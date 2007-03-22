@@ -1,0 +1,11 @@
+jemjvm-objs := domain.o jem.o jemUPipe.o malloc.o jar.o
+
+jemjvm.o: $(jemjvm-objs)
+	$(LD) -r -o $@ $(jemjvm-objs)
+
+obj-m += jemjvm.o
+
+# jem-y := jem.o
+
+EXTRA_CFLAGS += -I/opt/sombrio/jcore/staging/usr/xenomai/include 
+

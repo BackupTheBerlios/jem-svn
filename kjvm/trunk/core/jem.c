@@ -25,6 +25,7 @@
 #define VERSION "1.0.0"
 #define INITTASKPRIO 98
 #define INITTASKSTKSZ 8192
+#define DEFAULTHPSZ 33554432
 
 
 static RT_TASK          initTaskDesc;
@@ -109,9 +110,10 @@ int jem_init (void)
     printk(KERN_INFO "Jem/JVM version %s\n", VERSION);
 
     if (jemHeapSz == 0) {
-        printk(KERN_ERR "Jem/JVM - Please specify a heap size.\n");
-        printk(KERN_ERR "Jem/JVM - Eg. insmod jemjvm.ko jemHeapSz=102400\n");
-        return -EINVAL;
+        jemHeapSz   = DEFAULTHPSZ;
+        printk(KERN_INFO "Jem/JVM - Default heap size of %d will be used.\n", jemHeapSz);
+        printk(KERN_INFO "Jem/JVM - Use jemHeapSz parameter to change default.\n");
+        printk(KERN_INFO "Jem/JVM - Eg. insmod jemjvm.ko jemHeapSz=33554432\n");
     }
 
     // Create the jvm heap
@@ -156,7 +158,7 @@ module_exit(jem_exit);
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
 //
-// Copyright (C) 2007 Sombrio Systems Inc.
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License, version 2, as published by the Free 
@@ -169,16 +171,6 @@ module_exit(jem_exit);
 // You should have received a copy of the GNU General Public License along with 
 // Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
 // Fifth Floor, Boston, MA 02110-1301, USA
-//
-// As a special exception, if other files instantiate templates or use macros or 
-// inline functions from this file, or you compile this file and link it with other 
-// works to produce a work based on this file, this file does not by itself cause 
-// the resulting work to be covered by the GNU General Public License. However the 
-// source code for this file must still be made available in accordance with 
-// section (3) of the GNU General Public License.
-//
-// This exception does not invalidate any other reasons why a work based on this
-// file might be covered by the GNU General Public License.
 //
 // Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
 // at http://www.javadevices.com

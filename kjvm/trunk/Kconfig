@@ -24,7 +24,7 @@ config JEM_CODE_FRAGMENTS
 	depends on JEM
 	---help---
 	  Amount of space to allocate for code storage. Code space is allocated
-	  in 640K chunks. This variable controls the maximum number of chunks,
+	  in 512K chunks. This variable controls the maximum number of chunks,
 	  and thus the maximum amount of code space for a domain.
 
 config JEM_MAX_SERVICES
@@ -45,14 +45,35 @@ config JEM_ENABLE_GC
 	depends on JEM
 	default true
 	---help---
-	  Compile in support for the garbage collector.
+	  Compile in support for the garbage collector. The default collector is a 
+	  copying collector, which means that garbage collection consists of 
+	  allocating a new heap and copying referenced objects to the new heap. 
+	  This method requires double the heap memory for a domain while the
+	  gc is operating. There are other GC algorithms (below) that can be 
+	  compiled in and selected for the domain in the boot.rc file.
+
+config JEM_DYNAMIC_HEAP
+	bool "Dynamic heap allocation."
+	depends on JEM_ENABLE_GC
+	default false
+	---help---
+	  The default collector is a copying collector, which means that 
+	  garbage collection consists of allocating a new heap and copying 
+	  referenced objects to the new heap. This configuration item
+	  controls when the second heap is allocated. If this item is set
+	  on the second heap will be allocated when the garbage collection
+	  runs and is freed when garbage collection is done, i.e., it is 
+	  dynamic allocation. If this item is set off, the second heap 
+	  is allocated at initialization time, and is never freed.
 
 config JEM_COMPACTING_GC
 	bool "Enable compacting garbage collector support."
 	depends on JEM_ENABLE_GC
 	default false
 	---help---
-	  Compile in support for the compacting garbage collector.
+	  Compile in support for the compacting garbage collector. The boot.rc
+	  file must indicate which domains will use this GC, otherwise the 
+	  default copying collector will be used.
 
 config JEM_BITMAP_GC
 	bool "Enable bitmap garbage collector support."

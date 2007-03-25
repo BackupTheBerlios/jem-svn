@@ -5,33 +5,49 @@
 struct MemoryProxy_s;
 typedef struct MemoryProxy_s **MemoryProxyHandle;
 
-
-//FIXME
 void dzmemory_decRefcount(struct MemoryProxy_s *m);
 void dzmemory_alive(struct MemoryProxy_s *dzm);
 void dzmemory_redirect_invalid_dz(MemoryProxyHandle mem);
 
 
 ObjectDesc *copy_memory(struct DomainDesc_s *src, struct DomainDesc_s *dst,
-			struct MemoryProxy_s *obj, u4_t * quota);
+			struct MemoryProxy_s *obj, u32 * quota);
 
-
-#if defined (USE_QMAGIC) && defined (NORMAL_MAGIC)
-#define ASSERTDZMEM(x) assert_memory(x);
-#define ASSERTMEMORY(x) {ASSERTOBJECT(x); ASSERTDZMEM(x); }
-#else
-#define ASSERTMEMORY(x)
-#endif
 
 MemoryProxyHandle allocMemoryProxyInDomain(DomainDesc * domain,
 					   ClassDesc * c, jint start,
 					   jint size);
 
 struct MemoryProxy_s;
-struct MemoryProxy_s *gc_impl_shallowCopyMemory(u4_t * dst,
+struct MemoryProxy_s *gc_impl_shallowCopyMemory(u32 * dst,
 						struct MemoryProxy_s
 						*srcObj);
 
-u4_t memory_sizeof_proxy();
+u32 memory_sizeof_proxy(void);
+
+void memory_deleted(struct MemoryProxy_s *obj);
+
+//=================================================================================
+// This file is part of Jem, a real time Java operating system designed for 
+// embedded systems.
+//
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free 
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with 
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
+// at http://www.javadevices.com
+//=================================================================================
 
 #endif

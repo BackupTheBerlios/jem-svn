@@ -1,21 +1,31 @@
-/********************************************************************************
- * Garbage collector
- * Copyright 1998-2002 Michael Golm
- * Copyright 2001-2002 Joerg Baumann
- *******************************************************************************/
+//==============================================================================
+// 
+//==============================================================================
 
-#ifdef ENABLE_GC
-#include "all.h"
-
-//FIXME
-//#include "gc_memcpy.h"
+#ifdef CONFIG_JEM_ENABLE_GC 
+#include <linux/module.h>
+#include <linux/types.h>
+#include <linux/kernel.h>
+#include <native/mutex.h>
+#include "jemtypes.h"
+#include "malloc.h"
+#include "jemConfig.h"
+#include "object.h"
+#include "domain.h"
+#include "gc.h"
+#include "portal.h"
+#include "thread.h"
+#include "code.h"
+#include "load.h"
+#include "zero.h"
 #include "gc_move.h"
-#include "gc_pa.h"
 #include "gc_pgc.h"
-#include "gc_common.h"
 #include "gc_thread.h"
 #include "gc_stack.h"
 #include "gc_impl.h"
+
+extern RT_MUTEX     svTableLock;
+
 
 /*
  * freeze the threads in domain at known checkpoints, so we know the stackmaps 
@@ -24,7 +34,6 @@ void freezeThreads(DomainDesc * domain)
 {
 	ThreadDesc *thread;
 
-	IF_DBG_GC(printf("checking thread Positions ...\n"));
 	for (thread = domain->threads; thread != NULL; thread = thread->nextInDomain) {
 		if (thread == domain->gc.gcThread)
 			continue;	/* don't scan my own stack */
@@ -36,49 +45,17 @@ void freezeThreads(DomainDesc * domain)
 	}
 }
 
-#ifdef JAVASCHEDULER
-/*
- * visit all scheduler objects for thsi domain
- */
-static void walkSchedulerObjects(DomainDesc * domain, HandleReference_t handler)
-{
-	u4_t i;
-
-	for (i = 0; i < MAX_NR_CPUS; i++)
-		if (domain->Scheduler[i] != NULL)
-			if (domain->Scheduler[i]->SchedObj != NULL)
-				if (domain == domain->Scheduler[i]->SchedThread->domain) {
-					gc_dprintf("move HLScheduler %d\n", i);
-					handler(domain, &(domain->Scheduler[i]->SchedObj));
-				}
-}
-#endif
 
 /* 
  * visit all static refernces in class cl 
  */
-static void walkClass(DomainDesc * domain, Class * cl, HandleReference_t handler)
+static void walkClass(DomainDesc * domain, JClass * cl, HandleReference_t handler)
 {
 	ClassDesc *c = cl->classDesc;
 
-#ifdef DBG_GCSTATIC
-	if (c->staticFieldsSize) {
-		printf("   scan class %s\n", cl->classDesc->name);
-	}
-	FORBITMAP(c->staticsMap, c->staticFieldsSize, {
-		  /* reference slot */
-		  printf("      %d found ref %p\n", index, cl->staticFields[index]);
-		  handleReference(domain, (ObjectDesc **) & (cl->staticFields[index]));
-		  }
-		  , {
-		  printf("      %d numeric\n", index);
-		  }
-	);
-#else
 	FORBITMAP(c->staticsMap, c->staticFieldsSize,	/* reference slot */
 		  handler(domain, (ObjectDesc **) & (cl->staticFields[index])), {
 		  });
-#endif				/*DBG_GCSTATIC */
 }
 
 /* visit all references on the stacks for this domain*/
@@ -87,7 +64,6 @@ void walkStacks(DomainDesc * domain, HandleReference_t handler)
 	ThreadDesc *thread;
 
 	PGCB(STACK);
-	IF_DBG_GC(printf("Scanning stacks...\n"));
 	for (thread = domain->threads; thread != NULL; thread = thread->nextInDomain) {
 		if (thread == domain->gc.gcThread)
 			continue;	/* don't scan my own stack */
@@ -105,11 +81,10 @@ void walkStacks(DomainDesc * domain, HandleReference_t handler)
  */
 void walkStatics(DomainDesc * domain, HandleReference_t handler)
 {
-	u4_t i, k;
+	u32  i, k;
 	LibDesc *lib;
 
 	PGCB(STATIC);
-	IF_DBG_GC(printf("Scanning classes...\n"));
 	for (k = 0; k < domain->numberOfLibs; k++) {
 		lib = domain->libs[k];
 		for (i = 0; i < lib->numberOfClasses; i++) {
@@ -124,43 +99,32 @@ void walkStatics(DomainDesc * domain, HandleReference_t handler)
  */
 void walkPortals(DomainDesc * domain, HandleReference_t handler)
 {
-	u4_t i;
+	u32     i;
 	DEPDesc *d;
-	//printf("MOVE PORTALS\n");
+    int     result;
 
 	PGCB(SERVICE);
-	IF_DBG_GC(printf("Scanning portals...\n"));
 	/* TODO: perform GC on copy of service table and use locking only to reinstall table 
 	 * all entries of original table must be marked as changing
 	 */
-	LOCK_SERVICETABLE;
-	for (i = 0; i < MAX_SERVICES; i++) {
+    result = rt_mutex_acquire(&svTableLock, TM_INFINITE);
+    if (result < 0) {
+        printk(KERN_ERR "Error acquiring service table lock during GC, code=%d\n", result);
+        return;
+    }
+
+	for (i = 0; i < CONFIG_JEM_MAX_SERVICES; i++) {
 		d = domain->services[i];
 		if (d == SERVICE_ENTRY_FREE || d == SERVICE_ENTRY_CHANGING)
 			continue;
-#ifndef SERVICE_EAGER_CLEANUP
-		if (domain->services[i]->refcount == 1) {
-			//printf("DELETE SERVICE %s\n", obj2ClassDesc(domain->services[i]->obj)->name);
-			/* delete service (service object will stay on the heap as garbage) */
-			domain->services[i]->refcount = 0;
-			terminateThread(domain->services[i]->receiver);	/* thread is not in any queue (receiver is idle) */
-			domain->services[i] = SERVICE_ENTRY_FREE;
-			continue;
-		}
-#else
-		ASSERT(domain->services[i]->refcount > 1);
-#endif
 		handler(domain, (ObjectDesc **) & (domain->services[i]));
 	}
-#ifdef NEW_PORTALCALL
-	for (i = 0; i < MAX_SERVICES; i++) {
+	for (i = 0; i < CONFIG_JEM_MAX_SERVICES; i++) {
 		if (domain->pools[i]) {
-			//printf("MOVE POOL %d\n", i);
 			handler(domain, (ObjectDesc **) & (domain->pools[i]));
 		}
 	}
-#endif				/* NEW_PORTALCALL */
-	UNLOCK_SERVICETABLE;
+    rt_mutex_release(&svTableLock);
 	PGCE(SERVICE);
 }
 
@@ -169,13 +133,11 @@ void walkPortals(DomainDesc * domain, HandleReference_t handler)
  */
 void walkRegistereds(DomainDesc * domain, HandleReference_t handler)
 {
-	u4_t i;
+	u32  i;
 
 	PGCB(REGISTERED);
-	IF_DBG_GC(printf("Scanning registered...\n"));
-	for (i = 0; i < MAX_REGISTERED; i++) {
+	for (i = 0; i < getJVMConfig()->maxRegistered; i++) {
 		if (domain->gc.registeredObjects[i] != NULL) {
-			printf("register obj in domain %ld object %p\n", domain->id, &(domain->gc.registeredObjects[i]));
 			handler(domain, &(domain->gc.registeredObjects[i]));
 		}
 	}
@@ -186,17 +148,11 @@ void walkRegistereds(DomainDesc * domain, HandleReference_t handler)
 /*
  * visit all special objects in this domain for this domain 
  */
-#ifdef TIMER_EMULATION
-extern AtomicVariableProxy *atomic;
-#endif
 void walkSpecials(DomainDesc * domain, HandleReference_t handler)
 {
 	ThreadDesc *t;
 
 	PGCB(SPECIAL)
-	    IF_DBG_GC(printf("Scanning special...\n"));
-	/*if (domain->gc.gcObject != NULL)
-	   handler(domain, (ObjectDesc **) & (domain->gc.gcObject)); */
 	if (domain->startClassName)
 		handler(domain, (ObjectDesc **) & (domain->startClassName));
 	if (domain->dcodeName != NULL)
@@ -209,47 +165,19 @@ void walkSpecials(DomainDesc * domain, HandleReference_t handler)
 		handler(domain, (ObjectDesc **) & (domain->initialPortals));
 	if (domain->initialNamingProxy != NULL)
 		handler(domain, (ObjectDesc **) & (domain->initialNamingProxy));
-#ifdef TIMER_EMULATION
-	if ((atomic != NULL)
-	    && GC_FUNC_NAME(isInHeap) (domain, (ObjectDesc *) atomic))
-		handler(domain, (ObjectDesc **) & atomic);
-#endif
-#ifdef JAVASCHEDULER
-	{
-		int i;
-		/* move references to HLscheduler objects */
-		/* FIXME: 1) domain-control-blocks of other domains are touched
-		   2) very expensive (all domains are visited) */
-
-		foreachDomain1((domain1_f) walkSchedulerObjects, (void *) handler);
-
-		/* move references to LLscheduler objects */
-		for (i = 0; i < MAX_NR_CPUS; i++)
-			if (domain == CpuInfo[i]->LowLevel.SchedThread->domain)
-				if (CpuInfo[i]->LowLevel.SchedObj != NULL) {
-					gc_dprintf("move LLScheduler %d\n", i);
-					handler(domain, &(CpuInfo[i]->LowLevel.SchedObj));
-				}
-	}
-#endif
 
 	/*
 	 *  object references in domain control block 
 	 */
 	if (domain->naming) {
-		gc_dprintf("move naming\n");
 		handler(domain, (ObjectDesc **) & (domain->naming));
 	}
-#ifdef PORTAL_INTERCEPTOR
 	if (domain->outboundInterceptorObject) {
-		gc_dprintf("move interceptor\n");
 		handler(domain, (ObjectDesc **) & (domain->outboundInterceptorObject));
 	}
 	if (domain->inboundInterceptorObject) {
-		gc_dprintf("move interceptor\n");
 		handler(domain, (ObjectDesc **) & (domain->inboundInterceptorObject));
 	}
-#endif				/* PORTAL_INTERCEPTOR */
 
 	/*
 	 *  TCBs in domain control block 
@@ -260,26 +188,15 @@ void walkSpecials(DomainDesc * domain, HandleReference_t handler)
 		ThreadDesc *tp;
 		ThreadDescProxy *tpr;
 
-		gc_dprintf("move first TCB\n");
 		MOVETCB(domain->threads);
-#ifndef NEW_SCHED
-		gc_dprintf("move first runq TCB\n");
-		MOVETCB(domain->firstThreadInRunQueue);
-		gc_dprintf("move last runq TCB\n");
-		MOVETCB(domain->lastThreadInRunQueue);
-		gc_dprintf("move gc thread TCB\n");
-#else
 		Sched_gc_rootSet(domain, handler);
-#endif
 
 		MOVETCB(domain->gc.gcThread);
 		if (switchBackTo && switchBackTo->domain == domain) {	/* switchback is domainzero thread when gc is fired off by domainmanager.gc() */
-			gc_dprintf("move switchback TCB\n");
 			MOVETCB(switchBackTo);	// thread that was interrupted by GC (oneshot) */
 		}
 
 		/* move current thread TCB */
-		gc_dprintf("move current TCB\n");
 		tpr = thread2CPUState(curthr());
 		handler(domain, (ObjectDesc **) & (tpr));
 		*(curthrP()) = cpuState2thread(tpr);
@@ -290,10 +207,6 @@ void walkSpecials(DomainDesc * domain, HandleReference_t handler)
 	/* TCBs now are objects on the heap and are scanned for references the normal way */
 
 
-#ifdef JAVA_MONITOR_COMMANDS
-	gc_monitor_commands(domain);
-#endif
-	gc_dprintf("walkSpecials done\n");
 	PGCE(SPECIAL);
 }
 
@@ -302,17 +215,13 @@ void walkSpecials(DomainDesc * domain, HandleReference_t handler)
  */
 void walkInterrupHandlers(DomainDesc * domain, HandleReference_t handler)
 {
-	u4_t i, j;
+	u32  i, j;
 
 	/* Interrupt handler objects */
 	PGCB(INTR);
-#ifdef SMP
-	sys_panic("GC only tested for single CPU systems");
-#endif
 	for (i = 0; i < MAX_NR_CPUS; i++) {	/* FIXME: must synchronize with these CPUs!! */
 		for (j = 0; j < NUM_IRQs; j++) {
 			if (ifirstlevel_object[i][j] != NULL && idomains[i][j] == domain) {
-				gc_dprintf("move interrupt handler\n");
 				handler(domain, &(ifirstlevel_object[i][j]));
 			}
 		}
@@ -343,54 +252,28 @@ void walkRootSet(DomainDesc * domain, HandleReference_t stackHandler, HandleRefe
 
 #endif				/* ENABLE_GC */
 
-static void gc_memrefObjCB(DomainDesc * domain, ObjectDesc * obj, u4_t objsize, jint flags)
-{
-	ClassDesc *cl = *(ClassDesc **) (((ObjectDesc *) (obj))->vtable - 1);
-	//printf("%s\n",cl->name);
-	FORBITMAP(cl->map, cl->instanceSize, {
-		  /* reference slot */
-		  if (obj->data[index]
-		      && getObjFlags((ObjectDesc *) (obj->data[index])) == OBJFLAGS_MEMORY) printf("   %s[%ld]=%p\n", cl->name,
-												   index,
-												   (void *) (obj->data[index]));},
-		  {
-		  ;});
-	//printf("OK\n");
-}
-static void gc_memrefArrCB(DomainDesc * domain, ObjectDesc * object, u4_t objsize, jint flags)
-{
-	ArrayDesc *obj = (ArrayDesc *) object;
-	int index;
-	if (strcmp(obj->arrayClass->name, "[Ljx/zero/Memory;") == 0) {
-		for (index = 0; index < obj->size; index++)
-			if (obj->data[index] && getObjFlags((ObjectDesc *) (obj->data[index])) == OBJFLAGS_MEMORY)
-				printf("   %s[%ld]=%p\n", obj->arrayClass->name, index, (void *) (obj->data[index]));
 
-	}
-}
 
-u4_t *gc_memrefRootCB(DomainDesc * domain, ObjectDesc ** refPtr)
-{
-	u4_t *forward = NULL;
-	ClassDesc *refcl;
-	u4_t flags;
-	ObjectDesc *ref = *refPtr;
+//=================================================================================
+// This file is part of Jem, a real time Java operating system designed for 
+// embedded systems.
+//
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free 
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with 
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
+// at http://www.javadevices.com
+//=================================================================================
 
-	if (ref == NULL)
-		return NULL;
-
-	flags = getObjFlags(ref);
-	flags &= FLAGS_MASK;
-	if (flags == OBJFLAGS_MEMORY) {
-		printf("ROOT %p\n", *refPtr);
-	}
-	return *refPtr;
-}
-
-void print_memref(jint domainID)
-{
-	DomainDesc *domain = findDomain(domainID);
-	domain->gc.walkHeap(domain, gc_memrefObjCB, gc_memrefArrCB, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-
-	walkRootSet(domain, gc_memrefRootCB, gc_memrefRootCB, gc_memrefRootCB, gc_memrefRootCB, gc_memrefRootCB, gc_memrefRootCB);
-}

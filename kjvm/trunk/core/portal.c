@@ -1,8 +1,9 @@
-/********************************************************************************
- * Portal invocation and data copy between domains
- * Copyright 1998-2002 Michael Golm
- * Copyright 2001-2002 Meik Felser
- *******************************************************************************/
+//=================================================================================
+// Portal invocation and data copy between domains
+//=================================================================================
+
+#include <native/mutex.h>
+
 #include "all.h"
 #include "runq.h"
 #include "scheduler_inlined.h"
@@ -47,6 +48,10 @@ static int event_send_start, event_send_block, event_send_end, event_send_return
 #define INLINE static inline
 #endif
 
+
+
+RT_MUTEX     svTableLock;
+
 //#define VERBOSE_PORTAL_PARAM_COPY 1
 //#define CHECK_DEPPARAMS 1
 
@@ -87,14 +92,14 @@ u4_t createService(DomainDesc * domain, ObjectDesc * depObj, ClassDesc * interfa
 	u4_t index;
 
 	LOCK_SERVICETABLE;
-	for (index = 0; index < MAX_SERVICES; index++) {
+	for (index = 0; index < CONFIG_JEM_MAX_SERVICES; index++) {
 		if (domain->services[index] == SERVICE_ENTRY_FREE) {
 			domain->services[index] = SERVICE_ENTRY_CHANGING;
 			break;
 		}
 	}
 	UNLOCK_SERVICETABLE;
-	if (index == MAX_SERVICES)
+	if (index == CONFIG_JEM_MAX_SERVICES)
 		sys_panic("domain can not create more services");
 
 	dep = allocServiceDescInDomain(domain);
@@ -1831,7 +1836,7 @@ Proxy *portal_auto_promo(DomainDesc * domain, ObjectDesc * obj)
 		DEPDesc *d = NULL;
 		// try to find a service description for this object
 		LOCK_SERVICETABLE;
-		for (i = 0; i < MAX_SERVICES; i++) {
+		for (i = 0; i < CONFIG_JEM_MAX_SERVICES; i++) {
 			d = domain->services[i];
 			if (d == SERVICE_ENTRY_FREE || d == SERVICE_ENTRY_CHANGING) {
 				d = NULL;
@@ -1895,7 +1900,7 @@ Proxy *portal_auto_promo(DomainDesc * domain, ObjectDesc * obj)
 				int i, index;
 				pool = allocServicePoolInDomain(domain);
 				index = -1;
-				for (i = 0; i < MAX_SERVICES; i++) {
+				for (i = 0; i < CONFIG_JEM_MAX_SERVICES; i++) {
 					if (domain->pools[i] == NULL) {
 						domain->pools[i] = pool;
 						index = i;
@@ -2621,7 +2626,7 @@ void start_notify_thread(void *dummy)
 }
 #endif
 
-void service_decRefcount(DomainDesc * domain, u4_t index)
+void service_decRefcount(DomainDesc * domain, u32 index)
 {
 	ObjectHandle svcObj;
 #ifdef SMP
@@ -2694,6 +2699,14 @@ void disconnectServiceFromPool(DEPDesc * svc)
 
 void portals_init()
 {
+    int result;
+
+    result = rt_mutex_create(&svTableLock, "serviceTableLock");
+    if (result < 0) {
+        printk(KERN_ERR "Unable to create service table lock, rc=%d\n", result);
+        return;
+    }
+
 #ifdef PROFILE_EVENT_PORTAL
 	event_send_start = createNewEvent("PORTAL_SEND_START");
 	event_send_block = createNewEvent("PORTAL_SEND_BLOCK");
@@ -2708,3 +2721,27 @@ void portals_init()
 	event_receive_end_exec = createNewEvent("PORTAL_RECEIVE_END_EXEC");
 #endif
 }
+
+//=================================================================================
+// This file is part of Jem, a real time Java operating system designed for 
+// embedded systems.
+//
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free 
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with 
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
+// at http://www.javadevices.com
+//=================================================================================
+

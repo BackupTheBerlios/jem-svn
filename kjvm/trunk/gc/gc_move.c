@@ -1,8 +1,6 @@
-/********************************************************************************
- * Garbage collector
- * Copyright 1998-2002 Michael Golm
- * Copyright 2001-2002 Joerg Baumann
- *******************************************************************************/
+//=================================================================================
+// Garbage collector
+//=================================================================================
 
 #ifdef ENABLE_GC
 #include "all.h"
@@ -435,7 +433,7 @@ void gc_impl_walkContentForeignCPUState(DomainDesc * domain, ThreadDescForeignPr
 static void check_inwait(DomainDesc * domain, ThreadDesc * t)
 {
 	int i;
-	for (i = 0; i < MAX_SERVICES; i++) {
+	for (i = 0; i < CONFIG_JEM_MAX_SERVICES; i++) {
 		if (domain->pools[i]) {
 			if (domain->pools[i]->lastWaitingSender && t->id == domain->pools[i]->lastWaitingSender->id
 			    && t->domain->id == domain->pools[i]->lastWaitingSender->domain->id) {
@@ -788,3 +786,27 @@ void gc_impl_walkContent(DomainDesc * domain, ObjectDesc * obj, HandleReference_
 }
 
 #endif				/* ENABLE_GC */
+
+//=================================================================================
+// This file is part of Jem, a real time Java operating system designed for 
+// embedded systems.
+//
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free 
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with 
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
+// at http://www.javadevices.com
+//=================================================================================
+

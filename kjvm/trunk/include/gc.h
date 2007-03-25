@@ -11,11 +11,6 @@
 #include <linux/types.h>
 #include "jemConfig.h"
 #include "domain.h"
-//#include "gc_alloc.h"
-//#include "gc_org.h"
-//#include "gc_new.h"
-//#include "gc_compacting.h"
-//#include "gc_bitmap.h"
 
 #define GC_IMPLEMENTATION_NEW        0
 #define GC_IMPLEMENTATION_COMPACTING 1
@@ -52,6 +47,7 @@
 void gc_init(struct DomainDesc_s *domain, u8 *memu, jint gcinfo0, jint gcinfo1, jint gcinfo2, char *gcinfo3, 
              jint gcinfo4, int gcImpl);
 void gc_done(struct DomainDesc_s *domain);
+u32 gc_mem(void);
 
 static inline u32 *ObjectDesc2ptr(struct ObjectDesc_s * ref)
 {
@@ -265,14 +261,40 @@ jboolean isRef(jbyte * map, int total, int num);
 #define RETURN_UNREGHANDLE(handle) return unregisterObject(curdom(), handle);
 #define UNREGHANDLE(handle) unregisterObject(curdom(), handle);
 
+#define gc_objSize(_o_) gc_objSize2(_o_, getObjFlags(_o_))
+u32 gc_objSize2(ObjectDesc* obj, jint flags); 
+
+void gc_walkContinuesBlock(DomainDesc * domain, u32 * start, u32 ** top,
+			   HandleObject_t handleObject,
+			   HandleObject_t handleArray,
+			   HandleObject_t handlePortal,
+			   HandleObject_t handleMemory,
+			   HandleObject_t handleService,
+			   HandleObject_t handleCAS,
+			   HandleObject_t handleAtomVar,
+			   HandleObject_t handleDomainProxy,
+			   HandleObject_t handleCPUStateProxy,
+			   HandleObject_t handleServicePool,
+			   HandleObject_t handleStackProxy);
+
+void gc_walkContinuesBlock_Alt(DomainDesc * domain, u32 * start,
+			       u32 * top, HandleObject_t handleObject,
+			       HandleObject_t handleArray,
+			       HandleObject_t handlePortal,
+			       HandleObject_t handleMemory,
+			       HandleObject_t handleService,
+			       HandleObject_t handleCAS,
+			       HandleObject_t handleAtomVar,
+			       HandleObject_t handleDomainProxy);
+
 
 
 //=================================================================================
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
 //
-// Copyright (C) 2007 Sombrio Systems Inc.
-// Copyright (C) 1998-2002 Michael Golm
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License, version 2, as published by the Free 
@@ -285,16 +307,6 @@ jboolean isRef(jbyte * map, int total, int num);
 // You should have received a copy of the GNU General Public License along with 
 // Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
 // Fifth Floor, Boston, MA 02110-1301, USA
-//
-// As a special exception, if other files instantiate templates or use macros or 
-// inline functions from this file, or you compile this file and link it with other 
-// works to produce a work based on this file, this file does not by itself cause 
-// the resulting work to be covered by the GNU General Public License. However the 
-// source code for this file must still be made available in accordance with 
-// section (3) of the GNU General Public License.
-//
-// This exception does not invalidate any other reasons why a work based on this
-// file might be covered by the GNU General Public License.
 //
 // Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
 // at http://www.javadevices.com

@@ -1,11 +1,12 @@
-jemjvm-objs := domain.o jem.o jemUPipe.o malloc.o jar.o
+kjvm-objs := core/domain.o core/jem.o core/jemUPipe.o core/malloc.o core/jar.o \
+		core/thread.o
 
-jemjvm.o: $(jemjvm-objs)
-	$(LD) -r -o $@ $(jemjvm-objs)
+#	gc/gc_normal.o gc/gc.o gc/gc_impl.o
 
-obj-m += jemjvm.o
+kjvm.o: $(kjvm-objs)
+	$(LD) -r -o $@ $(kjvm-objs)
 
-# jem-y := jem.o
+obj-$(CONFIG_JEM) += kjvm.o
 
-EXTRA_CFLAGS += -I/opt/sombrio/jcore/staging/usr/xenomai/include 
+EXTRA_CFLAGS += -I/opt/sombrio/jcore/staging/usr/xenomai/include -I/vesta-work/chris/jem/jvm/kjvm/include
 

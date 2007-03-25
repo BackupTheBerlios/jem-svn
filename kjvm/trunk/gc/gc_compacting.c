@@ -1,7 +1,6 @@
-/********************************************************************************
- * Compacting garbage collector
- * Copyright 2001-2002 Joerg Baumann
- *******************************************************************************/
+//=================================================================================
+// Compacting garbage collector
+//=================================================================================
 
 #if defined( GC_COMPACTING_IMPL ) && defined ( GC_USE_NEW ) && defined ( ENABLE_GC )
 #include "all.h"
@@ -79,13 +78,13 @@ ObjectHandle gc_compacting_allocDataInDomain(DomainDesc * domain, int objSize, u
 
       try_alloc:
 	nextObj = GCM_COMPACTING(domain).heapTop + objSize;
-	if ((nextObj > GCM_COMPACTING(domain).heapBorder - HEAP_RESERVE)
+	if ((nextObj > GCM_COMPACTING(domain).heapBorder - getJVMConfig()->heapReserve)
 #ifdef PROFILE_AGING
 	    || (domain->gc.memTime > memTimeNext)
 #endif
 	    ) {
-		printf("%p,%p,%p,%p\n", nextObj, GCM_COMPACTING(domain).heapBorder, (void *) HEAP_RESERVE,
-		       (GCM_COMPACTING(domain).heapBorder - HEAP_RESERVE));
+		printf("%p,%p,%p,%p\n", nextObj, GCM_COMPACTING(domain).heapBorder, (void *) getJVMConfig()->heapReserve,
+		       (GCM_COMPACTING(domain).heapBorder - getJVMConfig()->heapReserve));
 #ifdef PROFILE_AGING
 		gc_dprintf("\nDomain %p (%s) reached memtime %lld (%lld). Starting GC...\n", domain, domain->domainName,
 			   memTimeNext, domain->gc.memTime);
@@ -520,8 +519,8 @@ void gc_compacting_init(DomainDesc * domain, u4_t heap_bytes)
 	/* alloc heap mem */
 	heapSize = (heap_bytes + HEAP_BLOCKSIZE - 1) & HEAP_BLOCKADDR_MASK;
 
-	if (heapSize <= HEAP_RESERVE + 1000)
-		sys_panic("heap too small. need at least %d bytes ", HEAP_RESERVE);
+	if (heapSize <= getJVMConfig()->heapReserve + 1000)
+		sys_panic("heap too small. need at least %d bytes ", getJVMConfig()->heapReserve);
 	if (HEAP_BLOCKSIZE % BLOCKSIZE != 0)
 		sys_panic("heapalign must be multiple of blocksize");
 
@@ -531,7 +530,7 @@ void gc_compacting_init(DomainDesc * domain, u4_t heap_bytes)
 	GCM_COMPACTING(domain).heapBorder = GCM_COMPACTING(domain).heap + (heap_bytes >> 2);
 	GCM_COMPACTING(domain).heapTop = GCM_COMPACTING(domain).heap;
 
-	if (GCM_COMPACTING(domain).heapTop > GCM_COMPACTING(domain).heapBorder - HEAP_RESERVE) {
+	if (GCM_COMPACTING(domain).heapTop > GCM_COMPACTING(domain).heapBorder - getJVMConfig()->heapReserve) {
 		sys_panic("HEAP TOO SMALL");
 	}
 #ifndef GC_USE_ONLY_ONE
@@ -550,3 +549,27 @@ void gc_compacting_init(DomainDesc * domain, u4_t heap_bytes)
 }
 
 #endif				/* defined( GC_COMPACTING_IMPL ) && defined ( GC_USE_NEW ) && defined (ENABLE_GC) */
+
+//=================================================================================
+// This file is part of Jem, a real time Java operating system designed for 
+// embedded systems.
+//
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free 
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with 
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
+// at http://www.javadevices.com
+//=================================================================================
+

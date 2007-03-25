@@ -101,10 +101,6 @@ static void *jemMallocInternal(u32 size, u32 ** start MEMTYPE_INFO)
 
     memset(addr, 0, size);
 
-#ifdef PROFILE_EVENT_JEMMALLOC
-    RECORD_EVENT_INFO(event_jxmalloc, jemMallocGetTotalFreeMemory());
-#endif
-
 	*start = addr;
 	return addr;
 }
@@ -114,6 +110,46 @@ void *jemMalloc(u32 size MEMTYPE_INFO)
 {
     u32 *start;
     return jemMallocInternal(size, &start MEMTYPE_PARAM);
+}
+
+
+void jemFree(void *addr, u32 size MEMTYPE_INFO)
+{
+
+	switch (memtype) {
+	case MEMTYPE_HEAP_PARAM:
+		alloc_stat.heap -= size;
+		break;
+	case MEMTYPE_CODE_PARAM:
+		alloc_stat.code -= size;
+		break;
+	case MEMTYPE_MEMOBJ_PARAM:
+		alloc_stat.memobj -= size;
+		break;
+	case MEMTYPE_PROFILING_PARAM:
+		alloc_stat.profiling -= size;
+		break;
+	case MEMTYPE_STACK_PARAM:
+		alloc_stat.stack -= size;
+		break;
+	case MEMTYPE_EMULATION_PARAM:
+		alloc_stat.emulation -= size;
+		break;
+	case MEMTYPE_TMP_PARAM:
+		alloc_stat.tmp -= size;
+		break;
+	case MEMTYPE_DCB_PARAM:
+		alloc_stat.dcb -= size;
+		break;
+	case MEMTYPE_OTHER_PARAM:
+		alloc_stat.other -= size;
+		break;
+	default:
+		printk(KERN_WARNING "Free MEMTYPE unknown\n");
+	}
+
+    allocRam -= size;
+    rt_heap_free(&jemHeap, addr);
 }
 
 
@@ -172,7 +208,8 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
 //
-// Copyright (C) 2007 Sombrio Systems Inc.
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License, version 2, as published by the Free 
@@ -185,16 +222,6 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
 // You should have received a copy of the GNU General Public License along with 
 // Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
 // Fifth Floor, Boston, MA 02110-1301, USA
-//
-// As a special exception, if other files instantiate templates or use macros or 
-// inline functions from this file, or you compile this file and link it with other 
-// works to produce a work based on this file, this file does not by itself cause 
-// the resulting work to be covered by the GNU General Public License. However the 
-// source code for this file must still be made available in accordance with 
-// section (3) of the GNU General Public License.
-//
-// This exception does not invalidate any other reasons why a work based on this
-// file might be covered by the GNU General Public License.
 //
 // Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
 // at http://www.javadevices.com

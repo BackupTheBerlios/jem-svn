@@ -205,14 +205,32 @@ static inline void stack_push(u32 ** sp, u32 data)
 
 
 
+void threads_init(void);
+ThreadDesc *createThread(DomainDesc * domain, thread_start_t thread_start,
+			 void *param, int state, int schedParam);
+ThreadDesc *createThreadUsingThreadEntry(DomainDesc * domain, ObjectDesc * entry);
+ThreadDesc *createInitialDomainThread(DomainDesc * domain, int state, int schedParam);
+ThreadDesc *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param, ObjectDesc * entry, 
+                              u32 stackSize, int state, int schedParam);
+void receive_dep(void *arg);
+void receiveDomainDEP(void *arg);
+void thread_exit(void);
+void terminateThread(ThreadDesc * t);
+
+ThreadDesc *findThreadDesc(ThreadDescForeignProxy *proxy);
+
+// FIXME jgbauman
+u32 start_thread_using_code1(ObjectDesc * obj, ThreadDesc * thread,
+			      code_t c, u32 param);
+
+
 
 //=================================================================================
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
 //
-// Copyright (C) 2007 Sombrio Systems Inc.
-// Copyright (C) 1998-2002 Michael Golm
-// Copyright (C) 2001-2002 Meik Felser
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License, version 2, as published by the Free 
@@ -225,16 +243,6 @@ static inline void stack_push(u32 ** sp, u32 data)
 // You should have received a copy of the GNU General Public License along with 
 // Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
 // Fifth Floor, Boston, MA 02110-1301, USA
-//
-// As a special exception, if other files instantiate templates or use macros or 
-// inline functions from this file, or you compile this file and link it with other 
-// works to produce a work based on this file, this file does not by itself cause 
-// the resulting work to be covered by the GNU General Public License. However the 
-// source code for this file must still be made available in accordance with 
-// section (3) of the GNU General Public License.
-//
-// This exception does not invalidate any other reasons why a work based on this
-// file might be covered by the GNU General Public License.
 //
 // Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
 // at http://www.javadevices.com

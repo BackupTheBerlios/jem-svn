@@ -1,4 +1,23 @@
-//===========================================================================
+//=================================================================================
+// This file is part of Jem, a real time Java operating system designed for 
+// embedded systems.
+//
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free 
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with 
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+//==============================================================================
 // File: domain.h
 //
 // Jem/JVM domain interface.
@@ -128,7 +147,7 @@ typedef struct DomainDesc_s {
 	int                         advancingThreads;
 	u32                         preempted;
 	u64                         cputime;
-    struct SchedDesc_s          sched;
+    u32                         currentThreadID;
     struct CPUDesc_s            *cpu[CONFIG_NR_CPUS];	/* CPU Object(s) of this domain */
 	struct ThreadDesc_s         *threads;
 	struct ObjectDesc_s         *startClassName;
@@ -165,6 +184,7 @@ typedef struct DomainDesc_s {
 	u32                         portal_statistics_copyout_rcv;
 	u32                         portal_statistics_copyin_rcv;
     RT_MUTEX                    domainMemLock;
+    RT_MUTEX                    domainGCLock;
 } DomainDesc;
 
 
@@ -187,29 +207,6 @@ int findMethodAtAddrInDomain(struct DomainDesc_s * domain, u8 * addr,
 			     struct MethodDesc_s ** method, struct ClassDesc_s ** classInfo,
 			     jint * bytecodePos, jint * lineNumber);
 
-
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
-// embedded systems.
-//
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
-// at http://www.javadevices.com
-//=================================================================================
 
 #endif
 

@@ -1,3 +1,23 @@
+//=================================================================================
+// This file is part of Jem, a real time Java operating system designed for 
+// embedded systems.
+//
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
+// Copyright © 1998-2002 Michael Golm. All rights reserved.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free 
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with 
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
 //==============================================================================
 // domain.c
 // 
@@ -93,6 +113,13 @@ static DomainDesc *specialAllocDomainDesc(void)
         rt_mutex_release(&domainLock);
         return NULL;
     }
+    sprintf(lockName, "dom%03dGCLock", d->id);
+    result          = rt_mutex_create(&d->domainGCLock, lockName);
+    if (result < 0) {
+        printk(KERN_CRIT "Unable to create domain GC lock %s, rc=%d\n", lockName, result);
+        rt_mutex_release(&domainLock);
+        return NULL;
+    }
 
     rt_mutex_release(&domainLock);
 	return d;
@@ -143,8 +170,9 @@ DomainDesc *createDomain(char *domainName, jint gcinfo0, jint gcinfo1, jint gcin
 	memset(domain->sfields, 0, sizeof(jint *) * domain->maxNumberOfLibs);
 
 	strcpy(domain->domainName, domainName);
-	domain->threads     = NULL;
-	domain->services[0] = SERVICE_ENTRY_CHANGING;
+	domain->threads         = NULL;
+	domain->services[0]     = SERVICE_ENTRY_CHANGING;
+    domain->currentThreadID = 0;
 
 	gc_init(domain, mem, gcinfo0, gcinfo1, gcinfo2, gcinfo3, gcinfo4, gcImpl);
 
@@ -209,29 +237,4 @@ void deleteDomainSystem(void)
     rt_mutex_delete(&domainLock);
 }
 
-
-
-
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
-// embedded systems.
-//
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
-// at http://www.javadevices.com
-//=================================================================================
 

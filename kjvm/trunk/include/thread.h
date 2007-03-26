@@ -1,14 +1,34 @@
-//===========================================================================
-// File: domain.h
+//=================================================================================
+// This file is part of Jem, a real time Java operating system designed for 
+// embedded systems.
+//
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free 
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with 
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
+// at http://www.javadevices.com
+//=================================================================================
 //
 // Jem/JVM thread interface.
 //
-//===========================================================================
+//=================================================================================
 
 #ifndef _THREAD_H
 #define _THREAD_H
 
-#include <linux/smp.h>
+#include <native/task.h>
 
 #define STATE_INIT      1
 #define STATE_RUNNABLE  2
@@ -39,6 +59,8 @@
 #define TID(t) (t)->domain->id, (t)->id
 #define THREAD_NAME_MAXLEN 40
 
+typedef void (*thread_start_t) (void *);
+
 
 struct copied_s {
 	struct ObjectDesc_s  *src;
@@ -52,63 +74,19 @@ typedef struct {
 
 
 typedef struct ThreadDesc_s  {
-	unsigned long                   *contextPtr;
-	u64                             *stack;		/* pointer to lowest element in stack (small address) */
-	u64                             *stackTop;		/* pointer to topmost element in stack (large address) */
 	u32                             state;
 	struct DomainDesc_s             *domain;
-	struct ThreadDesc_s             *nextInRunQueue;
-	struct ThreadDesc_s             *nextInDEPQueue;
-	unsigned long                   context[14];
-	jint                            *depParams;
-	jint                            depMethodIndex;
-    jboolean                        depSwitchBack;    /* if true the PortalThread should switch back to the caller */ 
-	struct ThreadDesc_s             *linkedDEPThr;	/* if thread is servicing a Portal  this is the Pointer to 
-						                the original caller (transitiv)
-						                else this points to the servicing Thread (transitiv)
-						                if no portal is used, this points to the thread itself */
-	struct ThreadDesc_s             *nextInReceiveQueue;
-	struct ThreadDesc_s             *nextInGCQueue;
-	jint                            curCpuId;		/* the ID of the last used CPU */
-	jboolean                        isPortalThread;	/* this thread is a Portalthread */
-	struct DEPDesc_s                *processingDEP;	/* this thread is currently servicing a Portal */
-	struct DomainDesc_s             *blockedInDomain;	/* this thread is currently waiting for a service of that domain */
-	u32                             blockedInDomainID;	/* this thread is currently waiting for a service of that domain (detect terminated domain)*/
-	u32                             blockedInServiceIndex;	/* index of the service this thread is waiting for */
-	struct ThreadDesc_s             *blockedInServiceThread;	/* service thread that executes our call 
-							                 * (needed to update mostRecentlyCalledBy during GC) */
-	struct ThreadDesc_s             *mostRecentlyCalledBy; /* needed to update the client thread pointer after svc exec */
-	struct DomainDesc_s             *callerDomain;
-	u32                             callerDomainID;
 	struct ThreadDesc_s             *nextInDomain;
 	struct ThreadDesc_s             *prevInDomain;
-	struct ThreadDesc_s             *next;     /* general Pointer, used from Java-Level and Atomic Variable */
-	jint                            wakeupTime;
-	jint                            unblockedWithoutBeingBlocked;
-	struct ObjectDesc_s             *schedInfo;	/* may be used by a scheduler to store thread specific infos */
-	jint                            debug[2];		/* two debug slots */
-	SchedDescUntypedThreadMemory    untypedSchedMemory;
-	struct ProfileDesc_s            *profile;
-	sigset_t                        sigmask;
-	jint                            preempted;
 	u32                             magic;
-	struct DomainDesc_s             *schedulingDomain;
-	char                            name[THREAD_NAME_MAXLEN];
-	struct ObjectDesc_s             *portalParameter;	/* implicit parameter passed during a portal call 
-					                                can be used to pass credentials to target domain */
-	struct ObjectDesc_s             *entry;	/* thread entry object containing run method */
-	struct ObjectDesc_s             *portalReturn;	/* may contain object reference or numeric data ! */
-	jint                            portalReturnType;	/* 0=numeric 1=reference 3=exception */
-	struct copied_s                 *copied;	/* onlu used when thread receives portal calls */
-	u32                             n_copied;
-	u32                             max_copied;
-	u32                             isInterruptHandlerThread;
-	u32                             isGCThread;
-	jint                            *myparams;
-	u32                             id;
-	struct StackProxy_s             *stackObj;
-	u32                             numberPreempted;
-	u64                             cputime;
+	thread_start_t                  entry;
+	jboolean                        isInterruptHandlerThread;
+	jboolean                        isGCThread;
+	jboolean                        isPortalThread;
+	u32                             threadID;
+    void                            *createParam;
+    jint                            *portalParams;
+    RT_TASK                         task;
 } ThreadDesc;
 
 
@@ -152,8 +130,6 @@ extern struct ThreadDesc_s                  *__idle_thread[CONFIG_NR_CPUS];
 extern u32                                  *trace_sched_ip;
 extern u32                                  *last_trace_sched_ip;
 extern struct ThreadDesc_s                  *__current[CONFIG_NR_CPUS];
-
-typedef void (*thread_start_t) (void *);
 
 
 static inline struct ThreadDesc_s *curthr(void)
@@ -223,29 +199,5 @@ ThreadDesc *findThreadDesc(ThreadDescForeignProxy *proxy);
 u32 start_thread_using_code1(ObjectDesc * obj, ThreadDesc * thread,
 			      code_t c, u32 param);
 
-
-
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
-// embedded systems.
-//
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
-// at http://www.javadevices.com
-//=================================================================================
 
 #endif

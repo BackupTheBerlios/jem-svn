@@ -1,91 +1,48 @@
-/********************************************************************************
- * Thread management
- * Copyright 1998-2002 Michael Golm
- * Copyright 2001-2002 Meik Felser
- *******************************************************************************/
-
-#include "all.h"
-#include "runq.h"
-#include "sched.h"
-
-#include "scheduler_inlined.h"
-
-#include "threadimpl.h"
-
-void thread_profile_irq(u4_t eip);
-
-#ifdef KERNEL
-void irq_destroy_switch_to(ThreadDesc ** current, ThreadDesc * to);
-#endif
-
-void idle(void *x);
-
-#ifdef JAVASCHEDULER
-void idle(void *x)
-{
-#  ifdef DEBUG
-	check_current = 1;	/* may be deactivated */
-#  endif
-	for (;;) {
-		/* printf("idle yield\n"); */
-#  ifdef NO_TIMER_IRQ
-		threadyield();
-#  endif
-	}
-}
-#endif
+//=================================================================================
+// This file is part of Jem, a real time Java operating system designed for 
+// embedded systems.
+//
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
+// Copyright © 1998-2002 Michael Golm. All rights reserved.
+// Copyright © 2001-2002 Meik Felser. All rights reserved.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free 
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with 
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
+// at http://www.javadevices.com
+//=================================================================================
+// 
+// Thread management
+// 
+//=================================================================================
 
 
-static void destroyCurrentThread();
+void        idle(void *x);
+ThreadDesc  *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param,
+                               ObjectDesc * e, u32 stackSize, int state, int schedParam, char *tName);
+ThreadDesc  *specialAllocThreadDesc(DomainDesc * domain);
+
+void        start_initial_thread(void *dummy);
+static void destroyCurrentThread(void);
 
 void thread_exit()
 {
-#ifdef DBG_THREAD
-	printf("THREADEXIT %d.%d\n", curdom()->id, curthr()->id);
-#endif
 	destroyCurrentThread();
-	printf("Looping forever. Should never be reached.\n");
+	printk(KERN_ERR "Looping forever. Should never be reached.\n");
 	for (;;);
 }
 
-void check_eflags0(ThreadDesc * t, u4_t flags)
-{
-	if ((flags & 0x200) == 0) {
-		printf("IF cleared FLAGS0: %p = %08lx\n", curthr(), flags);
-		printStackTrace("EFLAGS: ", curthr(), (u4_t *) & t - 2);
-	}
-}
-void check_eflags1(ThreadDesc * t, u4_t flags)
-{
-	if ((flags & 0x200) == 0) {
-		printf("IF cleared FLAGS1: %p = %08lx\n", curthr(), flags);
-		printStackTrace("EFLAGS: ", curthr(), (u4_t *) & t - 2);
-	}
-}
-
-void pcb_init(ThreadDesc * thread)
-{
-	thread->context[PCB_GS] = KERNEL_DS;
-	thread->context[PCB_FS] = KERNEL_DS;
-	thread->context[PCB_ES] = KERNEL_DS;	/* used by C */
-	thread->context[PCB_DS] = KERNEL_DS;	/* data segment, dont touch */
-	thread->context[PCB_EDI] = 0;
-	thread->context[PCB_ESI] = 0;
-	thread->context[PCB_EBP] = 0;
-	thread->context[PCB_ESP] = 0;
-	thread->context[PCB_EBX] = 0;
-	thread->context[PCB_EDX] = 0;
-	thread->context[PCB_ECX] = 0;
-	thread->context[PCB_EAX] = 0;
-	thread->context[PCB_EIP] = 0;
-	thread->context[PCB_EFLAGS] = 0x00000212;
-}
-
-ThreadDesc *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param, ObjectDesc * e, u4_t stackSize,
-			      int state, int schedParam);
-ThreadDesc *specialAllocThreadDesc(DomainDesc * domain);
-
-void start_initial_thread(void *dummy);
 
 ThreadDesc *createInitialDomainThread(DomainDesc * domain, int state, int schedParam)
 {
@@ -99,210 +56,48 @@ ThreadDesc *createThread(DomainDesc * domain, thread_start_t thread_start, void 
 	return t;
 }
 
-//#define STACK_ALIGN     STACK_CHUNK_SIZE
-#define STACK_ALIGN 4
-
-extern ClassDesc *cpuStateClass;
-extern ClassDesc *stackClass;
-
-#if ! defined(STACK_ON_HEAP) && defined(STACK_ALLOW_GROW)
-void thread_inc_current_stack(u4_t inc)
+ThreadDesc *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param, 
+                              ObjectDesc * entry, u32 stackSize, int state, int prio, char *tName)
 {
-	int size, nsize;
-	u4_t *new_stack, *new_top, *fp, *p, *nfp, *ebp, *old_stack;
-	ThreadDesc *thread;
-
-	thread = curthr();
-
-	size = (thread->stackTop - thread->stack) << 2;
-
-	new_stack = malloc_threadstack(curdom(), size + inc, STACK_ALIGN);
-	new_top = new_stack + ((size + inc) >> 2);
-
-	ebp = (u4_t *) & inc - 2;
-	fp = thread->stack;
-	nfp = new_top - (thread->stackTop - fp);
-	p = new_top - (thread->stackTop - ebp);
-
-	ASSERT(((thread->stack <= fp) && (fp < thread->stackTop)));
-
-	old_stack = thread->stack;
-
-	while (fp < thread->stackTop) {
-		if (fp == ebp) {
-			ebp = (u4_t *) * fp;
-			if (ebp != NULL) {
-				ASSERT(((thread->stack < ebp) && (ebp < thread->stackTop)));
-				*nfp = new_top - (thread->stackTop - ebp);
-			} else {
-				*nfp = NULL;
-			}
-		} else {
-			*nfp = *fp;
-		}
-		fp++;
-		nfp++;
-	}
-
-	thread->stackTop = new_top;
-	thread->stack = new_stack;
-
-/*
-0x804ed71 <thread_inc_current_stack+625>:       mov    0xffffffec(%ebp),%ecx
-0x804ed74 <thread_inc_current_stack+628>:       mov    %ecx,%ebp
-0x804ed76 <thread_inc_current_stack+630>:       mov    %ebp,%esp
-*/
-	asm volatile ("movl %0, %%ebp;"::"r" (p));	/* switch to new stack */
-	asm volatile ("movl %0, %%esp;"::"r" (p));
-	printf("REALLOC STACK IN THREAD %d.%d\n", thread->domain->id, thread->id);
-	free_threadstack(thread->domain, old_stack, size);
-
-	return;
-}
-#else
-void thread_inc_current_stack(u4_t inc)
-{
-	sys_panic("");
-}
-
-#endif
-
-/* stackSize in words */
-ThreadDesc *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param, ObjectDesc * entry, u4_t stackSize,
-			      int state, int schedParam)
-{
-	u4_t *sp1;
+	u32 *sp1;
 	ThreadDesc *thread;
 	ObjectDesc *obj;
 	ThreadDescProxy *threadproxy;
 
-	threadproxy = allocThreadDescProxyInDomain(domain, cpuStateClass);
-	thread = &(threadproxy->desc);
-#ifdef STACK_ON_HEAP
-#if 1
-	thread->stackObj = allocStackInDomain(domain, stackClass, STACK_CHUNK_SIZE /*stackSize */ );
-	thread->stackObj->thread = thread;
-	thread->stack = obj2stack(thread->stackObj);
-	thread->stackTop = thread->stack + STACK_CHUNK_SIZE;
-#else
-	thread->stack = malloc_threadstack(domain, STACK_CHUNK_SIZE, STACK_ALIGN);
-	thread->stackTop = thread->stack + (STACK_CHUNK_SIZE >> 2);
-#endif
-#else
-	thread->stack = malloc_threadstack(domain, STACK_CHUNK_SIZE, STACK_ALIGN);
-	thread->stackTop = thread->stack + (STACK_CHUNK_SIZE >> 2);
-#endif
-
-	thread->entry = entry;
-
-#ifdef USE_QMAGIC
-	thread->magic = MAGIC_THREAD;
-#endif
-	thread->contextPtr = &(thread->context);
-	thread->schedInfo = 0;
-	thread->domain = domain;
-#ifdef NEW_PORTALCALL
-	thread->nextInReceiveQueue = NULL;
-#endif
-	thread->name[0] = '\0';
-	thread->portalParameter = NULL;
-	thread->myparams = NULL;
-	domain->sched.currentThreadID++;
-	thread->id = domain->sched.currentThreadID;
-
-#ifdef JAVASCHEDULER
-	if (__current[get_processor_id()] == NULL)
-		thread->schedulingDomain = domainZero;
-	else
-		thread->schedulingDomain = curthr()->schedulingDomain;
-#endif
-#ifdef CONT_PORTAL
-	thread->linkedDEPThr = thread;
-#endif
-
-#ifndef NEW_SCHED
-	thread->nextInRunQueue = NULL;
-#endif
-
-#ifndef SMP
-	thread->nextInDomain = domain->threads;
+	threadproxy             = allocThreadDescProxyInDomain(domain, cpuStateClass);
+	thread                  = &(threadproxy->desc);
+	thread->entry           = entry;
+	thread->magic           = MAGIC_THREAD;
+	thread->domain          = domain;
+	thread->threadID        = domain->currentThreadID++;
+	thread->nextInDomain    = domain->threads;
 	if (domain->threads)
 		domain->threads->prevInDomain = thread;
-	thread->prevInDomain = NULL;
-	domain->threads = thread;
-#else
-	UPDATE prevInDomain
-	do {
-		thread->nextInDomain = domain->threads;
-	} while (!cas((u4_t *) & domain->threads, (u4_t) thread->nextInDomain, (u4_t) thread));
+	thread->prevInDomain    = NULL;
+	domain->threads         = thread;
+	thread->state           = state;
+    thread->createParam     = param;
+    thread->portalParams    = NULL;
 
-	/* set current CPU of the new Thread */
-	thread->curCpuId = get_processor_id();
-#endif
-
-	/*dprintf("     THREAD-> 0x%lx,\n", thread);
-	   dprintf("     THREADCTX-> at 0x%lx\n",  thread->contextPtr); */
-
-//      printf("STACK : %p .. %p obj=%p\n", thread->stackTop, thread->stack, thread->stackObj);
-	sp1 = thread->stackTop;
-	*--sp1 = (u4_t) thread_exit;
-	*--sp1 = (u4_t) param;
-	*--sp1 = (u4_t) thread_exit;
-
-	pcb_init(thread);
-	thread->context[PCB_EIP] = (u4_t) thread_start;
-	thread->context[PCB_ESP] = (u4_t) sp1;
-	thread->context[PCB_EBP] = 0;
-	thread->context[PCB_EFLAGS] = 0x00000212;
-	thread->state = state;
-
-#ifndef KERNEL
-	sigemptyset(&(thread->sigmask));
-#endif
-
-#ifdef PROFILE
-	/* alloc memory for profiling */
-	thread->profile = profile_new_desc();
-#endif
-
-	Sched_created(thread, schedParam);
+    rt_task_spawn(&thread->task, tName, stackSize, prio, T_FPU, thread_start, (void *) thread);
 
 	return thread;
 }
 
-#ifdef STACK_ON_HEAP
 void freeThreadMem(ThreadDesc * t)
 {
-}
-#else
-void freeThreadMem(ThreadDesc * t)
-{
-	u4_t *threadmem;
-	u4_t *memBorder, *mem;
 	DomainDesc *domain;
 
-	ASSERTCLI;
-
-	threadmem = ObjectDesc2ptr(ThreadDesc2ObjectDesc(t));
 	domain = t->domain;
-	if (t->myparams)
-		jxfree(t->myparams, MYPARAMS_SIZE MEMTYPE_OTHER);
-	//if (t->copied) jxfree(t->copied, sizeof(struct copied_s)*t->max_copied);
-
-	mem = t->stack;
-
-	free_threadstack(domain, mem, STACK_CHUNK_SIZE);
-	//  printf("stack=%p, border=%p\n", mem, memBorder);
-
+	if (t->portalParams)
+		jemFree(t->portalParams, PORTALPARAMS_SIZE MEMTYPE_OTHER);
 }
-#endif
 
-ThreadDesc *findThreadByID(DomainDesc * domain, u4_t id)
+ThreadDesc *findThreadByID(DomainDesc * domain, u32 tid)
 {
 	ThreadDesc *t;
-	ASSERTCLI;
 	for (t = domain->threads; t != NULL; t = t->nextInDomain) {
-		if (t->id == id)
+		if (t->threadID == tid)
 			return t;
 	}
 	return NULL;
@@ -311,7 +106,6 @@ ThreadDesc *findThreadByID(DomainDesc * domain, u4_t id)
 ThreadDesc *findThreadDesc(ThreadDescForeignProxy * proxy)
 {
 	DomainDesc *domain;
-	ASSERTCLI;
 	if (proxy->domain->domain->id == proxy->domain->domainID) {
 		domain = proxy->domain->domain;
 	} else {
@@ -524,17 +318,17 @@ static void rtc_irq_ack()
 	ports_inb_p(NULL, 0x71);
 }
 
-void irq_happened(u4_t irq, DEPDesc * dep /*u4_t eip, u4_t cs, u4_t eflags */ )
+void irq_happened(u32 irq, DEPDesc * dep /*u32 eip, u32 cs, u32 eflags */ )
 {
 	/* printf("*****IRQ****** %p %p %p\n", eip, cs, eflags); */
 	/* printf("*****IRQ %d %p******\n", irq, dep); */
 	/*rtc_irq_ack(); */
 }
-void irq_missed(u4_t irq, DEPDesc * dep)
+void irq_missed(u32 irq, DEPDesc * dep)
 {
 	/* printf("*****IRQ****** %p %p %p\n", eip, cs, eflags); */
 	printf("*****IRQMISSED %ld %p******\n", irq, dep);
-	printStackTrace("IRQMISS: ", curthr(), (u4_t *) & irq - 2);
+	printStackTrace("IRQMISS: ", curthr(), (u32 *) & irq - 2);
 
 	monitor(NULL);
 }
@@ -659,7 +453,6 @@ void irq_handler_new()
 	}
 #endif				/* ROLLFORWARD_ON_PREEMPTION */
 
-	thread_profile_irq(curthr()->context[PCB_EIP]);
 
 	reschedule();
 	sys_panic("should not be reached");
@@ -776,21 +569,21 @@ ThreadDesc *curthr()
 	int cpuID = get_processor_id();
 #if 0
 #ifdef CHECK_CURRENT
-	u4_t *sp;
+	u32 *sp;
 	ASSERTTHREAD(__current[cpuID]);
 	if (check_current) {
-		sp = (u4_t *) & cpuID;
+		sp = (u32 *) & cpuID;
 		if (sp <= __current[cpuID]->stack || sp >= __current[cpuID]->stackTop) {
 			cli();
 
 			printf("CURRENT NOT CONSISTENT!!!\n");
 			printf("THREAD: %p\n", __current[cpuID]);
 			printf("ESP: %p\n", &sp + 1);
-			printNStackTrace("CUR: ", __current[cpuID], (u4_t *) & cpuID + 1, 7);
+			printNStackTrace("CUR: ", __current[cpuID], (u32 *) & cpuID + 1, 7);
 			sys_panic("current not consistent %p.", __current[cpuID]);
 		}
 		check_not_in_runq(__current[cpuID]);
-		checkStackTrace(__current[cpuID], (u4_t *) & cpuID + 1);
+		checkStackTrace(__current[cpuID], (u32 *) & cpuID + 1);
 	}
 #endif
 #endif				/* 0 */
@@ -804,16 +597,16 @@ ThreadDesc **curthrP()
 {
 	int cpuID = get_processor_id();
 #ifdef CHECK_CURRENT
-	u4_t *sp;
+	u32 *sp;
 	if (check_current) {
-		sp = (u4_t *) & cpuID;
+		sp = (u32 *) & cpuID;
 		ASSERTTHREAD(__current[cpuID]);
 		if (sp <= __current[cpuID]->stack || sp >= __current[cpuID]->stackTop) {
-			printStackTrace("CURP: ", __current[cpuID], (u4_t *) & cpuID + 1);
+			printStackTrace("CURP: ", __current[cpuID], (u32 *) & cpuID + 1);
 			sys_panic("current not consistent %p.", __current[cpuID]);
 		}
 		check_not_in_runq(__current[cpuID]);
-		checkStackTrace(__current[cpuID], (u4_t *) & cpuID + 1);
+		checkStackTrace(__current[cpuID], (u32 *) & cpuID + 1);
 	}
 #endif
 	return &__current[cpuID];
@@ -849,7 +642,7 @@ void set_current(ThreadDesc * c)
 
 jint switch_to(ThreadDesc ** current, ThreadDesc * to)
 {
-	u4_t result;
+	u32 result;
 
 	DISABLE_IRQ;
 
@@ -892,3 +685,5 @@ void profile_cputime()
 	lasttime = t;
 }
 #endif				/* CPU_USAGE_STATISTICS */
+
+

@@ -1,4 +1,23 @@
-//===========================================================================
+//=================================================================================
+// This file is part of Jem, a real time Java operating system designed for 
+// embedded systems.
+//
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free 
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with 
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+//==============================================================================
 // File: gc.h
 //
 // Jem/JVM garbage collector interface.
@@ -249,7 +268,6 @@ static inline ObjectHandle gc_allocDataInDomain(struct DomainDesc_s * domain,
 						int objsize, u32 flags)
 {
 	return domain->gc.allocDataInDomain(domain, objsize, flags);
-    //return NULL;
 }
 
 void gc_in(struct ObjectDesc_s * o, struct DomainDesc_s * domain);
@@ -288,29 +306,6 @@ void gc_walkContinuesBlock_Alt(DomainDesc * domain, u32 * start,
 			       HandleObject_t handleDomainProxy);
 
 
-
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
-// embedded systems.
-//
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
-// at http://www.javadevices.com
-//=================================================================================
 
 #endif
 

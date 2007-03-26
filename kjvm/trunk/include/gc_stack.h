@@ -1,17 +1,3 @@
-#ifndef GC_STACK_H
-#define GC_STACK_H
-#ifdef CONFIG_JEM_ENABLE_GC
-
-jboolean find_stackmap(MethodDesc * method, u32  * eip, u32  * ebp,
-		       jbyte * stackmap, u32  maxslots, u32  * nslots);
-void list_stackmaps(MethodDesc * method);
-void walkStack(DomainDesc * domain, ThreadDesc * thread,
-	       HandleReference_t handleReference);
-
-#endif				/* ENABLE_GC */
-
-
-
 //=================================================================================
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
@@ -31,8 +17,18 @@ void walkStack(DomainDesc * domain, ThreadDesc * thread,
 // Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
-// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
-// at http://www.javadevices.com
-//=================================================================================
+//==============================================================================
+#ifndef GC_STACK_H
+#define GC_STACK_H
+#ifdef CONFIG_JEM_ENABLE_GC
+
+jboolean find_stackmap(MethodDesc * method, u32  * eip, u32  * ebp,
+		       jbyte * stackmap, u32  maxslots, u32  * nslots);
+void list_stackmaps(MethodDesc * method);
+void walkStack(DomainDesc * domain, ThreadDesc * thread,
+	       HandleReference_t handleReference);
+
+#endif				/* ENABLE_GC */
+
 
 #endif				/* GC_STACK_H */

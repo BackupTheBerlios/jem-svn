@@ -1,3 +1,24 @@
+//=================================================================================
+// This file is part of Jem, a real time Java operating system designed for 
+// embedded systems.
+//
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1998-2002 Michael Golm. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
+// Copyright © 2001-2002 Joerg Baumann. All rights reserved.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free 
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with 
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
 //==============================================================================
 // gc_normal.c
 // 
@@ -64,73 +85,46 @@ ObjectHandle gc_normal_allocDataInDomain(DomainDesc * domain, int objSize, u32 f
 	ObjectHandle    handle;
 	jboolean        tried = JNI_FALSE;
 
-#ifdef CONFIG_JEM_PROFILE
-	jlong memTimeNext;
-	memTimeNext = ((domain->gc.memTime / memTimeStep) + 1) * memTimeStep;
-	domain->gc.memTime += sizeof(jint) * objSize;
-	if (domain->domainName != NULL && (strcmp(domain->domainName, "DomainZero") == 0))
-		memTimeNext = domain->gc.memTime + 10;
-#endif
-
-	GC_LOCK;
+    int result = rt_mutex_acquire(&domain->domainGCLock, TM_INFINITE);
+    if (result < 0) {
+        printk(KERN_ERR "Error acquiring domain GC lock, code=%d\n", result);
+        return NULL;
+    }
 
   try_alloc:
 	nextObj = GCM_NEW(domain).heapTop + objSize;
-	if ((nextObj > GCM_NEW(domain).heapBorder - getJVMConfig()->heapReserve)
-#ifdef CONFIG_JEM_PROFILE
-	    || (domain->gc.memTime > memTimeNext)
-#endif
-	    ) {
-#ifdef CONFIG_JEM_PROFILE
-		printk(KERN_INFO "Domain %p (%s) reached memtime %lld (%lld). Starting GC...\n", domain, domain->domainName,
-			   memTimeNext, domain->gc.memTime);
-#endif
-
+	if ((nextObj > GCM_NEW(domain).heapBorder - getJVMConfig()->heapReserve)) {
 		if (curthr()->isInterruptHandlerThread) {
 			if (nextObj > GCM_NEW(domain).heapBorder) {
-				printk(KERN_ERR "Attmpt to GC in interrupt handler.");
+				printk(KERN_ERR "Out of heap space in interrupt handler.\n");
+                rt_mutex_release(&domain->domainGCLock);
                 return NULL;
 			}
 #ifdef CONFIG_JEM_ENABLE_GC
 			goto do_alloc;	/* we are in the interrupt handler but have still enough heap reserve */
 #else
-			printk(KERN_WARNING "Attempt to GC with GC disabled\n");
+			printk(KERN_WARNING "Attempt to GC with GC disabled at %s:%d\n" __FILE__, __LINE__);
 #endif
 		}
 		/* not in interrupt handler -> GC possible */
 
 #ifndef CONFIG_JEM_ENABLE_GC
-        printk(KERN_WARNING "Attempt to GC with GC disabled\n");
+        printk(KERN_WARNING "Attempt to GC with GC disabled at %s:%d\n" __FILE__, __LINE__);
 #endif
 
 		printk(KERN_INFO "Domain %p (%s) consumed %d bytes of heap space. Starting GC...\n", domain, domain->domainName,
 		       (char *) GCM_NEW(domain).heapTop - (char *) GCM_NEW(domain).heap);
-#ifdef CONFIG_JEM_PROFILE
-		paGCStart(domain, memTimeNext);
-#endif
-		/*GC_UNLOCK; */
 		if (tried) {
 			printk(KERN_WARNING "GC did not free enough memory. need %d bytes\n", objSize << 2);
 			exceptionHandler(THROW_RuntimeException);
 		}
 		start_thread_using_code1(domain->gc.gcObject, domain->gc.gcThread, domain->gc.gcCode, (u32) domain);
 
-		/*GC_LOCK; */
-
-#ifdef CONFIG_JEM_PROFILE
-		// prevent gc from running to often while profiling aging
-		memTimeNext = domain->gc.memTime + 1;
-#endif
 		tried = JNI_TRUE;
 		goto try_alloc;
 	}
+
   do_alloc:
-
-#ifdef CONFIG_JEM_PROFILE
-	paNew((DomainDesc *) domain, objSize, (jint *) ptr2ObjectDesc((u32 *) GCM_NEW(domain).heapTop));
-	profile_sample_heapusage_alloc(domain, objSize);
-#endif	
-
 	data = (jint *) GCM_NEW(domain).heapTop;
 	GCM_NEW(domain).heapTop = nextObj;
 	memset(data, 0, objSize * 4);
@@ -139,7 +133,7 @@ ObjectHandle gc_normal_allocDataInDomain(DomainDesc * domain, int objSize, u32 f
 	setObjMagic(obj, MAGIC_OBJECT);
 	handle = registerObject(domain, obj);
 
-	GC_UNLOCK;
+    rt_mutex_release(&domain->domainGCLock);
 	return handle;
 }
 
@@ -481,27 +475,4 @@ void gc_normal_init(DomainDesc * domain, u32 heap_bytes)
 
 
 
-
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
-// embedded systems.
-//
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
-// at http://www.javadevices.com
-//=================================================================================
 

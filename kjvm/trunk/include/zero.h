@@ -73,22 +73,6 @@ static inline ThreadDesc *cpuState2thread(ObjectDesc * obj)
 }
 
 
-/* Stack */
-
-static inline StackProxy *stack2Obj(char *stack)
-{
-	if (stack == NULL)
-		return NULL;
-	return (ObjectDesc *) (((u32 *) stack) - 3); /* vtable,size,tcb*/
-}
-
-static inline char *obj2stack(StackProxy * obj)
-{
-	if (obj == NULL)
-		return NULL;
-	return (char*)(((u32*)obj)+3); /* vtable,size,tcb*/
-}
-
 /* CPU */
 
 static inline ObjectDesc *cpuDesc2Obj(CPUDesc * cpu)

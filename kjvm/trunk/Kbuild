@@ -1,5 +1,6 @@
 kjvm-objs := core/domain.o core/jem.o core/jemUPipe.o core/malloc.o core/jar.o \
-		core/thread.o
+		core/thread.o \
+		gc/gc.o
 
 #	gc/gc_normal.o gc/gc.o gc/gc_impl.o
 

@@ -27,6 +27,12 @@
 #ifndef _PORTAL_H
 #define _PORTAL_H
 
+#define PORTAL_RETURN_TYPE_NUMERIC   0
+#define PORTAL_RETURN_TYPE_REFERENCE 1
+#define PORTAL_RETURN_TYPE_EXCEPTION 3
+#define PORTAL_RETURN_IS_OBJECT(x) (x & 1)
+#define PORTAL_RETURN_IS_EXCEPTION(x) (x == 3)
+#define PORTAL_RETURN_SET_EXCEPTION(x) ((x) = 3)
 
 typedef jint(*dep_f) (jint * paramlist);
 

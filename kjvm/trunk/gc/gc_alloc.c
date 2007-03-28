@@ -186,27 +186,6 @@ ThreadDescForeignProxy *allocThreadDescForeignProxyInDomain(DomainDesc * domain,
 	return obj;
 }
 
-#ifdef STACK_ON_HEAP
-StackProxy *allocStackInDomain(DomainDesc * domain, ClassDesc * c, u4_t stacksize)
-{
-	ObjectHandle handle;
-	StackProxy *obj;
-	jint objSize = OBJSIZE_STACK(stacksize);
-	ASSERTCLI;
-	handle = gc_allocDataInDomain(domain, objSize, OBJFLAGS_STACK);
-	obj = (StackProxy *) unregisterObject(domain, handle);
-	obj->size = stacksize;
-	if (c != NULL)
-		obj->vtable = c->vtable;
-	else
-		obj->vtable = NULL;	/* bootstrap of DomainZero */
-
-#ifdef PROFILE_AGING
-	// ...
-#endif
-	return obj;
-}
-#endif
 
 #ifdef ENABLE_MAPPING
 MappedMemoryProxy *allocMappedMemoryProxyInDomain(DomainDesc * domain, char *mem, ClassDesc * cl)

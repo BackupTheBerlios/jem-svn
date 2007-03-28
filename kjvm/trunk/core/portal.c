@@ -151,7 +151,8 @@ u4_t createService(DomainDesc * domain, ObjectDesc * depObj, ClassDesc * interfa
 ThreadDesc *createServiceThread(DomainDesc * domain, int poolIndex, char *name)
 {
 	ServiceThreadPool *pool = domain->pools[poolIndex];
-	ThreadDesc *thread = createThread(domain, receive_dep, (void *) poolIndex, STATE_RUNNABLE, SCHED_CREATETHREAD_DEFAULT);
+	ThreadDesc *thread = createThread(domain, receive_dep, (void *) poolIndex, STATE_RUNNABLE, 
+                                      SCHED_CREATETHREAD_DEFAULT, "SVCPool");
 	thread->nextInReceiveQueue = pool->firstReceiver;
 	pool->firstReceiver = thread;
 	setThreadName(thread, "SVCPool", name);

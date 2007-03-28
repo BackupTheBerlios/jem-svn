@@ -39,6 +39,7 @@
 #include "jar.h"
 #include "domain.h"
 #include "messages.h"
+#include "thread.h"
 
 #define VERSION "1.0.0"
 #define INITTASKPRIO 98
@@ -107,6 +108,8 @@ static void jvmInitTask(void *cookie)
     jarInit((char *) initrd_start, initrd_end - initrd_start);
 
     initDomainSystem();
+
+    threadsInit();
 
     printk(KERN_INFO "Jem/JVM initialization complete.\n");
 

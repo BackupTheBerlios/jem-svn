@@ -42,7 +42,6 @@
 #include "load.h"
 #include "gc_normal.h"
 #include "gc_impl.h"
-#include "gc_pgc.h"
 #include "gc_move_common.h"
 #include "gc_move.h"
 #include "pa_gc.h"
@@ -64,15 +63,6 @@ typedef struct gc_normal_mem_s {
 
 #define GCM_NEW(domain) (*(gc_normal_mem_t*)(&domain->gc.untypedMemory))
 
-/* align heap at page borders to use mprotect for debugging the GC */
-#define HEAP_BLOCKSIZE            4096
-#define HEAP_BLOCKADDR_N_NULLBITS 12
-#define HEAP_BLOCKADDR_MASK       0xfffff000
-
-#ifdef CONFIG_JEM_PROFILE
-extern jlong memTimeStep;
-#endif	
-
 ObjectHandle(*registerObject) (DomainDesc * domain, ObjectDesc * o);
 void gc_normal_checkHeap(DomainDesc * domain);
 void profile_sample_heapusage_alloc(DomainDesc * domain, u32 objSize);
@@ -85,9 +75,9 @@ ObjectHandle gc_normal_allocDataInDomain(DomainDesc * domain, int objSize, u32 f
 	ObjectHandle    handle;
 	jboolean        tried = JNI_FALSE;
 
-    int result = rt_mutex_acquire(&domain->domainGCLock, TM_INFINITE);
+    int result = rt_mutex_acquire(&domain->domainHeapLock, TM_INFINITE);
     if (result < 0) {
-        printk(KERN_ERR "Error acquiring domain GC lock, code=%d\n", result);
+        printk(KERN_ERR "Error acquiring domain heap allocation lock, code=%d\n", result);
         return NULL;
     }
 
@@ -97,7 +87,7 @@ ObjectHandle gc_normal_allocDataInDomain(DomainDesc * domain, int objSize, u32 f
 		if (curthr()->isInterruptHandlerThread) {
 			if (nextObj > GCM_NEW(domain).heapBorder) {
 				printk(KERN_ERR "Out of heap space in interrupt handler.\n");
-                rt_mutex_release(&domain->domainGCLock);
+                rt_mutex_release(&domain->domainHeapLock);
                 return NULL;
 			}
 #ifdef CONFIG_JEM_ENABLE_GC
@@ -133,7 +123,7 @@ ObjectHandle gc_normal_allocDataInDomain(DomainDesc * domain, int objSize, u32 f
 	setObjMagic(obj, MAGIC_OBJECT);
 	handle = registerObject(domain, obj);
 
-    rt_mutex_release(&domain->domainGCLock);
+    rt_mutex_release(&domain->domainHeapLock);
 	return handle;
 }
 
@@ -215,11 +205,6 @@ static void gc_normal_scan_heap2_ServicePool(DomainDesc * domain, ObjectDesc * o
 	gc_impl_walkContentServicePool(domain, (ServiceThreadPool *) obj, gc_common_move_reference);
 }
 
-static void gc_normal_scan_heap2_Stack(DomainDesc * domain, ObjectDesc * obj, u32 objSize, u32 flags)
-{
-	gc_impl_walkContentStack(domain, (StackProxy *) obj, gc_common_move_reference);
-}
-
 void gc_normal_done(DomainDesc * domain)
 {
 	jemFree(GCM_NEW(domain).heap, GCM_NEW(domain).heapSize MEMTYPE_HEAP);
@@ -292,9 +277,6 @@ void gc_normal_gc(DomainDesc * domain)
 	}
 #endif		
 
-#ifdef CONFIG_JEM_PROFILE
-	    pgcNewRun(domain);
-#endif
 	PGCB(GC);
 
 	/* 

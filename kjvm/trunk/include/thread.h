@@ -29,6 +29,7 @@
 #define _THREAD_H
 
 #include <native/task.h>
+#include "domain.h"
 
 #define STATE_INIT      1
 #define STATE_RUNNABLE  2
@@ -45,19 +46,9 @@
 #define STATE_PORTAL_WAIT_FOR_RETCOPY   14	/* client waiting for portal return value copy */
 #define THREAD_PPCB  0
 #define THREAD_STATE 0x8
-#define PORTAL_RETURN_TYPE_NUMERIC   0
-#define PORTAL_RETURN_TYPE_REFERENCE 1
-#define PORTAL_RETURN_TYPE_EXCEPTION 3
-#define PORTAL_RETURN_IS_OBJECT(x) (x & 1)
-#define PORTAL_RETURN_IS_EXCEPTION(x) (x == 3)
-#define PORTAL_RETURN_SET_EXCEPTION(x) ((x) = 3)
 #define MAX_EVENT_THREADSWITCH 2000000
 #define MAGIC_THREAD 0xcabaaffe
-#define idle_thread cur_idle_thread()
-#define LOCK(obj) { register int reg = 1; for(;;) {__asm__ __volatile__ ("xchgl %1,%0" :"=r" (reg), "=m" (*obj) :"r" (reg), "m" (*obj)); if (reg == 0) break; }}
-#define UNLOCK(obj) { register int reg = 0;        __asm__ __volatile__ ("xchgl %1,%0" :"=r" (reg), "=m" (*obj) : "r" (reg), "m" (*obj));}
 #define TID(t) (t)->domain->id, (t)->id
-#define THREAD_NAME_MAXLEN 40
 
 typedef void (*thread_start_t) (void *);
 
@@ -68,17 +59,13 @@ struct copied_s {
 };
 
 
-typedef struct {
-	u32 dummy[5];
-} SchedDescUntypedThreadMemory;
-
-
 typedef struct ThreadDesc_s  {
+    u32                             magic;
 	u32                             state;
 	struct DomainDesc_s             *domain;
 	struct ThreadDesc_s             *nextInDomain;
 	struct ThreadDesc_s             *prevInDomain;
-	u32                             magic;
+    struct ThreadDesc_s             *next;
 	thread_start_t                  entry;
 	jboolean                        isInterruptHandlerThread;
 	jboolean                        isGCThread;
@@ -87,6 +74,9 @@ typedef struct ThreadDesc_s  {
     void                            *createParam;
     jint                            *portalParams;
     RT_TASK                         task;
+    struct copied_s                 *copied;	/* onlu used when thread receives portal calls */
+    u32                             n_copied;
+	u32                             max_copied;
 } ThreadDesc;
 
 
@@ -109,44 +99,25 @@ typedef struct MappedMemoryProxy_s {
 	char    *mem;
 } MappedMemoryProxy;
 
-typedef struct StackProxy_s {
-	code_t              *vtable;
-	u32                 size; 
-	struct ThreadDesc_s *thread;
-} StackProxy;
 
-struct profile_event_threadswitch_s {
-	unsigned long long          timestamp;
-	struct ThreadDesc_s         *from;
-	struct ThreadDesc_s         *to;
-	char                        *ip_from;
-	char                        *ip_to;
-};
-
-
-extern struct profile_event_threadswitch_s  *profile_event_threadswitch_samples;
-extern u32                                  profile_event_threadswitch_n_samples;
-extern struct ThreadDesc_s                  *__idle_thread[CONFIG_NR_CPUS];
-extern u32                                  *trace_sched_ip;
-extern u32                                  *last_trace_sched_ip;
 extern struct ThreadDesc_s                  *__current[CONFIG_NR_CPUS];
 
 
 static inline struct ThreadDesc_s *curthr(void)
 {
-	return __current[get_cpu()];
+	return __current[smp_processor_id()];
 }
 
 
 static inline struct ThreadDesc_s **curthrP(void)
 {
-	return &__current[get_cpu()];
+	return &__current[smp_processor_id()];
 }
 
 
 static inline void set_current(struct ThreadDesc_s * t)
 {
-	__current[get_cpu()] = t;
+	__current[smp_processor_id()] = t;
 }
 
 
@@ -156,48 +127,15 @@ static inline struct DomainDesc_s *curdom(void)
 }
 
 
-static inline struct ThreadDesc_s *cur_idle_thread(void)
-{
-	return __idle_thread[get_cpu()];
-}
-
-
-static inline void check_not_in_runq(struct ThreadDesc_s * thread)
-{
-}
-
-
-#ifdef KERNEL
-void save(struct irqcontext *sc);
-#else
-void save(struct sigcontext *sc);
-#endif
-
-static inline void stack_push(u32 ** sp, u32 data)
-{
-	(*sp)--;
-	**sp = data;
-}
-
-
-
-void threads_init(void);
-ThreadDesc *createThread(DomainDesc * domain, thread_start_t thread_start,
-			 void *param, int state, int schedParam);
-ThreadDesc *createThreadUsingThreadEntry(DomainDesc * domain, ObjectDesc * entry);
+void threadsInit(void);
+ThreadDesc *createThread(DomainDesc * domain, thread_start_t thread_start, void *param, int state, 
+                         int prio, char *thName);
 ThreadDesc *createInitialDomainThread(DomainDesc * domain, int state, int schedParam);
-ThreadDesc *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param, ObjectDesc * entry, 
-                              u32 stackSize, int state, int schedParam);
-void receive_dep(void *arg);
-void receiveDomainDEP(void *arg);
+ThreadDesc *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param, 
+                              ObjectDesc * entry, u32 stackSize, int state, int prio, char *tName);
 void thread_exit(void);
 void terminateThread(ThreadDesc * t);
-
 ThreadDesc *findThreadDesc(ThreadDescForeignProxy *proxy);
-
-// FIXME jgbauman
-u32 start_thread_using_code1(ObjectDesc * obj, ThreadDesc * thread,
-			      code_t c, u32 param);
 
 
 #endif

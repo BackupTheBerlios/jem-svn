@@ -84,6 +84,9 @@ typedef struct GCDesc_s {
     u32                     gcBytesCollected;
     jlong                   memTime;
     u32                     epoch;
+    jboolean                active;
+    struct ThreadDesc_s     *gcSuspended;
+    RT_MUTEX                gcLock;
     ObjectHandle (*allocDataInDomain) (struct DomainDesc_s * domain,
                                       int objsize, u32 flags);
     void (*done) (struct DomainDesc_s * domain);
@@ -184,7 +187,7 @@ typedef struct DomainDesc_s {
 	u32                         portal_statistics_copyout_rcv;
 	u32                         portal_statistics_copyin_rcv;
     RT_MUTEX                    domainMemLock;
-    RT_MUTEX                    domainGCLock;
+    RT_MUTEX                    domainHeapLock;
 } DomainDesc;
 
 

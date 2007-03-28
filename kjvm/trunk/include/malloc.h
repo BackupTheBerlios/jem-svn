@@ -28,6 +28,8 @@
 #define _MALLOC_H
 
 #include <linux/types.h>
+#include "code.h"
+#include "thread.h"
 
 #define MEMTYPE_OTHER  ,0
 #define MEMTYPE_HEAP   ,1
@@ -57,11 +59,13 @@ typedef struct TempMemory_s {
 } TempMemory;
 
 
-int     jemMallocInit(void);
-int     jemDestroyHeap(void);
-void    *jemMalloc(u32 size MEMTYPE_INFO);
-char    *jemMallocCode(struct DomainDesc_s *domain, u32 size);
-void    jemFree(void *addr, u32 size MEMTYPE_INFO);
+int             jemMallocInit(void);
+int             jemDestroyHeap(void);
+void            *jemMalloc(u32 size MEMTYPE_INFO);
+char            *jemMallocCode(struct DomainDesc_s *domain, u32 size);
+void            jemFree(void *addr, u32 size MEMTYPE_INFO);
+void            jemFreeThreadDesc(ThreadDesc *t);
+ThreadDescProxy *jemMallocThreadDescProxy(ClassDesc * c);
 
 #endif
 

@@ -246,8 +246,6 @@ static void create_CPUObjs(void)
 	}
 }
 
-void start_initial_thread(void *dummy);
-
 extern Proxy *initialNamingProxy;
 ThreadDesc *monitorThread = NULL;
 

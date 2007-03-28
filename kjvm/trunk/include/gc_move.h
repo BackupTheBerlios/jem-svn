@@ -48,7 +48,6 @@ void gc_impl_walkContent(DomainDesc * domain, ObjectDesc * obj,
 			 HandleReference_t handleReference);
 
 void gc_impl_walkContentServicePool(DomainDesc * domain, ServiceThreadPool * obj, HandleReference_t handleReference);
-void gc_impl_walkContentStack(DomainDesc * domain, StackProxy * obj, HandleReference_t handleReference);
 void gc_impl_walkContentForeignCPUState(DomainDesc * domain, ThreadDescForeignProxy * obj, HandleReference_t handleReference);
 void gc_impl_walkContentCPUState(DomainDesc * domain, ThreadDescProxy * obj, HandleReference_t handleReference);
 

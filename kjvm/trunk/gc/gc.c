@@ -92,9 +92,6 @@ void rswitches()
 
 #else				/* ENABLE_GC */
 
-#ifdef CONFIG_JEM_PROFILE
-jlong memTimeStep = 20 * 1024;
-#endif	
 
 /** THIS FUNCTION MUST NOT BE INTERRUPTED BY A GC */
 ObjectHandle nonatomic_registerObject(DomainDesc * domain, ObjectDesc * o)
@@ -122,112 +119,6 @@ ObjectDesc *nonatomic_unregisterObject(DomainDesc * domain, ObjectHandle o)
 	*o = NULL;
 	return obj;
 }
-
-
-#ifdef CONFIG_JEM_PROFILE
-extern jint n_heap_samples;
-extern struct heapsample_s *heap_samples;
-
-void profile_sample_heapusage_alloc(DomainDesc * domain, u32 objsize)
-{
-	if (n_heap_samples < getJVMConfig()->maxHeapSamples) {
-		jint i;
-		u32 *sp = (u32 *) ((u32 *) & domain - 2);
-		u32 *eip = (u32 *) * sp++;
-
-		for (i = 0; i < 10; i++) {
-			heap_samples[n_heap_samples].eip[i] = 0;
-		}
-		heap_samples[n_heap_samples].eip[0] = (char *) eip;
-		heap_samples[n_heap_samples].cl = NULL;
-		heap_samples[n_heap_samples].size = objsize * 4;
-		n_heap_samples++;
-	}
-}
-
-
-/* 
- * callback for counting instances
- */
-static void gc_countInstancesCB(DomainDesc * domain, ObjectDesc * obj, u32 objsize, jint flags)
-{
-	ClassDesc *c;
-	InstanceCounts *counts = (InstanceCounts *) domain->gc.data;
-
-	switch (flags & FLAGS_MASK) {
-	case OBJFLAGS_ARRAY:{
-			counts->arrbytes += objsize * 4;
-			((ArrayDesc *) obj)->arrayClass->n_arrayelements += objsize;
-			break;
-		}
-	case OBJFLAGS_EXTERNAL_STRING:
-	case OBJFLAGS_OBJECT:{
-			c = obj2ClassDesc(obj);
-			c->n_instances++;
-			counts->objbytes += objsize * 4;
-			break;
-		}
-	case OBJFLAGS_PORTAL:{
-			counts->portalbytes += objsize * 4;
-			break;
-		}
-	case OBJFLAGS_MEMORY:{
-			counts->memproxybytes += objsize * 4;
-			break;
-		}
-	case OBJFLAGS_ATOMVAR:{
-			counts->atomvarbytes += objsize * 4;
-			break;
-		}
-	case OBJFLAGS_CAS:{
-			counts->casbytes += objsize * 4;
-			break;
-		}
-	case OBJFLAGS_SERVICE:{
-			counts->servicebytes += objsize * 4;
-			break;
-		}
-	case OBJFLAGS_SERVICE_POOL:{
-			counts->servicepoolbytes += objsize * 4;
-			break;
-		}
-	case OBJFLAGS_STACK:
-		counts->stackbytes += objsize * 4;
-		break;
-	case OBJFLAGS_CPUSTATE:
-		counts->tcbbytes += objsize * 4;
-		break;
-	default:
-		printk(KERN_ERR "Unknown flag %ld\n", flags & FLAGS_MASK);
-	}
-}
-
-/*
- * Count number of instances of all classes
- */
-void gc_countInstances(DomainDesc * domain, InstanceCounts * counts)
-{
-	counts->objbytes = 0;
-	counts->arrbytes = 0;
-	counts->portalbytes = 0;
-	counts->memproxybytes = 0;
-	counts->cpustatebytes = 0;
-	counts->atomvarbytes = 0;
-	counts->servicebytes = 0;
-	counts->casbytes = 0;
-	counts->tcbbytes = 0;
-	counts->stackbytes = 0;
-
-	domain->gc.data = (void *) counts;
-	domain->gc.walkHeap(domain, (HandleObject_t) gc_countInstancesCB, (HandleObject_t) gc_countInstancesCB, 
-                        (HandleObject_t) gc_countInstancesCB, (HandleObject_t) gc_countInstancesCB,
-                        (HandleObject_t) gc_countInstancesCB, (HandleObject_t) gc_countInstancesCB, 
-                        (HandleObject_t) gc_countInstancesCB, (HandleObject_t) gc_countInstancesCB,
-                        (HandleObject_t) gc_countInstancesCB, (HandleObject_t) gc_countInstancesCB, 
-                        (HandleObject_t) gc_countInstancesCB);
-}
-
-#endif
 
 
 /*
@@ -278,8 +169,11 @@ void gc_in(ObjectDesc * o, DomainDesc * domain)
 
 	printk(KERN_INFO "GC in  %d (%s) started\n", domain->id, domain->domainName);
 
-	gcStartTime = rt_timer_tsc();
-	heapBytesBefore = gc_freeWords(domain) * 4;
+	gcStartTime         = rt_timer_tsc();
+	heapBytesBefore     = gc_freeWords(domain) * 4;
+    if (rt_mutex_acquire(&domain->gc.gcLock, TM_INFINITE)) return;
+    domain->gc.active   = JNI_TRUE;
+    rt_mutex_release(&domain->gc.gcLock);
 	domain->gc.gc(domain);
 	gcEndTime = rt_timer_tsc();
 	domain->gc.gcTime += rt_timer_tsc2ns(gcEndTime - gcStartTime) / 1000;
@@ -328,12 +222,12 @@ void gc_zero_init(DomainDesc * domain)
 
 void gc_init(DomainDesc * domain, u8 * mem, jint gcinfo0, jint gcinfo1, jint gcinfo2, char *gcinfo3, jint gcinfo4, int gcImpl)
 {
-#ifdef CONFIG_JEM_PROFILE
-	domain->gc.memTime = 0;
-#endif
 	domain->gc.registeredObjects = (ObjectDesc **) mem;
 	memset(domain->gc.registeredObjects, 0, getJVMConfig()->maxRegistered * sizeof(ObjectDesc *));
 	mem += getJVMConfig()->maxRegistered * sizeof(ObjectDesc *);
+
+    domain->gc.active       = JNI_FALSE;
+    domain->gc.gcSuspended  = NULL;
 
 	gc_zero_init(domain);
 

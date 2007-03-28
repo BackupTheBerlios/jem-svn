@@ -35,6 +35,7 @@
 #include "messages.h"
 #include "jemUPipe.h"
 #include "domain.h"
+#include "gc.h"
 
 #define MEMTYPE_PARAM , memtype
 
@@ -224,3 +225,21 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
 }
 
 
+ThreadDescProxy *jemMallocThreadDescProxy(ClassDesc * c)
+{
+    ThreadDescProxy     *proxy;
+
+    if ((proxy = jemMalloc(sizeof(ThreadDescProxy) MEMTYPE_DCB)) == NULL) return NULL;
+    if (c != NULL)
+        proxy->vtable = c->vtable;
+    else
+        proxy->vtable = NULL;	/* bootstrap of DomainZero */
+    return proxy;
+}
+
+
+void jemFreeThreadDesc(ThreadDesc *t)
+{
+    ThreadDescProxy *tpxy    = (ThreadDescProxy *) ThreadDesc2ObjectDesc(t);
+    jemFree(tpxy, sizeof(ThreadDescProxy) MEMTYPE_DCB);
+}

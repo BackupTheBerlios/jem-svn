@@ -35,6 +35,8 @@
 
 #endif  // __KERNEL__
 
+#define PORTALPARAMS_SIZE 1024
+
 #define CONFIG_CODE_BYTES (512 * 1024)
 #define XMOFF 1
 

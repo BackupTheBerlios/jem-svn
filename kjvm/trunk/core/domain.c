@@ -30,17 +30,16 @@
 #include <linux/kernel.h>
 #include <native/mutex.h>
 #include "jemtypes.h"
-#include "malloc.h"
 #include "jemConfig.h"
 #include "object.h"
 #include "domain.h"
 #include "gc.h"
 #include "code.h"
 #include "execjava.h"
-#include "javascheduler.h"
 #include "portal.h"
 #include "thread.h"
 #include "profile.h"
+#include "malloc.h"
 
 static u32          numberOfDomains = 0;
 static u32          currentDomainID = 0;
@@ -113,8 +112,15 @@ static DomainDesc *specialAllocDomainDesc(void)
         rt_mutex_release(&domainLock);
         return NULL;
     }
+    sprintf(lockName, "dom%03dHeapLock", d->id);
+    result          = rt_mutex_create(&d->domainHeapLock, lockName);
+    if (result < 0) {
+        printk(KERN_CRIT "Unable to create domain heap lock %s, rc=%d\n", lockName, result);
+        rt_mutex_release(&domainLock);
+        return NULL;
+    }
     sprintf(lockName, "dom%03dGCLock", d->id);
-    result          = rt_mutex_create(&d->domainGCLock, lockName);
+    result          = rt_mutex_create(&d->gc.gcLock, lockName);
     if (result < 0) {
         printk(KERN_CRIT "Unable to create domain GC lock %s, rc=%d\n", lockName, result);
         rt_mutex_release(&domainLock);
@@ -176,10 +182,6 @@ DomainDesc *createDomain(char *domainName, jint gcinfo0, jint gcinfo1, jint gcin
 
 	gc_init(domain, mem, gcinfo0, gcinfo1, gcinfo2, gcinfo3, gcinfo4, gcImpl);
 
-#ifdef NEW_SCHED
-	sched_local_init(domain, 0);
-#endif
-
 	domain->state = DOMAIN_STATE_ACTIVE;
 
 	return domain;
@@ -230,7 +232,11 @@ void deleteDomainSystem(void)
     while (domainMemStart < domainMemBorder) {
         char *mem       = domainMemStart;
         d               = (DomainDesc *) (((char *) mem) + DOMAINDESC_OFFSETBYTES);
-        rt_mutex_delete(&d->domainMemLock);
+        if (d->state != DOMAIN_STATE_FREE) {
+            rt_mutex_delete(&d->domainMemLock);
+            rt_mutex_delete(&d->domainHeapLock);
+            rt_mutex_delete(&d->gc.gcLock);
+        }
         domainMemStart  += DOMAINMEM_SIZEBYTES;
     }
 

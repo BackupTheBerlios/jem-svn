@@ -235,7 +235,6 @@ static void        findClassDescAndMethod(char *classname, char *methodname, cha
 static void        findClassAndMethodInLib(LibDesc * lib, char *classname, char *methodname, char *signature, JClass ** classFound,
                                     MethodDesc ** methodFound);
 static MethodDesc  *findMethodInSharedLibs(char *classname, char *methodname, char *signature);
-static JClass      *findClassOrPrimitive(DomainDesc * domain, char *name);
 static ClassDesc   *createSharedArrayClassDesc(char *name);
 static JClass      *findPrimitiveClass(char name);
 static SharedLibDesc *loadSharedLibrary(DomainDesc * domain, char *filename, TempMemory * tmp_mem);
@@ -491,7 +490,7 @@ static JClass *findClassInLib(LibDesc * lib, char *name)
  * or
  * I for primitive int type
  */
-static JClass *findClassOrPrimitive(DomainDesc * domain, char *name)
+JClass *findClassOrPrimitive(DomainDesc * domain, char *name)
 {
 	JClass *cl;
 	if (*name == '[') {
@@ -941,7 +940,7 @@ static LibDesc *loadLib(DomainDesc * domain, SharedLibDesc * sharedLib)
 
 	static_offset = 0;
 	if (sharedLib->memSizeStaticFields != 0) {
-		sfield = specialAllocStaticFields(domain, sharedLib->memSizeStaticFields);
+		sfield = (jint *) specialAllocStaticFields(domain, sharedLib->memSizeStaticFields);
 		memset(sfield, 0, sharedLib->memSizeStaticFields * sizeof(jint));
 		domain->sfields[sharedLib->ndx] = sfield;
 	}

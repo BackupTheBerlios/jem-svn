@@ -36,6 +36,7 @@ ThreadDescForeignProxy  *allocThreadDescForeignProxyInDomain(DomainDesc * domain
 CPUDesc                 *specialAllocCPUDesc(void);
 DomainDesc              *specialAllocDomainDesc(void);
 ArrayDesc               *vmSpecialAllocArray(ClassDesc * elemClass0, jint size);
+u32                     *specialAllocStaticFields(DomainDesc * domain, int numberFields);
 ObjectDesc              *allocObjectInDomain(DomainDesc * domain, ClassDesc * c);
 
 

@@ -75,11 +75,11 @@ void        executeInterface(DomainDesc * domain, char *className,
 void        executeSpecial(DomainDesc * domain, char *className, char *methodname,
                            char *signature, ObjectDesc * obj, jint * params,
                            int params_size);
-jint        *specialAllocStaticFields(DomainDesc * domain, int numberFields);
 ArrayDesc   *allocArrayInDomain(DomainDesc * domain, ClassDesc * type, jint size);
 ArrayDesc   *specialAllocArray(ClassDesc * elemClass, jint size);
 void        findClassDescAndMethodInObject(SharedLibDesc * lib, char *classname, char *methodname, char *signature,
                                            ClassDesc ** classFound, MethodDesc ** methodFound);
+JClass      *findClassOrPrimitive(DomainDesc * domain, char *name);
 ObjectDesc  *specialAllocObject(ClassDesc * c);
 
 extern SharedLibDesc    *sharedLibs;

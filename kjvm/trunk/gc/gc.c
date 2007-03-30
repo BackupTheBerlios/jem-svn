@@ -50,13 +50,13 @@
 #ifndef CONFIG_JEM_ENABLE_GC
 
 /** THIS FUNCTION MUST NOT BE INTERRUPTED BY A GC */
-ObjectHandle nonatomic_registerObject(DomainDesc * domain, ObjectDesc * obj)
+ObjectHandle registerObject(DomainDesc * domain, ObjectDesc * obj)
 {
 	return (ObjectHandle) obj;
 }
 
 /** THIS FUNCTION MUST NOT BE INTERRUPTED BY A GC */
-ObjectDesc *nonatomic_unregisterObject(DomainDesc * domain, ObjectHandle handle)
+ObjectDesc *unregisterObject(DomainDesc * domain, ObjectHandle handle)
 {
 	return (ObjectDesc *) handle;
 }

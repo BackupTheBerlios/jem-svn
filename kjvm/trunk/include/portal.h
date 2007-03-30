@@ -152,6 +152,7 @@ typedef struct InterceptPortalInfoProxy_s {
 
 
 void service_decRefcount(DomainDesc * domain, u32 index);
+void service_incRefcount(DEPDesc * p);
 
 
 #endif

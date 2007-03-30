@@ -306,6 +306,8 @@ void gc_walkContinuesBlock_Alt(DomainDesc * domain, u32 * start,
 			       HandleObject_t handleDomainProxy);
 
 
+ObjectHandle registerObject(DomainDesc * domain, ObjectDesc * obj);
+ObjectDesc *unregisterObject(DomainDesc * domain, ObjectHandle handle);
 
 #endif
 

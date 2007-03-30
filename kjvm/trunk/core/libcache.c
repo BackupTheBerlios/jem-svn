@@ -1,5 +1,46 @@
+//=================================================================================
+// This file is part of Jem, a real time Java operating system designed for 
+// embedded systems.
+//
+// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 1997-2001 The JX Group. All rights reserved.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free 
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with 
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+//==============================================================================
+// libcache.c
+// 
+//==============================================================================
+// 
+
+#include <linux/module.h>
+#include <linux/types.h>
+#include <linux/kernel.h>
+#include <native/mutex.h>
+#include "jemtypes.h"
+#include "jemConfig.h"
+#include "object.h"
+#include "domain.h"
+#include "gc.h"
+#include "code.h"
+#include "execjava.h"
+#include "portal.h"
+#include "thread.h"
+#include "profile.h"
+#include "malloc.h"
 #include "libcache.h"
-#include "all.h"
+#include "zero_Memory.h"
+#include "load.h"
 
 static libcache_entry *global_jll_cache = NULL;
 
@@ -7,7 +48,7 @@ libcache_entry *libcache_new_entry(ObjectDesc * string_obj, ObjectDesc * memory_
 {
 	libcache_entry *new_entry;
 
-	if ((new_entry = jxmalloc(sizeof(libcache_entry) MEMTYPE_OTHER)) == NULL) {
+	if ((new_entry = jemMalloc(sizeof(libcache_entry) MEMTYPE_OTHER)) == NULL) {
 		return NULL;
 	}
 
@@ -56,10 +97,11 @@ void libcache_register_jll(ObjectDesc * self, ObjectDesc * string_obj, ObjectDes
 
 	stringToChar(string_obj, e_str, 80);
 
-	printf("register: %s\n", e_str);
+	printk(KERN_INFO "Lib register: %s\n", e_str);
 
 	if ((newjll = libcache_new_entry(string_obj, memory_obj)) == NULL) {
-		sys_panic("no memory for libcache");
+		printk(KERN_ERR "No memory for libcache\n");
+        return;
 	}
 
 	newjll->next = global_jll_cache;

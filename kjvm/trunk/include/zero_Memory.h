@@ -48,4 +48,7 @@ u32 memory_sizeof_proxy(void);
 
 void memory_deleted(struct MemoryProxy_s *obj);
 
+jint memory_getStartAddress(ObjectDesc * self);
+jint memory_size(ObjectDesc * self);
+
 #endif

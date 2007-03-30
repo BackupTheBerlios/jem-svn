@@ -18,7 +18,7 @@ libcache_entry *libcache_new_entry(ObjectDesc * string_obj, ObjectDesc * memory_
 	return new_entry;
 }
 
-void libcache_init()
+void libcache_init(void)
 {
 	global_jll_cache = NULL;
 }

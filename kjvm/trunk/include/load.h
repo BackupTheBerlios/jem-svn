@@ -31,75 +31,64 @@
 #include "domain.h"
 #include "object.h"
 #include "code.h"
+#include "portal.h"
 
-#ifdef CONFIG_JEM_PROFILE
-struct heapsample_s {
-	char *eip[10];
-	ClassDesc *cl;
-	jint size;
-};
-#endif
+void        initPrimitiveClasses(void);
+void        stringToChar(ObjectDesc * str, char *buf, jint buflen);
+LibDesc     *load(DomainDesc * domain, char *filename);
+void        linkdomain(DomainDesc * domain, LibDesc * lib,
+                       jint allocObjectFunction, jint allocArrayFunction);
+void        callClassConstructorsInLib(LibDesc * lib);
+u32         executeStatic(DomainDesc * domain, char *ClassName, char *methodname,
+                          char *signature, jint * params, jint params_size);
+jint        getArraySize(ArrayDesc * array);
+ObjectDesc  *getReferenceArrayElement(ArrayDesc * array, jint pos);
+char        *methodName2str(ClassDesc * jclass, MethodDesc * method, char *buffer,
+                            int size);
+MethodDesc  *findMethod(DomainDesc * domain, char *classname, char *methodname, char *signature);
+JClass      *findClass(DomainDesc * domain, char *name);
+jint        findDEPMethodIndex(DomainDesc * domain, char *className, char *methodName, char *signature);
+u32         executeVirtual(DomainDesc * domain, char *className, char *methodname, char *signature, ObjectDesc * obj, jint * params,
+                           int params_size);
+void        callClassConstructor(JClass * cl);
+ClassDesc   *findClassDesc(char *name);
+ClassDesc   *findClassDescInSharedLib(SharedLibDesc * lib, char *name);
+int         findClassForMethod(MethodDesc * method, JClass ** jclass);
+int         findMethodAtAddr(u8 * addr, MethodDesc ** method,
+                             ClassDesc ** ClassInfo, jint * bytecodePos,
+                             jint * lineNumber);
+ClassDesc   *findSharedArrayClassDescByElemClass(ClassDesc * elemClass);
+u32         findFieldOffset(ClassDesc * c, char *fieldname);
+LibDesc     *sharedLib2Lib(DomainDesc * domain, SharedLibDesc * slib);
+void        copyIntoByteArray(ArrayDesc * array, char *str, jint size);
+ObjectDesc  *string_replace_char(ObjectDesc * str, jint c1, jint c2);
+ObjectDesc  *newStringFromClassname(DomainDesc * domain, char *value);
+ObjectDesc  *newString(DomainDesc * domain, char *value);
+ObjectDesc  *newStringArray(DomainDesc * domain, int size, char *arr[]);
+ClassDesc   *obj2ClassDesc(ObjectDesc * obj);
+JClass      *ClassDesc2Class(DomainDesc * domain, ClassDesc * classDesc);
+ObjectDesc  *allocObject(ClassDesc * c);
+void        callClassConstructors(DomainDesc * domain, LibDesc * lib);
+void        executeInterface(DomainDesc * domain, char *className,
+                             char *methodname, char *signature, ObjectDesc * obj,
+                             jint * params, int params_size);
+void        executeSpecial(DomainDesc * domain, char *className, char *methodname,
+                           char *signature, ObjectDesc * obj, jint * params,
+                           int params_size);
+jint        *specialAllocStaticFields(DomainDesc * domain, int numberFields);
+ArrayDesc   *allocArrayInDomain(DomainDesc * domain, ClassDesc * type, jint size);
+ArrayDesc   *specialAllocArray(ClassDesc * elemClass, jint size);
+void        findClassDescAndMethodInObject(SharedLibDesc * lib, char *classname, char *methodname, char *signature,
+                                           ClassDesc ** classFound, MethodDesc ** methodFound);
+ObjectDesc  *specialAllocObject(ClassDesc * c);
 
-void initPrimitiveClasses(void);
-void stringToChar(ObjectDesc * str, char *buf, jint buflen);
-LibDesc *load(DomainDesc * domain, char *filename);
-void linkdomain(DomainDesc * domain, LibDesc * lib,
-		jint allocObjectFunction, jint allocArrayFunction);
-void callClassConstructorsInLib(LibDesc * lib);
-u32 executeStatic(DomainDesc * domain, char *ClassName, char *methodname,
-		   char *signature, jint * params, jint params_size);
-
-jint getArraySize(ArrayDesc * array);
-ObjectDesc *getReferenceArrayElement(ArrayDesc * array, jint pos);
-
-
-char *methodName2str(ClassDesc * jclass, MethodDesc * method, char *buffer,
-		     int size);
-JClass *findClass(DomainDesc * domain, char *name);
-JClass *findClassInLib(LibDesc * lib, char *name);
-JClass *findClassOrPrimitive(DomainDesc * domain, char *name);
-int findClassForMethod(MethodDesc * method, JClass ** jclass);
-code_t findAddrOfMethodBytecode(char *ClassName, char *method,
-				char *signature, jint bytecodePos);
-int findMethodAtAddr(u8 * addr, MethodDesc ** method,
-		     ClassDesc ** ClassInfo, jint * bytecodePos,
-		     jint * lineNumber);
-
-MethodDesc *cloneMethodInDomain(DomainDesc * domain, MethodDesc * method);
-
-ClassDesc *findSharedArrayClassDescByElemClass(ClassDesc * elemClass);
-ObjectDesc *newString(DomainDesc * domain, char *value);
-ObjectDesc *newStringArray(DomainDesc * domain, int size, char *arr[]);
-ClassDesc *findClassDescInSharedLib(SharedLibDesc * lib, char *name);
-ClassDesc *obj2ClassDesc(ObjectDesc * obj);
-JClass *ClassDesc2Class(DomainDesc * domain, ClassDesc * classDesc);
-ObjectDesc *allocObject(ClassDesc * c);
-void callClassConstructors(DomainDesc * domain, LibDesc * lib);
-void linksharedlib(DomainDesc * domain, SharedLibDesc * lib,
-		   jint allocObjectFunction, jint allocArrayFunction,
-		   TempMemory * tmp_mem);
-void executeInterface(DomainDesc * domain, char *className,
-		      char *methodname, char *signature, ObjectDesc * obj,
-		      jint * params, int params_size);
-void executeSpecial(DomainDesc * domain, char *className, char *methodname,
-		    char *signature, ObjectDesc * obj, jint * params,
-		    int params_size);
-void createVTable(DomainDesc * domain, ClassDesc * c);
-
-JClass *specialAllocClass(DomainDesc * domain, int number);
-
-ClassDesc *findClassDesc(char *name);
-
-extern SharedLibDesc *sharedLibs;
-
-extern DEPDesc **allDEPInstances;
-extern int numDEPInstances;
-
-extern DomainDesc *domainZero;
-
-extern ClassDesc *java_lang_Object;
-extern JClass *java_lang_Object_Class;
-extern code_t *array_vtable;
+extern SharedLibDesc    *sharedLibs;
+extern DEPDesc          **allDEPInstances;
+extern int              numDEPInstances;
+extern DomainDesc       *domainZero;
+extern ClassDesc        *java_lang_Object;
+extern JClass           *java_lang_Object_Class;
+extern code_t           *array_vtable;
 
 #define obj2ClassDesc(obj) ( *(ClassDesc**)(((ObjectDesc*)(obj))->vtable-1) )
 

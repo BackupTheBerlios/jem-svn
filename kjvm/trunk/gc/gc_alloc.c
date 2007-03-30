@@ -252,34 +252,17 @@ InterceptPortalInfoProxy *allocInterceptPortalInfoProxyInDomain(DomainDesc * dom
 
 #endif
 
-ObjectDesc *nonatomic_allocObjectInDomain(DomainDesc * domain, ClassDesc * c)
+ObjectDesc *allocObjectInDomain(DomainDesc * domain, ClassDesc * c)
 {
 	ObjectDesc *obj;
 	ObjectHandle handle;
 	jint objSize;
 
-	//ASSERT(domain->state == DOMAIN_STATE_ACTIVE);
-	ASSERT(c != NULL);
-	ASSERTCLASSDESC(c);
-
 	objSize = OBJSIZE_OBJECT(c->instanceSize);
-
-#if 0
-#ifdef DEBUG
-	// if (domain != domainZero) classDesc2Class(domain,c);
-
-	if (domain != curdom() && curdom() != domainZero /* mem proxy */  && domain != domainZero /* string constants */ ) {
-		printf("domain %d allocs in %d: class=%s\n", curdom()->id, domain->id, c->name);
-	}
-#endif
-#endif
 
 	handle = gc_allocDataInDomain(domain, objSize, OBJFLAGS_OBJECT);
 	obj = unregisterObject(domain, handle);
 	obj->vtable = c->vtable;
-#ifdef PROFILE_AGING
-	paObj((jint *) obj, c);
-#endif
 	return obj;
 }
 

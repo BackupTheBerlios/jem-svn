@@ -40,6 +40,7 @@
 #include "domain.h"
 #include "messages.h"
 #include "thread.h"
+#include "load.h"
 
 #define VERSION "1.0.0"
 #define INITTASKPRIO 98
@@ -110,6 +111,8 @@ static void jvmInitTask(void *cookie)
     initDomainSystem();
 
     threadsInit();
+
+    initPrimitiveClasses();
 
     printk(KERN_INFO "Jem/JVM initialization complete.\n");
 

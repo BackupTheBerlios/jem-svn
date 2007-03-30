@@ -39,7 +39,6 @@ extern u32 iprocessed[CONFIG_NR_CPUS][NR_IRQS];
 extern ObjectDesc *ifirstlevel_object[CONFIG_NR_CPUS][NR_IRQS];
 extern u32 ifirstlevel_happened[CONFIG_NR_CPUS][NR_IRQS];
 extern u32 ifirstlevel_processed[CONFIG_NR_CPUS][NR_IRQS];
-extern struct irqInfos iInfos[NR_IRQS];
 
 struct nameValue_s {
 	Proxy *obj;
@@ -88,7 +87,7 @@ static inline CPUDesc *obj2cpuDesc(ObjectDesc * obj)
 /**
  * Class -> jx/zero/VMClass (Object)
  */
-static inline ObjectDesc *class2Obj(Class * cl)
+static inline ObjectDesc *class2Obj(JClass * cl)
 {
 	return (ObjectDesc *) & (cl->objectDesc_vtable);
 }
@@ -124,7 +123,7 @@ static inline MethodDesc *obj2method(ObjectDesc * obj)
 
 void init_irq_data(void);
 void init_zero_from_lib(DomainDesc * domain, SharedLibDesc * zeroLib);
-ClassDesc *createObjectClassDesc();
+ClassDesc *createObjectClassDesc(void);
 JClass *createObjectClass(ClassDesc * java_lang_Object);
 void createArrayObjectVTableProto(DomainDesc * domain);
 ClassDesc *init_zero_class(char *ifname, MethodInfoDesc * methods,
@@ -138,7 +137,7 @@ void SMPcpuManager_register_LLScheduler(ObjectDesc * self,
 void installObjectVtable(ClassDesc * c);
 void installInitialNaming(DomainDesc * srcDomain, DomainDesc * dstDomain,
 			  Proxy * naming);
-Proxy *getInitialNaming();
+Proxy *getInitialNaming(void);
 
 
 /* in zero_DomainManager */

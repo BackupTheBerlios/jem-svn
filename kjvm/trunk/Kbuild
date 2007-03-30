@@ -1,8 +1,11 @@
 kjvm-objs := core/domain.o core/jem.o core/jemUPipe.o core/malloc.o core/jar.o \
-		core/thread.o \
+		core/thread.o core/load.o \
 		gc/gc.o
 
-#	gc/gc_normal.o gc/gc.o gc/gc_impl.o
+ifeq ($(CONFIG_JEM_ENABLE_GC),y)
+kjvm-objs += gc/gc_normal.o gc/gc_stack.o gc/gc_impl.o 
+endif
+
 
 kjvm.o: $(kjvm-objs)
 	$(LD) -r -o $@ $(kjvm-objs)

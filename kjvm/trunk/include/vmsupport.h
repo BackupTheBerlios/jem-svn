@@ -18,14 +18,29 @@
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //==============================================================================
-#ifndef GC_STACK_H
-#define GC_STACK_H
+// vmsupport.h
+// 
+// 
+//==============================================================================
 
-jboolean find_stackmap(MethodDesc * method, u32  * eip, u32  * ebp,
-		       jbyte * stackmap, u32  maxslots, u32  * nslots);
-void list_stackmaps(MethodDesc * method);
-void walkStack(DomainDesc * domain, ThreadDesc * thread,
-	       HandleReference_t handleReference);
+#ifndef VMSUPPORT_H
+#define VMSUPPORT_H
 
+#define VMSUPPORT(_ndx_) vmsupport[vmsupport[_ndx_].index]
 
-#endif				/* GC_STACK_H */
+typedef struct {
+	char *name;
+	int index;
+	code_t fkt;
+} vm_fkt_table_t;
+
+extern jint numberVMOperations;
+extern vm_fkt_table_t vmsupport[];
+
+void vm_unsupported(void);
+
+ClassDesc *get_element_class(ClassDesc * c);
+jboolean is_interface(ClassDesc * c);
+jboolean implements_interface(ClassDesc * c, ClassDesc * ifa);
+
+#endif

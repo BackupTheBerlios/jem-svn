@@ -18,14 +18,14 @@
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //==============================================================================
-#ifndef GC_STACK_H
-#define GC_STACK_H
 
-jboolean find_stackmap(MethodDesc * method, u32  * eip, u32  * ebp,
-		       jbyte * stackmap, u32  maxslots, u32  * nslots);
-void list_stackmaps(MethodDesc * method);
-void walkStack(DomainDesc * domain, ThreadDesc * thread,
-	       HandleReference_t handleReference);
+#ifndef SYMFIND_H
+#define SYMFIND_H
 
+char *findCoreSymbol(jint addr);
+u4_t sizeCoreSymbol(const char *name);
+char *addrCoreSymbol(const char *name);
+void printCoreSymbolInformation(char *name);
+int eip_in_last_stackframe(u32 eip);
 
-#endif				/* GC_STACK_H */
+#endif				/* SYMFIND_H */

@@ -44,7 +44,6 @@
 #include "gc_impl.h"
 #include "gc_move_common.h"
 #include "gc_move.h"
-#include "pa_gc.h"
 #include "exception_handler.h"
 #include "zero_Memory.h"
 
@@ -277,12 +276,10 @@ void gc_normal_gc(DomainDesc * domain)
 	}
 #endif		
 
-	PGCB(GC);
-
 	/* 
 	 * Init
 	 */
-	freezeThreads(domain);
+	//freezeThreads(domain);
 
 	/*
 	 * Move directly reachable objects onto new heap 
@@ -294,12 +291,10 @@ void gc_normal_gc(DomainDesc * domain)
 	 * All directly reachable objects are now on the new heap
 	 * Scan new heap 
 	 */
-	PGCB(HEAP);
 	gc_normal_walkHeap2(domain, gc_normal_scan_heap2_Object, gc_normal_scan_heap2_Array, NULL, NULL, gc_normal_scan_heap2_Service, NULL,
 			 gc_normal_scan_heap2_AtomVar, NULL, gc_normal_scan_heap2_CPUState, gc_normal_scan_heap2_ServicePool,
 			 gc_normal_scan_heap2_Stack);
 
-	PGCE(HEAP);
 
 	/*
 	 * Finish
@@ -321,10 +316,6 @@ void gc_normal_gc(DomainDesc * domain)
     jemFree(GCM_NEW(domain).heap2, GCM_NEW(domain).heapSize MEMTYPE_HEAP);
     GCM_NEW(domain).heap2       = NULL;
 #endif
-
-	PGCE(SCAN);
-
-	PGCE(GC);
 
 	printk(KERN_INFO "GC finished\n");
 }

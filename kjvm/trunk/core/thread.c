@@ -103,6 +103,9 @@ ThreadDesc *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, 
         return NULL;
     }
 
+    thread->stack           = thread->task.thread_base.tcb.stackbase;
+    thread->stackTop        = thread->stack + thread->task.thread_base.tcb.stacksize;
+
     if ((result = rt_task_start(&thread->task, thread_start, (void *) thread)) < 0) {
         jemFreeThreadDesc(thread);
         printk(KERN_ERR "Error starting Jem thread task, rc=%d\n", result);

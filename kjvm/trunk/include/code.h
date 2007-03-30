@@ -27,6 +27,8 @@
 #ifndef _CODE_H
 #define _CODE_H
 
+#include "object.h"
+
 
 #define DEPFLAG_NONE   0
 #define DEPFLAG_REDO   1
@@ -201,6 +203,14 @@ typedef struct LibDesc_s {
 	struct SharedLibDesc_s  *sharedLib;
 	int                     initialized;
 } LibDesc;
+
+
+jint callnative_special(jint * params, ObjectDesc * obj, code_t f,
+			jint params_size);
+jint callnative_special_portal(jint * params, ObjectDesc * obj, code_t f,
+			       jint params_size);
+jint callnative_static(jint * params, code_t f, jint params_size);
+void callnative_handler(u32 * ebp, u32 * sp, char *addr);
 
 
 #endif	

@@ -18,14 +18,29 @@
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //==============================================================================
-#ifndef GC_STACK_H
-#define GC_STACK_H
+// libcache.h
+// 
+//  The libcache is used by the online compiler to insert
+//  new jll-files into the system.
+// 
+//==============================================================================
 
-jboolean find_stackmap(MethodDesc * method, u32  * eip, u32  * ebp,
-		       jbyte * stackmap, u32  maxslots, u32  * nslots);
-void list_stackmaps(MethodDesc * method);
-void walkStack(DomainDesc * domain, ThreadDesc * thread,
-	       HandleReference_t handleReference);
+#ifndef LIBCACHE_H
+#define LIBCACHE_H
 
 
-#endif				/* GC_STACK_H */
+typedef struct libcache_entry_s {
+	ObjectDesc *name;	/* Java String object */
+	ObjectDesc *codefile;	/* Java Memory object */
+	struct libcache_entry_s *next;
+} libcache_entry;
+
+void libcache_init(void);
+
+char *libcache_lookup_jll(const char *name, jint * size);
+
+void libcache_register_jll(ObjectDesc * self,
+			   ObjectDesc * string_obj,
+			   ObjectDesc * memory_obj);
+
+#endif

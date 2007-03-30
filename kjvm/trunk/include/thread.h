@@ -62,27 +62,29 @@ struct copied_s {
 typedef struct ThreadDesc_s  {
     u32                             magic;
 	u32                             state;
-	struct DomainDesc_s             *domain;
-	struct ThreadDesc_s             *nextInDomain;
-	struct ThreadDesc_s             *prevInDomain;
+    unsigned long                   *stack;		/* pointer to lowest element in stack (small address) */
+    unsigned long                   *stackTop;	/* pointer to topmost element in stack (large address) */
+    struct DomainDesc_s             *domain;
+    struct ThreadDesc_s             *nextInDomain;
+    struct ThreadDesc_s             *prevInDomain;
     struct ThreadDesc_s             *next;
-	thread_start_t                  entry;
-	jboolean                        isInterruptHandlerThread;
-	jboolean                        isGCThread;
-	jboolean                        isPortalThread;
-	u32                             threadID;
+    thread_start_t                  entry;
+    jboolean                        isInterruptHandlerThread;
+    jboolean                        isGCThread;
+    jboolean                        isPortalThread;
+    u32                             threadID;
     void                            *createParam;
     jint                            *portalParams;
     RT_TASK                         task;
     struct copied_s                 *copied;	/* onlu used when thread receives portal calls */
     u32                             n_copied;
-	u32                             max_copied;
+    u32                             max_copied;
 } ThreadDesc;
 
 
 typedef struct ThreadDescProxy_s {
-	code_t              *vtable;
-	struct ThreadDesc_s desc;
+    code_t              *vtable;
+    struct ThreadDesc_s desc;
 } ThreadDescProxy;
 
 

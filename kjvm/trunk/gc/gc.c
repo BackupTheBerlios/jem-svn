@@ -44,7 +44,6 @@
 #include "gc_normal.h"
 #include "gc_compacting.h"
 #include "gc_move.h"
-#include "gc_pgc.h"
 #include "exception_handler.h"
 
 
@@ -86,7 +85,7 @@ jboolean isRef(jbyte * map, int total, int num)
 	return false;
 }
 
-void rswitches()
+void rswitches(void)
 {
 }
 

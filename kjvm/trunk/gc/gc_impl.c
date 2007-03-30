@@ -50,25 +50,6 @@
 extern RT_MUTEX     svTableLock;
 
 
-/*
- * freeze the threads in domain at known checkpoints, so we know the stackmaps 
- */
-void freezeThreads(DomainDesc * domain)
-{
-	ThreadDesc *thread;
-
-	for (thread = domain->threads; thread != NULL; thread = thread->nextInDomain) {
-		if (thread == domain->gc.gcThread)
-			continue;	/* don't scan my own stack */
-		if (thread->isInterruptHandlerThread)
-			continue;	/* don't scan interrupt stacks, they can not be interrupted by a GC and so they are not active */
-		if (thread->state == STATE_AVAILABLE)
-			continue;	/* don't scan stack of available threads */
-		check_thread_position(domain, thread);
-	}
-}
-
-
 /* 
  * visit all static refernces in class cl 
  */
@@ -86,7 +67,6 @@ void walkStacks(DomainDesc * domain, HandleReference_t handler)
 {
 	ThreadDesc *thread;
 
-	PGCB(STACK);
 	for (thread = domain->threads; thread != NULL; thread = thread->nextInDomain) {
 		if (thread == domain->gc.gcThread)
 			continue;	/* don't scan my own stack */
@@ -96,7 +76,6 @@ void walkStacks(DomainDesc * domain, HandleReference_t handler)
 			continue;	/* don't scan stack of available threads */
 		walkStack(domain, thread, handler);
 	}
-	PGCE(STACK);
 }
 
 /*
@@ -107,14 +86,12 @@ void walkStatics(DomainDesc * domain, HandleReference_t handler)
 	u32  i, k;
 	LibDesc *lib;
 
-	PGCB(STATIC);
 	for (k = 0; k < domain->numberOfLibs; k++) {
 		lib = domain->libs[k];
 		for (i = 0; i < lib->numberOfClasses; i++) {
 			walkClass(domain, &(lib->allClasses[i]), handler);
 		}
 	}
-	PGCE(STATIC);
 }
 
 /* 
@@ -126,7 +103,6 @@ void walkPortals(DomainDesc * domain, HandleReference_t handler)
 	DEPDesc *d;
     int     result;
 
-	PGCB(SERVICE);
 	/* TODO: perform GC on copy of service table and use locking only to reinstall table 
 	 * all entries of original table must be marked as changing
 	 */
@@ -148,7 +124,6 @@ void walkPortals(DomainDesc * domain, HandleReference_t handler)
 		}
 	}
     rt_mutex_release(&svTableLock);
-	PGCE(SERVICE);
 }
 
 /*
@@ -158,14 +133,11 @@ void walkRegistereds(DomainDesc * domain, HandleReference_t handler)
 {
 	u32  i;
 
-	PGCB(REGISTERED);
 	for (i = 0; i < getJVMConfig()->maxRegistered; i++) {
 		if (domain->gc.registeredObjects[i] != NULL) {
 			handler(domain, &(domain->gc.registeredObjects[i]));
 		}
 	}
-
-	PGCE(REGISTERED);
 }
 
 /*
@@ -175,7 +147,6 @@ void walkSpecials(DomainDesc * domain, HandleReference_t handler)
 {
 	ThreadDesc *t;
 
-	PGCB(SPECIAL)
 	if (domain->startClassName)
 		handler(domain, (ObjectDesc **) & (domain->startClassName));
 	if (domain->dcodeName != NULL)
@@ -202,35 +173,6 @@ void walkSpecials(DomainDesc * domain, HandleReference_t handler)
 		handler(domain, (ObjectDesc **) & (domain->inboundInterceptorObject));
 	}
 
-	/*
-	 *  TCBs in domain control block 
-	 * Copying the first TCB is sufficient as all other TCBs are reachable from this one
-	 */
-	{
-		extern ThreadDesc *switchBackTo;
-		ThreadDesc *tp;
-		ThreadDescProxy *tpr;
-
-		MOVETCB(domain->threads);
-		Sched_gc_rootSet(domain, handler);
-
-		MOVETCB(domain->gc.gcThread);
-		if (switchBackTo && switchBackTo->domain == domain) {	/* switchback is domainzero thread when gc is fired off by domainmanager.gc() */
-			MOVETCB(switchBackTo);	// thread that was interrupted by GC (oneshot) */
-		}
-
-		/* move current thread TCB */
-		tpr = thread2CPUState(curthr());
-		handler(domain, (ObjectDesc **) & (tpr));
-		*(curthrP()) = cpuState2thread(tpr);
-
-
-	}
-
-	/* TCBs now are objects on the heap and are scanned for references the normal way */
-
-
-	PGCE(SPECIAL);
 }
 
 /*
@@ -241,7 +183,6 @@ void walkInterrupHandlers(DomainDesc * domain, HandleReference_t handler)
 	u32  i, j;
 
 	/* Interrupt handler objects */
-	PGCB(INTR);
 	for (i = 0; i < MAX_NR_CPUS; i++) {	/* FIXME: must synchronize with these CPUs!! */
 		for (j = 0; j < NUM_IRQs; j++) {
 			if (ifirstlevel_object[i][j] != NULL && idomains[i][j] == domain) {
@@ -249,7 +190,6 @@ void walkInterrupHandlers(DomainDesc * domain, HandleReference_t handler)
 			}
 		}
 	}
-	PGCE(INTR);
 }
 
 /*

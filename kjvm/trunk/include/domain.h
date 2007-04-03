@@ -29,6 +29,7 @@
 
 #include <linux/types.h>
 #include <native/mutex.h>
+#include <native/sem.h>
 #include "jemConfig.h"
 #include "object.h"
 
@@ -160,6 +161,7 @@ typedef struct DomainDesc_s {
 	struct ArrayDesc_s          *initialPortals;
 	struct DEPDesc_s            *services[CONFIG_JEM_MAX_SERVICES];
 	struct ServiceThreadPool_s  *pools[CONFIG_JEM_MAX_SERVICES];
+    RT_SEM                      serviceSem;
 	int                         state;
 	u32                         id;
  	struct ThreadDesc_s         *firstThreadInRunQueue;

@@ -36,6 +36,7 @@
 #include "jemConfig.h"
 #include "object.h"
 #include "domain.h"
+#include "code.h"
 #include "portal.h"
 #include "thread.h"
 #include "malloc.h"

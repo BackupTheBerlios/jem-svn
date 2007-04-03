@@ -236,13 +236,20 @@ DEPDesc *allocServiceDescInDomain(DomainDesc * domain)
 
 ServiceThreadPool *allocServicePoolInDomain(DomainDesc * domain)
 {
-	ObjectHandle handle;
-	ServiceThreadPool *dep;
-	jint objSize = OBJSIZE_SERVICEPOOL;
-	handle = gc_allocDataInDomain(domain, objSize, OBJFLAGS_SERVICE_POOL);
-	dep = (ServiceThreadPool *) unregisterObject(domain, handle);
+	ObjectHandle        handle;
+	ServiceThreadPool   *dep;
+    char                lockName[20];
+	jint                objSize = OBJSIZE_SERVICEPOOL;
+    int                 result;
+
+	handle  = gc_allocDataInDomain(domain, objSize, OBJFLAGS_SERVICE_POOL);
+	dep     = (ServiceThreadPool *) unregisterObject(domain, handle);
 	memset(dep, 0, sizeof(ServiceThreadPool));
 	dep->magic = MAGIC_DEP;
+    sprintf(lockName, "dom%03dSvPoolLock", domain->id);
+    if ((result = rt_mutex_create(&dep->poolLock, lockName)) < 0) {
+        printk(KERN_ERR "Can not create service thread pool lock, rc=%d\n", result);
+    }
 	return dep;
 }
 

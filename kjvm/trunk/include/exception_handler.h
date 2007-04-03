@@ -62,6 +62,7 @@ void throw_NullPointerException(jint dummy);
 
 void exceptionHandlerMsg(jint * p, char *msg);
 void exceptionHandler(jint * p);
+void exceptionHandlerInternal(char *msg);
 
 
 #endif

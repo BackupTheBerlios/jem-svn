@@ -39,12 +39,6 @@ void installInitialNaming(DomainDesc * srcDomain, DomainDesc * dstDomain, Proxy 
 typedef jint(*code2_f) (jint a, jint b);
 
 
-void receive_dep(void *arg)
-{
-	u4_t depIndex = (u4_t) arg;
-	receive_portalcall(depIndex);
-}
-
 ClassDesc *createClassDescImplementingInterface(DomainDesc * domain, ClassDesc * cl, MethodInfoDesc * methods, int numMethods,
 						char *name)
 {

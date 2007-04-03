@@ -30,9 +30,6 @@
 #define PORTAL_RETURN_TYPE_NUMERIC   0
 #define PORTAL_RETURN_TYPE_REFERENCE 1
 #define PORTAL_RETURN_TYPE_EXCEPTION 3
-#define PORTAL_RETURN_IS_OBJECT(x) (x & 1)
-#define PORTAL_RETURN_IS_EXCEPTION(x) (x == 3)
-#define PORTAL_RETURN_SET_EXCEPTION(x) ((x) = 3)
 
 typedef jint(*dep_f) (jint * paramlist);
 
@@ -58,6 +55,7 @@ typedef struct ServiceThreadPool_s {
 	struct ThreadDesc_s *firstWaitingSender;	
 	struct ThreadDesc_s *lastWaitingSender;
 	u32                 index;
+    RT_MUTEX            poolLock;
 } ServiceThreadPool;
 
 typedef struct DEPDesc_s {
@@ -151,8 +149,19 @@ typedef struct InterceptPortalInfoProxy_s {
 } InterceptPortalInfoProxy;
 
 
-void service_decRefcount(DomainDesc * domain, u32 index);
-void service_incRefcount(DEPDesc * p);
-
+void            service_decRefcount(DomainDesc * domain, u32 index);
+void            service_incRefcount(DEPDesc * p);
+u32             createService(DomainDesc * domain, ObjectDesc * depObj, ClassDesc * interface, 
+                              ServiceThreadPool * pool);
+void            installVtables(DomainDesc * domain, ClassDesc * c, MethodInfoDesc * methods, 
+                               int numMethods, ClassDesc * cl);
+void            receive_portalcall(u32 poolIndex);
+int             findProxyCodeInDomain(DomainDesc * domain, char *addr, char **method, char **sig, 
+                                      ClassDesc ** classInfo);
+void            addToRefTable(ObjectDesc * src, ObjectDesc * dst);
+void            reinit_service_thread(void);
+Proxy           *portal_auto_promo(DomainDesc * domain, ObjectDesc * obj);
+void            abstract_method_error(ObjectDesc * self);
+void            portals_init(void);
 
 #endif

@@ -26,12 +26,6 @@
 #ifndef GC_IMPL_H
 #define GC_IMPL_H
 
-#ifdef CONFIG_JEM_ENABLE_GC
-
-static spinlock_t gc_lock = SPIN_LOCK_UNLOCKED;
-#define GC_LOCK    spin_lock(&gc_lock);
-#define GC_UNLOCK  spin_unlock(&gc_lock);
-
 #define gc_objSize(_o_) gc_objSize2(_o_, getObjFlags(_o_))
 u32 gc_objSize2(ObjectDesc* obj, jint flags); 
 
@@ -126,8 +120,6 @@ void walkRootSet(DomainDesc * domain,
     bits >>= 1; \
   } \
 }
-
-#endif				/* ENABLE_GC */
 
 #define MOVETCB(x) if (x) {tpr = thread2CPUState(x); handler(domain, (ObjectDesc **) & (tpr)); x = cpuState2thread(tpr);}
 

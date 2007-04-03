@@ -126,6 +126,13 @@ static DomainDesc *specialAllocDomainDesc(void)
         rt_mutex_release(&domainLock);
         return NULL;
     }
+    sprintf(lockName, "dom%03dSvSem", d->id);
+    result          = rt_sem_create(&d->serviceSem, lockName, 0, S_PRIO);
+    if (result < 0) {
+        printk(KERN_CRIT "Unable to create domain service semaphore %s, rc=%d\n", lockName, result);
+        rt_mutex_release(&domainLock);
+        return NULL;
+    }
 
     rt_mutex_release(&domainLock);
 	return d;

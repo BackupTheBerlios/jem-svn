@@ -44,11 +44,13 @@ struct MemoryProxy_s *gc_impl_shallowCopyMemory(u32 * dst,
 						struct MemoryProxy_s
 						*srcObj);
 
-u32 memory_sizeof_proxy(void);
-
-void memory_deleted(struct MemoryProxy_s *obj);
-
-jint memory_getStartAddress(ObjectDesc * self);
-jint memory_size(ObjectDesc * self);
+u32             memory_sizeof_proxy(void);
+void            memory_deleted(struct MemoryProxy_s *obj);
+jint            memory_getStartAddress(ObjectDesc * self);
+jint            memory_size(ObjectDesc * self);
+ObjectDesc      *memoryManager_alloc(ObjectDesc * self, jint size);
+ObjectDesc      *memoryManager_allocAligned(ObjectDesc * self, jint size, jint bytes);
+ObjectDesc      *copy_shallow_memory(DomainDesc * src, DomainDesc * dst, struct MemoryProxy_s * obj, u32 * quota);
+void            copy_content_memory(DomainDesc * src, DomainDesc * dst, struct MemoryProxy_s * obj, u32 * quota);
 
 #endif

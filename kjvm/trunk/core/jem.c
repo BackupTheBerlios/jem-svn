@@ -41,6 +41,8 @@
 #include "messages.h"
 #include "thread.h"
 #include "load.h"
+#include "sched.h"
+#include "portal.h"
 
 #define VERSION "1.0.0"
 #define INITTASKPRIO 98
@@ -111,6 +113,8 @@ static void jvmInitTask(void *cookie)
     initDomainSystem();
 
     threadsInit();
+
+    portals_init();
 
     initPrimitiveClasses();
 

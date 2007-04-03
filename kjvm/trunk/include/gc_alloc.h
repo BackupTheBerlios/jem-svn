@@ -37,7 +37,9 @@ CPUDesc                 *specialAllocCPUDesc(void);
 DomainDesc              *specialAllocDomainDesc(void);
 ArrayDesc               *vmSpecialAllocArray(ClassDesc * elemClass0, jint size);
 u32                     *specialAllocStaticFields(DomainDesc * domain, int numberFields);
+InterceptInboundInfoProxy *allocInterceptInboundInfoProxyInDomain(DomainDesc * domain);
 ObjectDesc              *allocObjectInDomain(DomainDesc * domain, ClassDesc * c);
+ServiceThreadPool       *allocServicePoolInDomain(DomainDesc * domain);
 
 
 #endif				/* GC_ALLOC_H */

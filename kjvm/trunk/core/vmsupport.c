@@ -16,7 +16,6 @@
 
 static jint vm_spinlock = 1;
 
-jboolean check_assign(ClassDesc * variable_class, ClassDesc * reference_class);
 jboolean implements_interface(ClassDesc * c, ClassDesc * ifa);
 jboolean is_interface(ClassDesc * c);
 

@@ -138,6 +138,7 @@ void installObjectVtable(ClassDesc * c);
 void installInitialNaming(DomainDesc * srcDomain, DomainDesc * dstDomain,
 			  Proxy * naming);
 Proxy *getInitialNaming(void);
+ObjectDesc *bootfs_getFile(ObjectDesc * self, ObjectDesc * filename);
 
 
 /* in zero_DomainManager */

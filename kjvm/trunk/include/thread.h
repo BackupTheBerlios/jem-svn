@@ -30,6 +30,7 @@
 
 #include <native/task.h>
 #include "domain.h"
+#include "portal.h"
 
 #define STATE_INIT      1
 #define STATE_RUNNABLE  2
@@ -76,9 +77,25 @@ typedef struct ThreadDesc_s  {
     void                            *createParam;
     jint                            *portalParams;
     RT_TASK                         task;
-    struct copied_s                 *copied;	/* onlu used when thread receives portal calls */
+    struct copied_s                 *copied;	/* only used when thread receives portal calls */
     u32                             n_copied;
     u32                             max_copied;
+	struct ThreadDesc_s             *mostRecentlyCalledBy;
+	struct ThreadDesc_s             *nextInReceiveQueue;
+	struct ThreadDesc_s             *nextInDEPQueue;
+	struct ThreadDesc_s             *blockedInServiceThread;
+	struct DomainDesc_s             *callerDomain;
+	struct DomainDesc_s             *blockedInDomain;	/* this thread is currently waiting for a service of that domain */
+	u32                             blockedInDomainID;	/* this thread is currently waiting for a service of that domain (detect terminated domain)*/
+	u32                             blockedInServiceIndex;	/* index of the service this thread is waiting for */
+	u32                             callerDomainID;
+	jint                            *myparams;	
+	jint                            depMethodIndex;
+	jint                            *depParams;
+	struct ObjectDesc_s             *portalParameter;	/* implizit parameter passed during a portal call */
+	struct DEPDesc_s                *processingDEP;	/* this thread is currently servicing a Portal */
+	struct ObjectDesc_s             *portalReturn;	/* may contain object reference or numeric data ! */
+	jint                            portalReturnType;	/* 0=numeric 1=reference 3=exception */
 } ThreadDesc;
 
 
@@ -129,15 +146,16 @@ static inline struct DomainDesc_s *curdom(void)
 }
 
 
-void threadsInit(void);
-ThreadDesc *createThread(DomainDesc * domain, thread_start_t thread_start, void *param, int state, 
+void        threadsInit(void);
+ThreadDesc  *createThread(DomainDesc * domain, thread_start_t thread_start, void *param, int state, 
                          int prio, char *thName);
-ThreadDesc *createInitialDomainThread(DomainDesc * domain, int state, int schedParam);
-ThreadDesc *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param, 
+ThreadDesc  *createInitialDomainThread(DomainDesc * domain, int state, int schedParam);
+ThreadDesc  *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param, 
                               ObjectDesc * entry, u32 stackSize, int state, int prio, char *tName);
-void thread_exit(void);
-void terminateThread(ThreadDesc * t);
-ThreadDesc *findThreadDesc(ThreadDescForeignProxy *proxy);
+void        thread_exit(void);
+void        terminateThread(ThreadDesc * t);
+ThreadDesc  *findThreadDesc(ThreadDescForeignProxy *proxy);
+void        thread_prepare_to_copy(void);
 
 
 #endif

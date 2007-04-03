@@ -490,8 +490,8 @@ void gc_impl_walkContentCPUState(DomainDesc * domain, ThreadDescProxy * obj, Han
 	if (t->entry) {
 		handler(domain, (ObjectDesc **) & (t->entry));
 	}
-	if (PORTAL_RETURN_IS_OBJECT(t->portalReturnType)
-	    && t->portalReturn) {
+	if ((t->portalReturnType & PORTAL_RETURN_TYPE_REFERENCE)
+	    && (t->portalReturn)) {
 		gc_dprintf("move portalReturn\n");
 		handler(domain, (ObjectDesc **) & (t->portalReturn));
 	}

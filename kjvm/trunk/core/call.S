@@ -2,7 +2,7 @@
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
 //
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 2007 JemStone Software LLC. All rights reserved.
 // Copyright © 1997-2001 The JX Group. All rights reserved.
 // Copyright © 1998-2002 Michael Golm. All rights reserved.
 //

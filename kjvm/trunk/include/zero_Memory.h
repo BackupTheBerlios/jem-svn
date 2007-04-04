@@ -23,7 +23,12 @@
 #define ZERO_MEMORY_H
 
 
-struct MemoryProxy_s;
+typedef struct MemoryProxy_s {
+    code_t  *vtable;
+    u32     size;
+    char    *mem;
+} MemoryProxy;
+
 typedef struct MemoryProxy_s **MemoryProxyHandle;
 
 void dzmemory_decRefcount(struct MemoryProxy_s *m);
@@ -52,5 +57,7 @@ ObjectDesc      *memoryManager_alloc(ObjectDesc * self, jint size);
 ObjectDesc      *memoryManager_allocAligned(ObjectDesc * self, jint size, jint bytes);
 ObjectDesc      *copy_shallow_memory(DomainDesc * src, DomainDesc * dst, struct MemoryProxy_s * obj, u32 * quota);
 void            copy_content_memory(DomainDesc * src, DomainDesc * dst, struct MemoryProxy_s * obj, u32 * quota);
+
+MemoryProxyHandle allocReadOnlyMemory(MemoryProxy * self, jint start, jint size);
 
 #endif

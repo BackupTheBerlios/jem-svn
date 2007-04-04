@@ -34,7 +34,6 @@
 #include "domain.h"
 #include "gc.h"
 #include "code.h"
-#include "execjava.h"
 #include "portal.h"
 #include "thread.h"
 #include "profile.h"

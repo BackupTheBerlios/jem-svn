@@ -3,7 +3,6 @@
 // embedded systems.
 //
 // Copyright © 2007 JemStone Software LLC. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License, version 2, as published by the Free 
@@ -18,29 +17,18 @@
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //==============================================================================
-// File: jar.h
-//
-// Jem/JVM jar file interface.
-//
-//===========================================================================
+// sched.c
+// 
+// Jem/JVM scheduler emulation
+// 
+//==============================================================================
 
-#ifndef _JAR_H
-#define _JAR_H
-
-
-
-typedef struct jarentry_s {
-    char    filename[80];
-    jint    uncompressed_size;
-    jint    compression_method;
-    char    *data;
-    jint    isDirectory;
-} jarentry;
+#ifndef _SCHED_H
+#define _SCHED_H
 
 
-void    jarReset(void);
-int     jarNextEntry(jarentry * entry);
-void    jarInit(char *jarstart, jint jarlen);
+void    Sched_block(u32 state);
+void    Sched_portal_handoff_to_sender(ThreadDesc *sender);
 
 
-#endif
+#endif // _SCHED_H

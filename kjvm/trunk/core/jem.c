@@ -2,7 +2,7 @@
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
 //
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 2007 JemStone Software LLC. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License, version 2, as published by the Free 
@@ -172,8 +172,8 @@ int jem_init (void)
     return 0;
 }
 
-MODULE_AUTHOR("Chris Stone");
-MODULE_LICENSE("GPL and additional rights");
+MODULE_AUTHOR("JemStone Software LLC");
+MODULE_LICENSE("GPL v2");
 MODULE_DESCRIPTION("A Java Virtual Machine for embedded devices.");
 MODULE_VERSION(VERSION);
 module_init(jem_init);

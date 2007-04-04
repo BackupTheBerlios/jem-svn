@@ -2,7 +2,7 @@
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
 //
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 2007 JemStone Software LLC. All rights reserved.
 // Copyright © 1997-2001 The JX Group. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
@@ -33,7 +33,6 @@
 #include "domain.h"
 #include "gc.h"
 #include "code.h"
-#include "execjava.h"
 #include "portal.h"
 #include "thread.h"
 #include "profile.h"
@@ -46,66 +45,67 @@ static libcache_entry *global_jll_cache = NULL;
 
 libcache_entry *libcache_new_entry(ObjectDesc * string_obj, ObjectDesc * memory_obj)
 {
-	libcache_entry *new_entry;
+    libcache_entry *new_entry;
 
-	if ((new_entry = jemMalloc(sizeof(libcache_entry) MEMTYPE_OTHER)) == NULL) {
-		return NULL;
-	}
+    if ((new_entry = jemMalloc(sizeof(libcache_entry) MEMTYPE_OTHER)) == NULL) {
+        return NULL;
+    }
 
-	new_entry->name = string_obj;
-	new_entry->codefile = memory_obj;
-	new_entry->next = NULL;
+    new_entry->name = string_obj;
+    new_entry->codefile = memory_obj;
+    new_entry->next = NULL;
 
-	return new_entry;
+    return new_entry;
 }
 
 void libcache_init(void)
 {
-	global_jll_cache = NULL;
+    global_jll_cache = NULL;
 }
 
 char *libcache_lookup_jll(const char *name, jint * size)
 {
-	libcache_entry *entry;
-	ObjectDesc *str;
-	char e_str[80];
+    libcache_entry *entry;
+    ObjectDesc *str;
+    char e_str[80];
 
-	for (entry = global_jll_cache; entry != NULL; entry = entry->next) {
+    for (entry = global_jll_cache; entry != NULL; entry = entry->next) {
 
-		str = entry->name;
-		stringToChar(str, e_str, 80);
+        str = entry->name;
+        stringToChar(str, e_str, 80);
 
-		if (strcmp(name, e_str) == 0) {
+        if (strcmp(name, e_str) == 0) {
 
-			if (size != NULL)
-				*size = memory_size(entry->codefile);
+            if (size != NULL)
+                *size = memory_size(entry->codefile);
 
-			return (char *) memory_getStartAddress(entry->codefile);
-		}
+            return (char *) memory_getStartAddress(entry->codefile);
+        }
 
-	}
+    }
 
-	if (size != NULL)
-		*size = 0;
-	return NULL;
+    if (size != NULL)
+        *size = 0;
+    return NULL;
 }
 
 void libcache_register_jll(ObjectDesc * self, ObjectDesc * string_obj, ObjectDesc * memory_obj)
 {
-	libcache_entry *newjll;
-	char e_str[80];
+    libcache_entry *newjll;
+    char e_str[80];
 
-	stringToChar(string_obj, e_str, 80);
+    stringToChar(string_obj, e_str, 80);
 
-	printk(KERN_INFO "Lib register: %s\n", e_str);
+    printk(KERN_INFO "Lib register: %s\n", e_str);
 
-	if ((newjll = libcache_new_entry(string_obj, memory_obj)) == NULL) {
-		printk(KERN_ERR "No memory for libcache\n");
+    if ((newjll = libcache_new_entry(string_obj, memory_obj)) == NULL) {
+        printk(KERN_ERR "No memory for libcache\n");
         return;
-	}
+    }
 
-	newjll->next = global_jll_cache;
-	global_jll_cache = newjll;
+    newjll->next = global_jll_cache;
+    global_jll_cache = newjll;
 
-	return;
+    return;
 }
+

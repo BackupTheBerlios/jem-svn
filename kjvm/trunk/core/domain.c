@@ -2,7 +2,7 @@
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
 //
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 2007 JemStone Software LLC. All rights reserved.
 // Copyright © 1997-2001 The JX Group. All rights reserved.
 // Copyright © 1998-2002 Michael Golm. All rights reserved.
 //
@@ -40,6 +40,8 @@
 #include "thread.h"
 #include "profile.h"
 #include "malloc.h"
+#include "exception_handler.h"
+#include "sched.h"
 
 static u32          numberOfDomains = 0;
 static u32          currentDomainID = 0;
@@ -48,6 +50,7 @@ static char         *domainMem = NULL;
 static char         *domainMemBorder = NULL;
 static char         *domainMemCurrent = NULL;
 static RT_MUTEX     domainLock;
+extern RT_MUTEX     svTableLock;
 
 #define DOMAINMEM_SIZEBYTES (OBJSIZE_DOMAINDESC*4)
 #define DOMAINDESC_OFFSETBYTES (( 2 + XMOFF) *4)
@@ -58,15 +61,6 @@ DomainDesc *getDomainZero(void)
     return domainZero;
 }
 
-
-// TEMPTEMP
-
-void sched_local_init(DomainDesc * domain, int schedImpl)
-{
-}
-
-
-// TEMPTEMP
 
 static DomainDesc *specialAllocDomainDesc(void)
 {
@@ -248,6 +242,324 @@ void deleteDomainSystem(void)
     }
 
     rt_mutex_delete(&domainLock);
+}
+
+
+static int findByteCodePosition(MethodDesc * method, u8 * addr)
+{
+	ByteCodeDesc *table;
+	int i, offset, bPos;
+
+	table = method->bytecodeTable;
+	offset = addr - (u8 *) (method->code);
+
+	bPos = -1;
+	for (i = 0; i < method->numberOfByteCodes; i++) {
+		if (table[i].start <= offset && table[i].end >= offset) {
+			bPos = table[i].bytecodePos;
+			break;
+		}
+	}
+
+	return bPos;
+}
+
+
+int findMethodAtAddrInDomain(DomainDesc * domain, u8 * addr, MethodDesc ** method, ClassDesc ** classInfo, 
+                             jint * bytecodePos, jint * lineNumber)
+{
+	int g, h, i, j, k, l, m;
+	int ret = -1;
+	SourceLineDesc *stable;
+	if (addr == NULL)
+		return -1;
+
+    rt_mutex_acquire(&domainLock, TM_INFINITE);
+	for (h = 0; h < domain->numberOfLibs; h++) {
+		LibDesc *lib = domain->libs[h];
+		JClass *allClasses = lib->allClasses;
+		ClassDesc *classDesc;
+		u8 *lower, *upper=NULL;
+		if (lib->numberOfClasses <= 0) {
+			printk(KERN_ERR "Problem in domain, %d, empty lib\n", domain->id);
+            return -1;
+		}
+		if (lib->hasNoImplementations)
+			continue;
+		for (i = 0; i < lib->numberOfClasses; i++) {
+			classDesc = lib->allClasses[i].classDesc;
+			if ((classDesc->classType & CLASSTYPE_INTERFACE) == CLASSTYPE_INTERFACE)
+				continue;
+			for (j = 0; j < classDesc->numberOfMethods; j++) {
+				lower = (u8 *) (classDesc->methods[j].code);
+				if (lower)
+					goto low_class;
+			}
+		}
+		if (i == lib->numberOfClasses) {
+			lib->hasNoImplementations = JNI_TRUE;
+			continue;
+		}
+	  low_class:
+		for (g = lib->numberOfClasses - 1; g >= i; g--) {
+			classDesc = lib->allClasses[g].classDesc;
+			if ((classDesc->classType & CLASSTYPE_INTERFACE) == CLASSTYPE_INTERFACE)
+				continue;
+			for (j = classDesc->numberOfMethods - 1; j >= 0; j--) {
+				upper = ((u8 *) classDesc->methods[j].code) + classDesc->methods[j].numberOfCodeBytes;
+				if (upper)
+					goto upp_class;
+			}
+		}
+	  upp_class:
+		if ((addr < lower) || (addr >= upper))
+			continue;
+		for (; i <= g; i++) {
+			classDesc = allClasses[i].classDesc;
+			if ((classDesc->classType & CLASSTYPE_INTERFACE) == CLASSTYPE_INTERFACE)
+				continue;
+			for (l = 0; l < classDesc->numberOfMethods; l++) {
+				lower = (u8 *) (classDesc->methods[l].code);
+				if (lower)
+					break;
+			}
+			for (m = classDesc->numberOfMethods - 1; m >= l; m--) {
+				upper = ((u8 *) classDesc->methods[m].code) + classDesc->methods[m].numberOfCodeBytes;
+				if (upper)
+					break;
+			}
+			if ((addr < lower) || (addr >= upper))
+				continue;
+			l = 0;
+			m = classDesc->numberOfMethods - 1;
+			for (j = l; j <= m; j++) {
+				if (classDesc->methods[j].code <= (code_t) addr
+				    && classDesc->methods[j].code + classDesc->methods[j].numberOfCodeBytes > (code_t) addr) {
+					*method = &classDesc->methods[j];
+					*classInfo = classDesc;
+
+					*bytecodePos = findByteCodePosition(&(classDesc->methods[j]), addr);
+
+					*lineNumber = -1;
+					if (*bytecodePos != -1) {
+						/* find source code line */
+						stable = classDesc->methods[j].sourceLineTable;
+						for (k = 0; k < classDesc->methods[j].numberOfSourceLines - 1; k++) {
+							if ((stable[k].startBytecode <= *bytecodePos)
+							    && (stable[k + 1].startBytecode > *bytecodePos)) {
+								*lineNumber = stable[k].lineNumber;
+								break;
+							}
+						}
+					}
+					ret = 0;
+					goto finish;
+				}
+			}
+		}
+	}
+
+  finish:
+    rt_mutex_release(&domainLock);
+
+	return ret;
+}
+
+
+/* -1 failure, 
+   0 success */
+int findMethodAtAddr(u8 * addr, MethodDesc ** method, ClassDesc ** classInfo, jint * bytecodePos, jint * lineNumber)
+{
+	DomainDesc *domain;
+	char *mem;
+	int ret = -1;
+
+	if (addr == NULL)
+		return -1;
+
+    rt_mutex_acquire(&domainLock, TM_INFINITE);
+
+	for (mem = domainMem; mem < domainMemBorder; mem += DOMAINMEM_SIZEBYTES) {
+		domain = (DomainDesc *) (mem + DOMAINDESC_OFFSETBYTES);
+		if (findMethodAtAddrInDomain(domain, addr, method, classInfo, bytecodePos, lineNumber) == 0) {
+			ret = 0;
+			goto finish;
+		}
+	}
+
+  finish:
+    rt_mutex_release(&domainLock);
+	return ret;
+}
+
+
+int findProxyCode(DomainDesc * domain, char *addr, char **method, char **sig, ClassDesc ** classInfo)
+{
+	char *mem;
+	int ret = -1;
+
+    rt_mutex_acquire(&domainLock, TM_INFINITE);
+
+	for (mem = domainMem; mem < domainMemBorder; mem += DOMAINMEM_SIZEBYTES) {
+		domain = (DomainDesc *) (mem + DOMAINDESC_OFFSETBYTES);
+		if (findProxyCodeInDomain(domain, addr, method, sig, classInfo) == 0) {
+			ret = 0;
+			break;
+		}
+	}
+
+    rt_mutex_release(&domainLock);
+	return ret;
+}
+
+
+DomainDesc *findDomain(u32 id)
+{
+	DomainDesc *domain;
+	char *mem;
+	DomainDesc *ret = NULL;
+
+    rt_mutex_acquire(&domainLock, TM_INFINITE);
+
+	for (mem = domainMem; mem < domainMemBorder; mem += DOMAINMEM_SIZEBYTES) {
+		domain = (DomainDesc *) (mem + DOMAINDESC_OFFSETBYTES);
+		if (domain->state == DOMAIN_STATE_FREE)
+			continue;
+		if (domain->id == id) {
+			ret = domain;
+			break;
+		}
+	}
+
+    rt_mutex_release(&domainLock);
+	return ret;
+}
+
+
+DomainDesc *findDomainByName(char *name)
+{	
+	DomainDesc *domain;
+	char *mem;
+	DomainDesc *ret = NULL;
+
+    rt_mutex_acquire(&domainLock, TM_INFINITE);
+
+	for (mem = domainMem; mem < domainMemBorder; mem += DOMAINMEM_SIZEBYTES) {
+		domain = (DomainDesc *) (mem + DOMAINDESC_OFFSETBYTES);
+		if (domain->state == DOMAIN_STATE_FREE)
+			continue;
+		if (domain->domainName && strcmp(domain->domainName, name) == 0) {
+			ret = domain;
+			break;
+		}
+	}
+
+    rt_mutex_release(&domainLock);
+	return ret;
+}
+
+
+void foreachDomain(domain_f func)
+{
+	DomainDesc *domain;
+	char *mem;
+
+    rt_mutex_acquire(&domainLock, TM_INFINITE);
+
+	for (mem = domainMem; mem < domainMemBorder; mem += DOMAINMEM_SIZEBYTES) {
+		domain = (DomainDesc *) (mem + DOMAINDESC_OFFSETBYTES);
+		if (domain->state != DOMAIN_STATE_ACTIVE)
+			continue;
+		func(domain);
+	}
+
+    rt_mutex_release(&domainLock);
+}
+
+
+jint getNumberOfDomains()
+{
+	return numberOfDomains;
+}
+
+
+void domain_panic(DomainDesc * domain, char *msg)
+{
+	printk(KERN_ERR "DOMAIN PANIC: \n");
+	if (domain != NULL)
+		printk(KERN_ERR "   in domain %d\n", domain->id);
+	printk(KERN_ERR "%s\n", msg);
+
+	terminateDomain(domain);
+}
+
+/* only a thread outside the domain can terminate the domain */
+void terminateDomain(DomainDesc * domain)
+{
+	u32 index, j, size;
+	ThreadDesc *t;
+
+	domain->state = DOMAIN_STATE_TERMINATING;
+
+	/* deactivate services */
+    rt_mutex_acquire(&svTableLock, TM_INFINITE);
+	for (index = 0; index < CONFIG_JEM_MAX_SERVICES; index++) {
+		if (domain->services[index] != SERVICE_ENTRY_FREE) {
+			domain->services[index] = SERVICE_ENTRY_CHANGING;
+			break;
+		}
+	}
+    rt_mutex_release(&svTableLock);
+
+	/* terminate all pending portal calls */
+	/* and return from all running service executions with an exception */
+
+	for (t = domain->threads; t != NULL; t = t->nextInDomain) {
+		if (t->blockedInDomain != NULL) {
+			DEPDesc *svc = t->blockedInDomain->services[t->blockedInServiceIndex];
+			if (t->state == STATE_PORTAL_WAIT_FOR_RCV) {
+				portal_remove_sender(svc, t);
+			} else if (t->state == STATE_PORTAL_WAIT_FOR_RET) {
+				portal_abort_current_call(svc, t);
+			} else {
+				printk(KERN_WARNING "Domain terminate with pending call not yet supported\n");
+			}
+		}
+		if (t->mostRecentlyCalledBy != NULL) {
+			/* called by domain */
+			/* throw exception */
+			ThreadDesc *source = t->mostRecentlyCalledBy;
+			source->portalReturn = (struct ObjectDesc_s *) THROW_DomainTerminatedException;
+			source->portalReturnType = PORTAL_RETURN_TYPE_EXCEPTION;
+			Sched_portal_handoff_to_sender(source);
+		}
+	}
+
+	/* free all TCBs and stacks */
+	for (t = domain->threads; t != NULL;) {
+		ThreadDesc *tnext = t->nextInDomain;
+		terminateThread(t);
+		t = tnext;
+	}
+
+	/* free unshared code segments */
+	for (j = 0; j < domain->cur_code + 1; j++) {
+		size = (char *) (domain->codeBorder[j]) - (char *) (domain->code[j]);
+		jemFree(domain->code[j], domain->code_bytes /*size */ MEMTYPE_CODE);
+		domain->code[j] = domain->codeBorder[j] = domain->codeTop[j] = NULL;
+	}
+
+	gc_done(domain);
+
+	jemFree(domain->scratchMem, domain->scratchMemSize MEMTYPE_OTHER);
+
+    rt_mutex_delete(&domain->domainMemLock);
+    rt_mutex_delete(&domain->domainHeapLock);
+    rt_mutex_delete(&domain->gc.gcLock);
+    rt_sem_delete(&domain->serviceSem);
+
+	domain->state = DOMAIN_STATE_FREE;	/* domain control block can be reused */
+	numberOfDomains--;
 }
 
 

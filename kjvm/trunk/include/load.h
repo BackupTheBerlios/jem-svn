@@ -2,7 +2,7 @@
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
 //
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 2007 JemStone Software LLC. All rights reserved.
 // Copyright © 1997-2001 The JX Group. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
@@ -53,7 +53,6 @@ u32         executeVirtual(DomainDesc * domain, char *className, char *methodnam
 void        callClassConstructor(JClass * cl);
 ClassDesc   *findClassDesc(char *name);
 ClassDesc   *findClassDescInSharedLib(SharedLibDesc * lib, char *name);
-int         findClassForMethod(MethodDesc * method, JClass ** jclass);
 int         findMethodAtAddr(u8 * addr, MethodDesc ** method,
                              ClassDesc ** ClassInfo, jint * bytecodePos,
                              jint * lineNumber);

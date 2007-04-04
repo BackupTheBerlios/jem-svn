@@ -224,6 +224,25 @@ static inline void portal_add_sender(DEPDesc * dep, ThreadDesc * thread)
 }
 
 
+void portal_remove_sender(DEPDesc * dep, ThreadDesc * sender)
+{
+	ThreadDesc **t;
+	for (t = &(dep->pool->firstWaitingSender); *t != NULL; t = &((*t)->nextInDEPQueue)) {
+		if (*t == sender) {
+			*t = (*t)->nextInDEPQueue;
+			return;
+		}
+	}
+	printk(KERN_ERR "SENDER NOT IN QUEUE\n");
+}
+
+
+void portal_abort_current_call(DEPDesc * dep, ThreadDesc * sender)
+{
+	dep->abortFlag = 1;
+}
+
+
 static inline ThreadDesc *portal_dequeue_sender(ServiceThreadPool * pool)
 {
 	ThreadDesc *ret = pool->firstWaitingSender;
@@ -276,8 +295,10 @@ void receive_portalcall(u32 poolIndex)
      *  Wait until there is a sender.
      **************/
 		pool = curdom()->pools[poolIndex];
+        curthr()->state = STATE_PORTAL_WAIT_FOR_SND;
         rt_sem_p(&(curdom()->serviceSem), TM_INFINITE);
         source = portal_dequeue_sender(pool);
+        curthr()->state = STATE_RUNNABLE;
 
     /**************
      *  There is a waiting sender.

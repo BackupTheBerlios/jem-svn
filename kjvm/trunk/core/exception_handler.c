@@ -292,12 +292,7 @@ void throw_exception(ObjectDesc * exception, u4_t * sp)
 				//      printf("%p not in portalcall\n", eip);
 			}
 
-#ifdef USE_PUSHED_METHODDESC
-			if (findMethodAtFramePointer(ebp, &method, &classInfo) == 0) {	/* } */
-				bytecodePos = findByteCodePosition(method, eip);
-#else
 			if (findMethodAtAddrInDomain(curdom(), (char *) eip, &method, &classInfo, &bytecodePos, &i) == 0) {
-#endif
 #ifdef VERBOSE_EXCEPTION
 				printf("EX: %s, exclass=%s\n", method->name, exclass->name);
 #endif				/* VERBOSE_EXCEPTION */

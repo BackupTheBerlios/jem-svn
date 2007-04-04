@@ -2,7 +2,7 @@
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
 //
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 2007 JemStone Software LLC. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License, version 2, as published by the Free 
@@ -53,7 +53,6 @@ struct jarentry_s;
 struct ObjectDesc_s;
 struct ArrayDesc_s;
 struct CPUDesc_s;
-struct SchedDesc_s;
 struct SymbolDesc_s;
 struct SymbolDescStackMap_s;
 struct FieldDesc_s;
@@ -74,7 +73,6 @@ struct StackProxy_s;
 struct HLSchedDesc_s;
 struct LLSchedDesc_s;
 struct CpuDesc_s;
-struct InstanceCounts_s;
 struct TempMemory_s;
 struct profile_entry_s;
 struct profile_s;

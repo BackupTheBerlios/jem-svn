@@ -2,7 +2,7 @@
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
 //
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 2007 JemStone Software LLC. All rights reserved.
 // Copyright © 1997-2001 The JX Group. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
@@ -45,21 +45,6 @@
 #define SERVICE_ENTRY_FREE     ((DEPDesc*)0x00000000)
 #define SERVICE_ENTRY_CHANGING ((DEPDesc*)0xffffffff)
 #define MAGIC_DOMAIN 0xd0d0eeee
-
-
-typedef struct InstanceCounts_s {
-	jint objbytes;
-	jint arrbytes;
-	jint portalbytes;
-	jint memproxybytes;
-	jint cpustatebytes;
-	jint atomvarbytes;
-	jint servicebytes;
-	jint servicepoolbytes;
-	jint casbytes;
-	jint tcbbytes;
-	jint stackbytes;
-} InstanceCounts;
 
 
 typedef struct GCDescUntypedMemory_s {
@@ -117,20 +102,6 @@ typedef struct GCDesc_s {
     struct ObjectDesc_s * (*atMark)(struct DomainDesc_s *domain);
 } GCDesc;
 
-typedef struct SchedDescUntypedMemory_s {
-	u64 dummy[5];
-} SchedDescUntypedMemory_t;
-
-typedef struct GlobalSchedDescUntypedMemory_s {
-	u64 dummy[5+20];
-} GlobalSchedDescUntypedMemory_t;
-
-typedef struct SchedDesc_s {
-	GlobalSchedDescUntypedMemory_t  untypedGlobalMemory;
-	SchedDescUntypedMemory_t        untypedLocalMemory;
-	int                             currentThreadID;
-	u64                             (*becomesRunnable) (struct DomainDesc_s *domain);
-} SchedDesc;
 
 typedef struct DomainDesc_s {
 	u32                         magic;
@@ -202,15 +173,19 @@ void deleteDomainSystem(void);
 struct DomainDesc_s *createDomain(char *domainName, jint gcinfo0, jint gcinfo1, jint gcinfo2, char *gcinfo3, jint gcinfo4,
 			 u32 code_bytes, int gcImpl, struct ArrayDesc_s *schedinfo);
 jint getNumberOfDomains(void);
-void domain_panic(struct DomainDesc_s * domain, char *msg, ...);
+void domain_panic(struct DomainDesc_s * domain, char *msg);
 void foreachDomain(domain_f func);
-void foreachDomain1(domain1_f func, void *arg);
-void foreachDomainRUNQ(domain_f func);
 char **malloc_tmp_stringtable(struct DomainDesc_s * domain, struct TempMemory_s * mem,
 			      u32 number);
 int findMethodAtAddrInDomain(struct DomainDesc_s * domain, u8 * addr,
 			     struct MethodDesc_s ** method, struct ClassDesc_s ** classInfo,
 			     jint * bytecodePos, jint * lineNumber);
+int findMethodAtAddr(u8 * addr, struct MethodDesc_s ** method, struct ClassDesc_s ** classInfo, 
+                     jint * bytecodePos, jint * lineNumber);
+int findProxyCode(struct DomainDesc_s * domain, char *addr, char **method, char **sig, struct ClassDesc_s ** classInfo);
+struct DomainDesc_s *findDomain(u32 id);
+struct DomainDesc_s *findDomainByName(char *name);
+void terminateDomain(struct DomainDesc_s * domain);
 
 
 #endif

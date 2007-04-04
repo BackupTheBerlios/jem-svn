@@ -2,7 +2,7 @@
 // This file is part of Jem, a real time Java operating system designed for 
 // embedded systems.
 //
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
+// Copyright © 2007 JemStone Software LLC. All rights reserved.
 // Copyright © 1997-2001 The JX Group. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
@@ -163,5 +163,7 @@ void            reinit_service_thread(void);
 Proxy           *portal_auto_promo(DomainDesc * domain, ObjectDesc * obj);
 void            abstract_method_error(ObjectDesc * self);
 void            portals_init(void);
+void            portal_abort_current_call(DEPDesc * dep, struct ThreadDesc_s * sender);
+void            portal_remove_sender(DEPDesc * dep, struct ThreadDesc_s * sender);
 
 #endif

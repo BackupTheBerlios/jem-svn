@@ -51,8 +51,8 @@
 #define CHECK_NULL_POINTER(_exp_) {if (_exp_) exceptionHandler(THROW_NullPointerException);}
 
 ObjectDesc *createExceptionInDomain(DomainDesc * domain,
-                                    const char *exception,
-                                    const char *details);
+                                    char *exception,
+                                    char *details);
 
 void throw_exception(ObjectDesc * exception, u32 * sp);
 void throw_ArithmeticException(jint dummy);

@@ -149,21 +149,22 @@ typedef struct InterceptPortalInfoProxy_s {
 } InterceptPortalInfoProxy;
 
 
-void            service_decRefcount(DomainDesc * domain, u32 index);
-void            service_incRefcount(DEPDesc * p);
-u32             createService(DomainDesc * domain, ObjectDesc * depObj, ClassDesc * interface, 
+void                service_decRefcount(DomainDesc * domain, u32 index);
+void                service_incRefcount(DEPDesc * p);
+u32                 createService(DomainDesc * domain, ObjectDesc * depObj, ClassDesc * interface, 
                               ServiceThreadPool * pool);
-void            installVtables(DomainDesc * domain, ClassDesc * c, MethodInfoDesc * methods, 
+void                installVtables(DomainDesc * domain, ClassDesc * c, MethodInfoDesc * methods, 
                                int numMethods, ClassDesc * cl);
-void            receive_portalcall(u32 poolIndex);
-int             findProxyCodeInDomain(DomainDesc * domain, char *addr, char **method, char **sig, 
+void                receive_portalcall(u32 poolIndex);
+int                 findProxyCodeInDomain(DomainDesc * domain, char *addr, char **method, char **sig, 
                                       ClassDesc ** classInfo);
-void            addToRefTable(ObjectDesc * src, ObjectDesc * dst);
-void            reinit_service_thread(void);
-Proxy           *portal_auto_promo(DomainDesc * domain, ObjectDesc * obj);
-void            abstract_method_error(ObjectDesc * self);
-void            portals_init(void);
-void            portal_abort_current_call(DEPDesc * dep, struct ThreadDesc_s * sender);
-void            portal_remove_sender(DEPDesc * dep, struct ThreadDesc_s * sender);
+void                addToRefTable(ObjectDesc * src, ObjectDesc * dst);
+void                reinit_service_thread(void);
+Proxy               *portal_auto_promo(DomainDesc * domain, ObjectDesc * obj);
+void                abstract_method_error(ObjectDesc * self);
+void                portals_init(void);
+void                portal_abort_current_call(DEPDesc * dep, struct ThreadDesc_s * sender);
+void                portal_remove_sender(DEPDesc * dep, struct ThreadDesc_s * sender);
+struct ObjectDesc_s *copy_reference(DomainDesc * src, DomainDesc * dst, ObjectDesc * ref, u32 * quota);
 
 #endif

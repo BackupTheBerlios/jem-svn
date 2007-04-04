@@ -35,117 +35,117 @@ typedef jint(*dep_f) (jint * paramlist);
 
 
 typedef struct MethodInfoDesc_s {
-	char        *name;
-	char        *signature;
-	code_t      code;
+    char        *name;
+    char        *signature;
+    code_t      code;
 } MethodInfoDesc;
 
 typedef struct DEPTypeDesc_s {
-	char        *type;
-	jint        numMethods;
-	char        **methods;
-	code_t      code;
+    char        *type;
+    jint        numMethods;
+    char        **methods;
+    code_t      code;
 } DEPTypeDesc;
 
 typedef struct ServiceThreadPool_s {
-	u32                 magic;
-	u32                 flags;
-	u32                 refcount;
-	struct ThreadDesc_s *firstReceiver;
-	struct ThreadDesc_s *firstWaitingSender;	
-	struct ThreadDesc_s *lastWaitingSender;
-	u32                 index;
+    u32                 magic;
+    u32                 flags;
+    u32                 refcount;
+    struct ThreadDesc_s *firstReceiver;
+    struct ThreadDesc_s *firstWaitingSender;    
+    struct ThreadDesc_s *lastWaitingSender;
+    u32                 index;
     RT_MUTEX            poolLock;
 } ServiceThreadPool;
 
 typedef struct DEPDesc_s {
-	u32                         magic;
-	u32                         flags;
-	struct ServiceThreadPool_s  *pool;
-	volatile u32                lock;
-	struct DomainDesc_s         *domain;
-	struct ObjectDesc_s         *obj;
-	struct Proxy_s              *proxy; 
-	struct ClassDesc_s          *interface;
-	volatile u32                valid;
-	volatile u32                refcount;
-	volatile u32                serviceIndex;
-	volatile u32                abortFlag;
-	u32                         statistics_no_receiver;
-	u32                         statistics_handoff;
+    u32                         magic;
+    u32                         flags;
+    struct ServiceThreadPool_s  *pool;
+    volatile u32                lock;
+    struct DomainDesc_s         *domain;
+    struct ObjectDesc_s         *obj;
+    struct Proxy_s              *proxy; 
+    struct ClassDesc_s          *interface;
+    volatile u32                valid;
+    volatile u32                refcount;
+    volatile u32                serviceIndex;
+    volatile u32                abortFlag;
+    u32                         statistics_no_receiver;
+    u32                         statistics_handoff;
 } DEPDesc;
 
 
 #define MAGIC_DEP 0xbabeface
 
 typedef struct Proxy_s {
-	code_t              *vtable;
-	struct DomainDesc_s *targetDomain;
-	u32                 targetDomainID;
-	u32                 index;
+    code_t              *vtable;
+    struct DomainDesc_s *targetDomain;
+    u32                 targetDomainID;
+    u32                 index;
 } Proxy;
 
 typedef struct CPUStateProxy_s {
-	code_t              *vtable;
-	struct ThreadDesc_s *cpuState;
+    code_t              *vtable;
+    struct ThreadDesc_s *cpuState;
 } CPUStateProxy;
 
 typedef struct AtomicVariableProxy_s {
-	code_t              *vtable;
-	struct ObjectDesc_s *value;
-	struct ThreadDesc_s *blockedThread;
-	int                 listMode;
+    code_t              *vtable;
+    struct ObjectDesc_s *value;
+    struct ThreadDesc_s *blockedThread;
+    int                 listMode;
 } AtomicVariableProxy;
 
 typedef struct CASProxy_s {
-	code_t  *vtable;
-	u32     index;
+    code_t  *vtable;
+    u32     index;
 } CASProxy;
 
 typedef struct VMObjectProxy_s {
-	code_t              *vtable;
-	struct DomainDesc_s *domain;
-	u32                 domain_id;
-	u32                 epoch;
-	int                 type;
-	struct ObjectDesc_s *obj;
-	int                 subObjectIndex;
+    code_t              *vtable;
+    struct DomainDesc_s *domain;
+    u32                 domain_id;
+    u32                 epoch;
+    int                 type;
+    struct ObjectDesc_s *obj;
+    int                 subObjectIndex;
 } VMObjectProxy;
 
 typedef struct CredentialProxy_s {
-	code_t              *vtable;
-	u32                 signerDomainID;
-	struct ObjectDesc_s *value;
+    code_t              *vtable;
+    u32                 signerDomainID;
+    struct ObjectDesc_s *value;
 } CredentialProxy;
 
 typedef struct DomainProxy_s {
-	code_t              *vtable;
-	struct DomainDesc_s *domain;
-	u32                 domainID;
+    code_t              *vtable;
+    struct DomainDesc_s *domain;
+    u32                 domainID;
 } DomainProxy;
 
 typedef struct InterceptOutboundInfo_s {
-	struct DomainDesc_s      *source;
-	struct DomainDesc_s      *target;
-	struct MethodDesc_S      *method;
-	struct ObjectDesc_s      *obj;
-	struct ArrayDesc_s       *paramlist;
+    struct DomainDesc_s      *source;
+    struct DomainDesc_s      *target;
+    struct MethodDesc_S      *method;
+    struct ObjectDesc_s      *obj;
+    struct ArrayDesc_s       *paramlist;
 } InterceptOutboundInfo;
 
 typedef struct InterceptInboundInfoProxy_s {
-	code_t               *vtable;
-	struct DomainDesc_s  *source;
-	struct DomainDesc_s  *target;
-	struct ObjectDesc_s  *method;
-	struct ObjectDesc_s  *obj;
-	jint                 *paramlist;
-	int                  index;
+    code_t               *vtable;
+    struct DomainDesc_s  *source;
+    struct DomainDesc_s  *target;
+    struct ObjectDesc_s  *method;
+    struct ObjectDesc_s  *obj;
+    jint                 *paramlist;
+    int                  index;
 } InterceptInboundInfoProxy;
 
 typedef struct InterceptPortalInfoProxy_s {
-	code_t              *vtable;
-	struct DomainDesc_s *domain;
-	u32                 index;
+    code_t              *vtable;
+    struct DomainDesc_s *domain;
+    u32                 index;
 } InterceptPortalInfoProxy;
 
 

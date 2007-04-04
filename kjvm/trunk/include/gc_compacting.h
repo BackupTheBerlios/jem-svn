@@ -29,7 +29,7 @@
 void gc_compacting_init(DomainDesc * domain, u32 heap_bytes);
 
 ObjectHandle gc_compacting_allocDataInDomain(DomainDesc * domain,
-					     int objSize, u32 flags);
+                                             int objSize, u32 flags);
 u32 gc_compacting_freeWords(DomainDesc * domain);
 u32 gc_compacting_totalWords(struct DomainDesc_s *domain);
 void gc_compacting_printInfo(struct DomainDesc_s *domain);
@@ -38,14 +38,14 @@ void gc_compacting_done(DomainDesc * domain);
 void gc_compacting_gc(DomainDesc * domain);
 int gc_compacting_isInHeap(DomainDesc * domain, ObjectDesc * obj);
 void gc_compacting_walkHeap(DomainDesc * domain,
-		HandleObject_t handleObject,
-		HandleObject_t handleArray,
-		HandleObject_t handlePortal,
-		HandleObject_t handleMemory,
-		HandleObject_t handleService,
-		HandleObject_t handleCAS,
-		HandleObject_t handleAtomVar,
-		HandleObject_t handleDomainProxy,
-		HandleObject_t handleCPUStateProxy);
+                            HandleObject_t handleObject,
+                            HandleObject_t handleArray,
+                            HandleObject_t handlePortal,
+                            HandleObject_t handleMemory,
+                            HandleObject_t handleService,
+                            HandleObject_t handleCAS,
+                            HandleObject_t handleAtomVar,
+                            HandleObject_t handleDomainProxy,
+                            HandleObject_t handleCPUStateProxy);
 
-#endif				/* GC_COMPACTING_H */
+#endif              /* GC_COMPACTING_H */

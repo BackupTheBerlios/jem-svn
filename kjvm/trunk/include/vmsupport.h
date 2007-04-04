@@ -29,9 +29,9 @@
 #define VMSUPPORT(_ndx_) vmsupport[vmsupport[_ndx_].index]
 
 typedef struct {
-	char *name;
-	int index;
-	code_t fkt;
+    char *name;
+    int index;
+    code_t fkt;
 } vm_fkt_table_t;
 
 extern jint numberVMOperations;

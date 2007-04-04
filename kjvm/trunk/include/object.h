@@ -35,22 +35,22 @@
 
 
 typedef struct ObjectDesc_s {
-	code_t      *vtable;
-	jint        data[1];
+    code_t      *vtable;
+    jint        data[1];
 } ObjectDesc;
 
 typedef struct ObjectDesc_s **ObjectHandle;
 
 typedef struct ArrayDesc_s {
-	code_t              *vtable;
-	struct ClassDesc_s  *arrayClass;
-	jint                size;
-	jint                data[1];
+    code_t              *vtable;
+    struct ClassDesc_s  *arrayClass;
+    jint                size;
+    jint                data[1];
 } ArrayDesc;
 
 typedef struct CPUDesc_s {
-	u32         magic;
-	int         cpu_id;
+    u32         magic;
+    int         cpu_id;
 } CPUDesc;
 
 

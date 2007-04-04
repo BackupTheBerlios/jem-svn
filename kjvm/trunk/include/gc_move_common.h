@@ -27,19 +27,19 @@
 #define GC_MOVE_COMMON_H
 
 typedef struct gc_move_common_mem_s {
-	u32* (*allocHeap2) (struct DomainDesc_s * domain, u32 size);
-	void (*walkHeap2) (struct DomainDesc_s * domain,
-			  HandleObject_t handleObject,
-			  HandleObject_t handleArray,
-			  HandleObject_t handlePortal,
-			  HandleObject_t handleMemory,
-			  HandleObject_t handleService,
-			  HandleObject_t handleCAS,
-			  HandleObject_t handleAtomVar,
-			  HandleObject_t handleDomainProxy,
-			   HandleObject_t handleCPUStateProxy,
-			   HandleObject_t handleServicePool,
-			  HandleObject_t handleStack);
+    u32* (*allocHeap2) (struct DomainDesc_s * domain, u32 size);
+    void (*walkHeap2) (struct DomainDesc_s * domain,
+                       HandleObject_t handleObject,
+                       HandleObject_t handleArray,
+                       HandleObject_t handlePortal,
+                       HandleObject_t handleMemory,
+                       HandleObject_t handleService,
+                       HandleObject_t handleCAS,
+                       HandleObject_t handleAtomVar,
+                       HandleObject_t handleDomainProxy,
+                       HandleObject_t handleCPUStateProxy,
+                       HandleObject_t handleServicePool,
+                       HandleObject_t handleStack);
 } gc_move_common_mem_t;
 
 u32 *gc_common_move_reference(DomainDesc * domain, ObjectDesc ** refPtr);

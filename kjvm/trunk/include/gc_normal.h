@@ -30,7 +30,7 @@
 void gc_normal_init(DomainDesc * domain, u32 heap_bytes);
 
 ObjectHandle gc_new_allocDataInDomain(DomainDesc * domain, int objSize,
-				      u32 flags);
+                                      u32 flags);
 u32 gc_new_freeWords(DomainDesc * domain);
 u32 gc_new_totalWords(struct DomainDesc_s *domain);
 void gc_new_printInfo(struct DomainDesc_s *domain);
@@ -39,17 +39,17 @@ void gc_new_done(DomainDesc * domain);
 void gc_new_gc(DomainDesc * domain);
 int gc_new_isInHeap(DomainDesc * domain, ObjectDesc * obj);
 void gc_new_walkHeap(DomainDesc * domain,
-		     HandleObject_t handleObject,
-		     HandleObject_t handleArray,
-		     HandleObject_t handlePortal,
-		     HandleObject_t handleMemory,
-		     HandleObject_t handleService,
-		     HandleObject_t handleCAS,
-		     HandleObject_t handleAtomVar,
-		     HandleObject_t handleDomainProxy,
-		     HandleObject_t handleCPUStateProxy);
+                     HandleObject_t handleObject,
+                     HandleObject_t handleArray,
+                     HandleObject_t handlePortal,
+                     HandleObject_t handleMemory,
+                     HandleObject_t handleService,
+                     HandleObject_t handleCAS,
+                     HandleObject_t handleAtomVar,
+                     HandleObject_t handleDomainProxy,
+                     HandleObject_t handleCPUStateProxy);
 
-#endif	
+#endif  
 
-#endif				/* GC_NORMAL_H */
+#endif              /* GC_NORMAL_H */
 

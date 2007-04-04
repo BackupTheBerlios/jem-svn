@@ -30,9 +30,9 @@
 
 
 typedef struct libcache_entry_s {
-	ObjectDesc *name;	/* Java String object */
-	ObjectDesc *codefile;	/* Java Memory object */
-	struct libcache_entry_s *next;
+    ObjectDesc *name;   /* Java String object */
+    ObjectDesc *codefile;   /* Java Memory object */
+    struct libcache_entry_s *next;
 } libcache_entry;
 
 void libcache_init(void);
@@ -40,7 +40,7 @@ void libcache_init(void);
 char *libcache_lookup_jll(const char *name, jint * size);
 
 void libcache_register_jll(ObjectDesc * self,
-			   ObjectDesc * string_obj,
-			   ObjectDesc * memory_obj);
+                           ObjectDesc * string_obj,
+                           ObjectDesc * memory_obj);
 
 #endif

@@ -23,11 +23,11 @@
 #define GC_ALLOC_H
 
 CPUStateProxy           *allocCPUStateProxyInDomain(DomainDesc * domain,
-                                            ClassDesc * c, ThreadDesc * cpuState);
+                                                    ClassDesc * c, ThreadDesc * cpuState);
 Proxy                   *allocProxyInDomain(DomainDesc * domain, ClassDesc * c,
-                                    struct DomainDesc_s *targetDomain, u32 targetDomainID, u32 index);
+                                            struct DomainDesc_s *targetDomain, u32 targetDomainID, u32 index);
 CredentialProxy         *allocCredentialProxyInDomain(DomainDesc * domain,
-                                              ClassDesc * c, u32 signerDomainID);
+                                                      ClassDesc * c, u32 signerDomainID);
 DEPDesc                 *allocServiceDescInDomain(DomainDesc * domain);
 ArrayDesc               *allocArrayInDomain(DomainDesc * domain, ClassDesc * elemClass, jint size);
 DomainProxy             *allocDomainProxyInDomain(DomainDesc * domain, DomainDesc * domainValue, u32 domainID);
@@ -42,4 +42,4 @@ ObjectDesc              *allocObjectInDomain(DomainDesc * domain, ClassDesc * c)
 ServiceThreadPool       *allocServicePoolInDomain(DomainDesc * domain);
 
 
-#endif				/* GC_ALLOC_H */
+#endif              /* GC_ALLOC_H */

@@ -41,9 +41,9 @@ extern u32 ifirstlevel_happened[CONFIG_NR_CPUS][NR_IRQS];
 extern u32 ifirstlevel_processed[CONFIG_NR_CPUS][NR_IRQS];
 
 struct nameValue_s {
-	Proxy *obj;
-	char *name;
-	struct nameValue_s *next;
+    Proxy *obj;
+    char *name;
+    struct nameValue_s *next;
 };
 extern struct nameValue_s *nameValue;
 
@@ -53,22 +53,21 @@ extern code_t extern_panic;
 
 static inline ObjectDesc *thread2CPUState(ThreadDesc * thread)
 {
-	if (thread == NULL)
-		return NULL;
-	return (ObjectDesc *) (((u32 *) thread) - 1);
+    if (thread == NULL)
+        return NULL;
+    return(ObjectDesc *) (((u32 *) thread) - 1);
 }
 
 static inline ThreadDesc *cpuState2thread(ObjectDesc * obj)
 {
-	if (obj == NULL)
-		return NULL;
-	if ((getObjFlags(obj) & FLAGS_MASK) == OBJFLAGS_CPUSTATE) {
-		return &(((ThreadDescProxy *)obj)->desc);
-	} 
-    else if ((getObjFlags(obj) & FLAGS_MASK) == OBJFLAGS_FOREIGN_CPUSTATE) {
-		return findThreadDesc((ThreadDescForeignProxy*)obj);
-	} 
-	return NULL;
+    if (obj == NULL)
+        return NULL;
+    if ((getObjFlags(obj) & FLAGS_MASK) == OBJFLAGS_CPUSTATE) {
+        return &(((ThreadDescProxy *)obj)->desc);
+    } else if ((getObjFlags(obj) & FLAGS_MASK) == OBJFLAGS_FOREIGN_CPUSTATE) {
+        return findThreadDesc((ThreadDescForeignProxy*)obj);
+    }
+    return NULL;
 }
 
 
@@ -76,12 +75,12 @@ static inline ThreadDesc *cpuState2thread(ObjectDesc * obj)
 
 static inline ObjectDesc *cpuDesc2Obj(CPUDesc * cpu)
 {
-	return (ObjectDesc *) (((u32 *) cpu) - 1);
+    return(ObjectDesc *) (((u32 *) cpu) - 1);
 }
 
 static inline CPUDesc *obj2cpuDesc(ObjectDesc * obj)
 {
-	return (CPUDesc *) (((u32 *) obj) + 1);
+    return(CPUDesc *) (((u32 *) obj) + 1);
 }
 
 /**
@@ -89,7 +88,7 @@ static inline CPUDesc *obj2cpuDesc(ObjectDesc * obj)
  */
 static inline ObjectDesc *class2Obj(JClass * cl)
 {
-	return (ObjectDesc *) & (cl->objectDesc_vtable);
+    return(ObjectDesc *) & (cl->objectDesc_vtable);
 }
 
 /**
@@ -97,7 +96,7 @@ static inline ObjectDesc *class2Obj(JClass * cl)
  */
 static inline JClass *obj2class(ObjectDesc * obj)
 {
-	return (JClass *) (((u32 *) obj) - 1 - XMOFF);
+    return(JClass *) (((u32 *) obj) - 1 - XMOFF);
 }
 
 /**
@@ -105,7 +104,7 @@ static inline JClass *obj2class(ObjectDesc * obj)
  */
 static inline ObjectDesc *method2Obj(MethodDesc * m)
 {
-	return (ObjectDesc *) & (m->objectDesc_vtable);
+    return(ObjectDesc *) & (m->objectDesc_vtable);
 }
 
 /**
@@ -113,7 +112,7 @@ static inline ObjectDesc *method2Obj(MethodDesc * m)
  */
 static inline MethodDesc *obj2method(ObjectDesc * obj)
 {
-	return (MethodDesc *) (((u32 *) obj) - 1 - XMOFF);
+    return(MethodDesc *) (((u32 *) obj) - 1 - XMOFF);
 }
 
 
@@ -127,35 +126,35 @@ ClassDesc *createObjectClassDesc(void);
 JClass *createObjectClass(ClassDesc * java_lang_Object);
 void createArrayObjectVTableProto(DomainDesc * domain);
 ClassDesc *init_zero_class(char *ifname, MethodInfoDesc * methods,
-			   jint size, jint instanceSize, jbyte * typeMap,
-			   char *subname);
+                           jint size, jint instanceSize, jbyte * typeMap,
+                           char *subname);
 jint findZeroLibMethodIndex(DomainDesc * domain, char *className,
-			    char *methodName, char *signature);
+                            char *methodName, char *signature);
 void SMPcpuManager_register_LLScheduler(ObjectDesc * self,
-					ObjectDesc * cpu,
-					ObjectDesc * new_sched);
+                                        ObjectDesc * cpu,
+                                        ObjectDesc * new_sched);
 void installObjectVtable(ClassDesc * c);
 void installInitialNaming(DomainDesc * srcDomain, DomainDesc * dstDomain,
-			  Proxy * naming);
+                          Proxy * naming);
 Proxy *getInitialNaming(void);
 ObjectDesc *bootfs_getFile(ObjectDesc * self, ObjectDesc * filename);
 
 
 /* in zero_DomainManager */
 DomainProxy *domainManager_createDomain(ObjectDesc * self,
-					ObjectDesc * dname,
-					ArrayDesc * cpuObjs,
-					ArrayDesc * HLSNames,
-					ObjectDesc * dcodeName,
-					ArrayDesc * libsName,
-					ObjectDesc * startClassName,
-					jint gcinfo0, jint gcinfo1, jint gcinfo2, ObjectDesc* gcinfo3, jint gcinfo4,
-					jint codeSize,
-					ArrayDesc * argv,
-					ObjectDesc * naming,
-					ArrayDesc * portals,
-					jint gcImpl,
-					ArrayDesc *schedinfo);
+                                        ObjectDesc * dname,
+                                        ArrayDesc * cpuObjs,
+                                        ArrayDesc * HLSNames,
+                                        ObjectDesc * dcodeName,
+                                        ArrayDesc * libsName,
+                                        ObjectDesc * startClassName,
+                                        jint gcinfo0, jint gcinfo1, jint gcinfo2, ObjectDesc* gcinfo3, jint gcinfo4,
+                                        jint codeSize,
+                                        ArrayDesc * argv,
+                                        ObjectDesc * naming,
+                                        ArrayDesc * portals,
+                                        jint gcImpl,
+                                        ArrayDesc *schedinfo);
 
 
-#endif				/* ZERO_H */
+#endif              /* ZERO_H */

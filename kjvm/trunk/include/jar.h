@@ -30,11 +30,11 @@
 
 
 typedef struct jarentry_s {
-	char    filename[80];
-	jint    uncompressed_size;
-	jint    compression_method;
-	char    *data;
-	jint    isDirectory;
+    char    filename[80];
+    jint    uncompressed_size;
+    jint    compression_method;
+    char    *data;
+    jint    isDirectory;
 } jarentry;
 
 

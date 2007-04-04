@@ -30,52 +30,52 @@
 u32 gc_objSize2(ObjectDesc* obj, jint flags); 
 
 void gc_walkContinuesBlock(DomainDesc * domain, u32 * start, u32 ** top,
-			   HandleObject_t handleObject,
-			   HandleObject_t handleArray,
-			   HandleObject_t handlePortal,
-			   HandleObject_t handleMemory,
-			   HandleObject_t handleService,
-			   HandleObject_t handleCAS,
-			   HandleObject_t handleAtomVar,
-			   HandleObject_t handleDomainProxy,
-			   HandleObject_t handleCPUStateProxy,
-			   HandleObject_t handleServicePool,
-			   HandleObject_t handleStackProxy);
+                           HandleObject_t handleObject,
+                           HandleObject_t handleArray,
+                           HandleObject_t handlePortal,
+                           HandleObject_t handleMemory,
+                           HandleObject_t handleService,
+                           HandleObject_t handleCAS,
+                           HandleObject_t handleAtomVar,
+                           HandleObject_t handleDomainProxy,
+                           HandleObject_t handleCPUStateProxy,
+                           HandleObject_t handleServicePool,
+                           HandleObject_t handleStackProxy);
 
 void gc_walkContinuesBlock_Alt(DomainDesc * domain, u32 * start,
-			       u32 * top, HandleObject_t handleObject,
-			       HandleObject_t handleArray,
-			       HandleObject_t handlePortal,
-			       HandleObject_t handleMemory,
-			       HandleObject_t handleService,
-			       HandleObject_t handleCAS,
-			       HandleObject_t handleAtomVar,
-			       HandleObject_t handleDomainProxy);
+                               u32 * top, HandleObject_t handleObject,
+                               HandleObject_t handleArray,
+                               HandleObject_t handlePortal,
+                               HandleObject_t handleMemory,
+                               HandleObject_t handleService,
+                               HandleObject_t handleCAS,
+                               HandleObject_t handleAtomVar,
+                               HandleObject_t handleDomainProxy);
 
 ObjectDesc *gc_impl_shallowCopyObject(u32 * dst, ObjectDesc * srcObj);
 void gc_impl_walkContentObject(DomainDesc * domain, ObjectDesc * obj,
-			       HandleReference_t handleReference);
+                               HandleReference_t handleReference);
 
 DEPDesc *gc_impl_shallowCopyService(u32 * dst, DEPDesc * srcObj);
 void gc_impl_walkContentService(DomainDesc * domain, DEPDesc * obj,
-				HandleReference_t handleReference);
+                                HandleReference_t handleReference);
 
 ArrayDesc *gc_impl_shallowCopyArray(u32 * dst, ArrayDesc * srcObj);
 void gc_impl_walkContentArray(DomainDesc * domain, ArrayDesc * obj,
-			      HandleReference_t handleReference);
+                              HandleReference_t handleReference);
 
 Proxy *gc_impl_shallowCopyPortal(u32 * dst, Proxy * srcObj);
 
 CASProxy *gc_impl_shallowCopyCAS(u32 * dst, CASProxy * srcObj);
 
 AtomicVariableProxy *gc_impl_shallowCopyAtomVar(u32 * dst,
-						AtomicVariableProxy *srcObj);
+                                                AtomicVariableProxy *srcObj);
 void gc_impl_walkContentAtomVar(DomainDesc *domain,
-				AtomicVariableProxy * obj,
-				HandleReference_t handleReference);
+                                AtomicVariableProxy * obj,
+                                HandleReference_t handleReference);
 
 void gc_impl_walkContent(DomainDesc * domain, ObjectDesc * obj,
-			 HandleReference_t handleReference);
+                         HandleReference_t handleReference);
 
 void freezeThreads(DomainDesc * domain);
 
@@ -87,12 +87,12 @@ void walkSpecial(DomainDesc * domain, HandleReference_t handler);
 void walkInterrupHandlers(DomainDesc * domain, HandleReference_t handler);
 
 void walkRootSet(DomainDesc * domain,
-		 HandleReference_t stacksHandler,
-		 HandleReference_t staticsHandler,
-		 HandleReference_t portalsHandler,
-		 HandleReference_t registeredHandler,
-		 HandleReference_t specialHandler,
-		 HandleReference_t interruptHandlersHandler);
+                 HandleReference_t stacksHandler,
+                 HandleReference_t staticsHandler,
+                 HandleReference_t portalsHandler,
+                 HandleReference_t registeredHandler,
+                 HandleReference_t specialHandler,
+                 HandleReference_t interruptHandlersHandler);
 
 #define FORWARD_MASK            0x00000001
 #define FORWARD_PTR_MASK        0xfffffffe
@@ -124,4 +124,4 @@ void walkRootSet(DomainDesc * domain,
 #define MOVETCB(x) if (x) {tpr = thread2CPUState(x); handler(domain, (ObjectDesc **) & (tpr)); x = cpuState2thread(tpr);}
 
 
-#endif				/* GC_IMPL_H */
+#endif              /* GC_IMPL_H */

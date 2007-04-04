@@ -29,7 +29,7 @@
 void gc_bitmap_init(DomainDesc * domain, u32 heap_bytes);
 
 ObjectHandle gc_bitmap_allocDataInDomain(DomainDesc * domain,
-					     int objSize, u32 flags);
+                                         int objSize, u32 flags);
 u32 gc_bitmap_freeWords(DomainDesc * domain);
 u32 gc_bitmap_totalWords(struct DomainDesc_s *domain);
 void gc_bitmap_printInfo(struct DomainDesc_s *domain);
@@ -38,14 +38,14 @@ void gc_bitmap_done(DomainDesc * domain);
 void gc_bitmap_gc(DomainDesc * domain);
 int gc_bitmap_isInHeap(DomainDesc * domain, ObjectDesc * obj);
 void gc_bitmap_walkHeap(DomainDesc * domain,
-			    HandleObject_t handleObject,
-			    HandleObject_t handleArray,
-			    HandleObject_t handlePortal,
-			    HandleObject_t handleMemory,
-			    HandleObject_t handleService,
-			    HandleObject_t handleCAS,
-			    HandleObject_t handleAtomVar,
-			    HandleObject_t handleDomainProxy,
-			    HandleObject_t handleCPUStateProxy);
+                        HandleObject_t handleObject,
+                        HandleObject_t handleArray,
+                        HandleObject_t handlePortal,
+                        HandleObject_t handleMemory,
+                        HandleObject_t handleService,
+                        HandleObject_t handleCAS,
+                        HandleObject_t handleAtomVar,
+                        HandleObject_t handleDomainProxy,
+                        HandleObject_t handleCPUStateProxy);
 
-#endif				/* GC_BITMAP_H */
+#endif              /* GC_BITMAP_H */

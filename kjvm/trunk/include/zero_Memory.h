@@ -32,17 +32,17 @@ void dzmemory_redirect_invalid_dz(MemoryProxyHandle mem);
 
 
 ObjectDesc *copy_memory(struct DomainDesc_s *src, struct DomainDesc_s *dst,
-			struct MemoryProxy_s *obj, u32 * quota);
+                        struct MemoryProxy_s *obj, u32 * quota);
 
 
 MemoryProxyHandle allocMemoryProxyInDomain(DomainDesc * domain,
-					   ClassDesc * c, jint start,
-					   jint size);
+                                           ClassDesc * c, jint start,
+                                           jint size);
 
 struct MemoryProxy_s;
 struct MemoryProxy_s *gc_impl_shallowCopyMemory(u32 * dst,
-						struct MemoryProxy_s
-						*srcObj);
+                                                struct MemoryProxy_s
+                                                *srcObj);
 
 u32             memory_sizeof_proxy(void);
 void            memory_deleted(struct MemoryProxy_s *obj);

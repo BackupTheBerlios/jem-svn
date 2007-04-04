@@ -28,4 +28,4 @@ char *addrCoreSymbol(const char *name);
 void printCoreSymbolInformation(char *name);
 int eip_in_last_stackframe(u32 eip);
 
-#endif				/* SYMFIND_H */
+#endif              /* SYMFIND_H */

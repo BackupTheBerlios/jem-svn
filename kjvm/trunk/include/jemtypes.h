@@ -84,4 +84,4 @@ typedef void (*code_t) (void);
 //typedef int (*int_code_t) ();
 //typedef jlong(*longop_t) (jlong a, jlong b);
 
-#endif				/* _JEMTYPES_H */
+#endif              /* _JEMTYPES_H */

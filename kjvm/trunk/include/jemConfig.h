@@ -27,11 +27,11 @@
 #define _JEMCONFIG_H
 
 #ifdef __KERNEL__
-#include <linux/types.h>
+    #include <linux/types.h>
 
-#ifndef CONFIG_SMP
-#define CONFIG_NR_CPUS 1
-#endif
+    #ifndef CONFIG_SMP
+        #define CONFIG_NR_CPUS 1
+    #endif
 
 #endif  // __KERNEL__
 

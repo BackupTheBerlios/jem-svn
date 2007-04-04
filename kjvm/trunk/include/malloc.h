@@ -52,10 +52,10 @@
 #define MEMTYPE_DCB_PARAM   8
 
 typedef struct TempMemory_s {
-	u32     size;
-	char    *free;
-	char    *start;
-	char    *border;
+    u32     size;
+    char    *free;
+    char    *start;
+    char    *border;
 } TempMemory;
 
 

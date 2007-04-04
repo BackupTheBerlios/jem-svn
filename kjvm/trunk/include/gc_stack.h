@@ -22,10 +22,10 @@
 #define GC_STACK_H
 
 jboolean find_stackmap(MethodDesc * method, u32  * eip, u32  * ebp,
-		       jbyte * stackmap, u32  maxslots, u32  * nslots);
+                       jbyte * stackmap, u32  maxslots, u32  * nslots);
 void list_stackmaps(MethodDesc * method);
 void walkStack(DomainDesc * domain, ThreadDesc * thread,
-	       HandleReference_t handleReference);
+               HandleReference_t handleReference);
 
 
-#endif				/* GC_STACK_H */
+#endif              /* GC_STACK_H */

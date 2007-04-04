@@ -23,33 +23,33 @@
 
 ObjectDesc *gc_impl_shallowCopyObject(u32 * dst, ObjectDesc * srcObj);
 void gc_impl_walkContentObject(DomainDesc * domain, ObjectDesc * obj,
-			       HandleReference_t handleReference);
+                               HandleReference_t handleReference);
 
 DEPDesc *gc_impl_shallowCopyService(u32 * dst, DEPDesc * srcObj);
 void gc_impl_walkContentService(DomainDesc * domain, DEPDesc * obj,
-				HandleReference_t handleReference);
+                                HandleReference_t handleReference);
 
 ArrayDesc *gc_impl_shallowCopyArray(u32 * dst, ArrayDesc * srcObj);
 void gc_impl_walkContentArray(DomainDesc * domain, ArrayDesc * obj,
-			      HandleReference_t handleReference);
+                              HandleReference_t handleReference);
 
 Proxy *gc_impl_shallowCopyPortal(u32 * dst, Proxy * srcObj);
 
 CASProxy *gc_impl_shallowCopyCAS(u32 * dst, CASProxy * srcObj);
 
 AtomicVariableProxy *gc_impl_shallowCopyAtomVar(u32 * dst,
-						AtomicVariableProxy *
-						srcObj);
+                                                AtomicVariableProxy *
+                                                srcObj);
 void gc_impl_walkContentAtomVar(DomainDesc * domain,
-				AtomicVariableProxy * obj,
-				HandleReference_t handleReference);
+                                AtomicVariableProxy * obj,
+                                HandleReference_t handleReference);
 
 void gc_impl_walkContent(DomainDesc * domain, ObjectDesc * obj,
-			 HandleReference_t handleReference);
+                         HandleReference_t handleReference);
 
 void gc_impl_walkContentServicePool(DomainDesc * domain, ServiceThreadPool * obj, HandleReference_t handleReference);
 void gc_impl_walkContentForeignCPUState(DomainDesc * domain, ThreadDescForeignProxy * obj, HandleReference_t handleReference);
 void gc_impl_walkContentCPUState(DomainDesc * domain, ThreadDescProxy * obj, HandleReference_t handleReference);
 
 
-#endif				/* GC_MOVE_H */
+#endif              /* GC_MOVE_H */

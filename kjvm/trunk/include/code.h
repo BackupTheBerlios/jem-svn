@@ -60,62 +60,62 @@ typedef struct SymbolDescStackMap_s {
     jint    immediateNCIndex;
     jint    numBytes;
     jint    nextInstrNCIndex;
-	jint    immediateNCIndexPre;
-	int     n_bytes;
-	int     n_bits;
-	jbyte   *map;
+    jint    immediateNCIndexPre;
+    int     n_bytes;
+    int     n_bits;
+    jbyte   *map;
 } SymbolDescStackMap;
 
 typedef struct FieldDesc_s {
-	char    *fieldName;
-	char    *fieldType;
-	char    fieldOffset;
+    char    *fieldName;
+    char    *fieldType;
+    char    fieldOffset;
 } FieldDesc;
 
 typedef struct ByteCodeDesc_s {
-	jint    bytecodePos;
-	jint    start;
-	jint    end;
+    jint    bytecodePos;
+    jint    start;
+    jint    end;
 } ByteCodeDesc;
 
 typedef struct SourceLineDesc_s {
-	jint    startBytecode;
-	jint    lineNumber;
+    jint    startBytecode;
+    jint    lineNumber;
 } SourceLineDesc;
 
 typedef struct ExceptionDesc_s {
-	jint                start;
-	jint                end;
-	struct ClassDesc_s  *type;
-	u32                 addr;
+    jint                start;
+    jint                end;
+    struct ClassDesc_s  *type;
+    u32                 addr;
 } ExceptionDesc;
 
 typedef struct MethodDesc_s {
-	u32                     objectDesc_magic;
-	u32                     objectDesc_flags;
-	code_t                  *objectDesc_vtable;
-	u32                     magic;
-	char                    *name;
-	char                    *signature;
-	jint                    numberOfCodeBytes;
-	jint                    numberOfSymbols;
-	struct SymbolDesc_s     **symbols;
-	jint                    numberOfByteCodes;
-	struct ByteCodeDesc_s   *bytecodeTable;
-	jint                    codeOffset;
-	code_t                  code;
-	jint                    numberOfArgs;
-	jint                    numberOfArgTypeMapBytes;
-	jbyte                   *argTypeMap;
-	jint                    returnType;
-	jint                    sizeLocalVars;
-	jint                    isprofiled;
-	struct ClassDesc_s      *classDesc;
-	jint                    sizeOfExceptionTable;
-	struct ExceptionDesc_s  *exceptionTable;
-	jint                    numberOfSourceLines;
-	struct SourceLineDesc_s *sourceLineTable;
-	u32                     flags;
+    u32                     objectDesc_magic;
+    u32                     objectDesc_flags;
+    code_t                  *objectDesc_vtable;
+    u32                     magic;
+    char                    *name;
+    char                    *signature;
+    jint                    numberOfCodeBytes;
+    jint                    numberOfSymbols;
+    struct SymbolDesc_s     **symbols;
+    jint                    numberOfByteCodes;
+    struct ByteCodeDesc_s   *bytecodeTable;
+    jint                    codeOffset;
+    code_t                  code;
+    jint                    numberOfArgs;
+    jint                    numberOfArgTypeMapBytes;
+    jbyte                   *argTypeMap;
+    jint                    returnType;
+    jint                    sizeLocalVars;
+    jint                    isprofiled;
+    struct ClassDesc_s      *classDesc;
+    jint                    sizeOfExceptionTable;
+    struct ExceptionDesc_s  *exceptionTable;
+    jint                    numberOfSourceLines;
+    struct SourceLineDesc_s *sourceLineTable;
+    u32                     flags;
 } MethodDesc;
 
 
@@ -157,60 +157,60 @@ typedef struct ClassDesc_s {
 
 
 typedef struct JClass_s {
-	u32                 objectDesc_magic;
-	u32                 objectDesc_flags;
-	code_t              *objectDesc_vtable;
-	u32                 magic;
-	struct ClassDesc_s  *classDesc;
-	struct JClass_s     *superclass;
-	jint                *staticFields;
-	jint                state;
-	jint                numberOfInstances;
+    u32                 objectDesc_magic;
+    u32                 objectDesc_flags;
+    code_t              *objectDesc_vtable;
+    u32                 magic;
+    struct ClassDesc_s  *classDesc;
+    struct JClass_s     *superclass;
+    jint                *staticFields;
+    jint                state;
+    jint                numberOfInstances;
 } JClass;
 
 struct meta_s {
-	char *var;
-	char *val;
+    char *var;
+    char *val;
 };
 
 typedef struct SharedLibDesc_s {
-	u32                     magic;
-	char                    *name;
-	jint                    ndx;
-	jint                    memSizeStaticFields;
-	u32                     id;
-	jint                    numberOfClasses;
-	struct ClassDesc_s      *allClasses;
-	jint                    numberOfNeededLibs;
-	struct SharedLibDesc_s  **neededLibs;
-	char                    *code;
-	u32                     codeBytes;
-	char                    key[LIB_HASHKEY_LEN];
-	u32                     vtablesize;
+    u32                     magic;
+    char                    *name;
+    jint                    ndx;
+    jint                    memSizeStaticFields;
+    u32                     id;
+    jint                    numberOfClasses;
+    struct ClassDesc_s      *allClasses;
+    jint                    numberOfNeededLibs;
+    struct SharedLibDesc_s  **neededLibs;
+    char                    *code;
+    u32                     codeBytes;
+    char                    key[LIB_HASHKEY_LEN];
+    u32                     vtablesize;
     u32                     bytecodes;
-	u32                     numberOfMeta;
-	struct meta_s           *meta;
-	struct SharedLibDesc_s  *next;
+    u32                     numberOfMeta;
+    struct meta_s           *meta;
+    struct SharedLibDesc_s  *next;
 } SharedLibDesc;
 
 
 typedef struct LibDesc_s {
-	u32                     magic;
-	jint                    numberOfClasses;
-	char                    hasNoImplementations;
-	struct JClass_s         *allClasses;
-	char                    key[LIB_HASHKEY_LEN];
-	struct SharedLibDesc_s  *sharedLib;
-	int                     initialized;
+    u32                     magic;
+    jint                    numberOfClasses;
+    char                    hasNoImplementations;
+    struct JClass_s         *allClasses;
+    char                    key[LIB_HASHKEY_LEN];
+    struct SharedLibDesc_s  *sharedLib;
+    int                     initialized;
 } LibDesc;
 
 
 jint callnative_special(jint * params, ObjectDesc * obj, code_t f,
-			jint params_size);
+                        jint params_size);
 jint callnative_special_portal(jint * params, ObjectDesc * obj, code_t f,
-			       jint params_size);
+                               jint params_size);
 jint callnative_static(jint * params, code_t f, jint params_size);
 void callnative_handler(u32 * ebp, u32 * sp, char *addr);
 
 
-#endif	
+#endif  

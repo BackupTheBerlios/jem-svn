@@ -70,55 +70,51 @@ u32 gc_mem(void);
 
 static inline u32 *ObjectDesc2ptr(struct ObjectDesc_s * ref)
 {
-	return ((u32 *) ref) - 1 - XMOFF;
+    return((u32 *) ref) - 1 - XMOFF;
 }
 
-static inline struct ObjectDesc_s *ptr2ObjectDesc(u32 * ptr)
-{
-	return (struct ObjectDesc_s *) (ptr + 1 + XMOFF);
+static inline struct ObjectDesc_s *ptr2ObjectDesc(u32 * ptr) {
+    return(struct ObjectDesc_s *) (ptr + 1 + XMOFF);
 }
 
-static inline struct ObjectDesc_s *DomainDesc2ObjectDesc(struct DomainDesc_s * domain)
-{
-	return (struct ObjectDesc_s *) (((u32 *) domain) - 1);
+static inline struct ObjectDesc_s *DomainDesc2ObjectDesc(struct DomainDesc_s * domain) {
+    return(struct ObjectDesc_s *) (((u32 *) domain) - 1);
 }
 
-static inline struct ObjectDesc_s *CPUDesc2ObjectDesc(struct CPUDesc_s * cpu)
-{
-	return (struct ObjectDesc_s *) (((u32 *) cpu) - 1);
+static inline struct ObjectDesc_s *CPUDesc2ObjectDesc(struct CPUDesc_s * cpu) {
+    return(struct ObjectDesc_s *) (((u32 *) cpu) - 1);
 }
 
-static inline struct ObjectDesc_s *ThreadDesc2ObjectDesc(struct ThreadDesc_s * thread)
-{
-	return (struct ObjectDesc_s *) (((u32 *) thread) - 1);
+static inline struct ObjectDesc_s *ThreadDesc2ObjectDesc(struct ThreadDesc_s * thread) {
+    return(struct ObjectDesc_s *) (((u32 *) thread) - 1);
 }
 
 static inline u32 getObjFlags(struct ObjectDesc_s * ref)
 {
-	return *(((u32 *) ref) - 1 - XMONE);
+    return *(((u32 *) ref) - 1 - XMONE);
 }
 
 static inline void setObjFlags(struct ObjectDesc_s * ref, u32 flags)
 {
-	*(((u32 *) ref) - 1 - XMONE) = flags;
+    *(((u32 *) ref) - 1 - XMONE) = flags;
 }
 
 #define getObjMagic(ref) (*(((u32*)ref) - 1 - XMZERO))
 
 static inline void setObjMagic(struct ObjectDesc_s * ref, u32 magic)
 {
-	*(((u32 *) ref) - 1 - XMZERO) = magic;
+    *(((u32 *) ref) - 1 - XMZERO) = magic;
 }
 
 static inline u32 gc_freeWords(struct DomainDesc_s * domain)
 {
-	return domain->gc.freeWords(domain);
+    return domain->gc.freeWords(domain);
     //return 0;
 }
 
 static inline u32 gc_totalWords(struct DomainDesc_s * domain)
 {
-	return domain->gc.totalWords(domain);
+    return domain->gc.totalWords(domain);
     //return 0;
 }
 
@@ -129,54 +125,54 @@ void gc_findOnHeap(struct DomainDesc_s * domain, char *classname);
 
 
 #define OBJSIZE_ARRAY \
-	  XMOFF /* magic */\
-	  + 1 /* flags at neg index */\
-	  + 1 /* vtable (arrays are objects!) */\
-	  + 1 /* size */\
-	  + 1 /* elemClass pointer */
+      XMOFF /* magic */\
+      + 1 /* flags at neg index */\
+      + 1 /* vtable (arrays are objects!) */\
+      + 1 /* size */\
+      + 1 /* elemClass pointer */
 
 #define OBJSIZE_ARRAY_8BIT(size) \
-	  ((((size)+3)/4) \
-	   + OBJSIZE_ARRAY)
+      ((((size)+3)/4) \
+       + OBJSIZE_ARRAY)
 
 #define OBJSIZE_ARRAY_16BIT(size) \
-	  ((((size)+1)/2) \
-	   + OBJSIZE_ARRAY)
+      ((((size)+1)/2) \
+       + OBJSIZE_ARRAY)
 
 #define OBJSIZE_ARRAY_32BIT(size) \
-	  ((size) \
-	   + OBJSIZE_ARRAY)
+      ((size) \
+       + OBJSIZE_ARRAY)
 
 #define OBJSIZE_ARRAY_64BIT(size) \
-	  (((size)*2) \
-	   + OBJSIZE_ARRAY)
+      (((size)*2) \
+       + OBJSIZE_ARRAY)
 
 #define OBJSIZE_OBJECT(size) \
-	  (size \
-	  + XMOFF /* magic */\
-	  + 1 /* flags at neg index */\
-	  + 1 /* vtable  */\
-	  + 1 /* size */)
+      (size \
+      + XMOFF /* magic */\
+      + 1 /* flags at neg index */\
+      + 1 /* vtable  */\
+      + 1 /* size */)
 
 #define OBJSIZE_STACK(size) \
-	  (size \
-	  + XMOFF /* magic */\
-	  + 1 /* flags at neg index */\
-	  + 2 /* size field, tcb field */\
-	  + 1 /* vtable  */)
+      (size \
+      + XMOFF /* magic */\
+      + 1 /* flags at neg index */\
+      + 2 /* size field, tcb field */\
+      + 1 /* vtable  */)
 
 #define OBJSIZE_PORTAL \
-	  ( XMOFF /* magic */\
+      ( XMOFF /* magic */\
           + 1 /* flags at neg */\
-	  + 1 /* domain */\
-	  + 1 /* domainID */\
-	  + 1 /* index */\
-	  + 1 /* vtable pointer */)
+      + 1 /* domain */\
+      + 1 /* domainID */\
+      + 1 /* index */\
+      + 1 /* vtable pointer */)
 
 #define OBJSIZE_MEMORY \
-	 ( XMOFF /* magic */\
+     ( XMOFF /* magic */\
          + 1 /* flags at negative index */\
-	 + (memory_sizeof_proxy()>>2) /* vtable pointer + data */)
+     + (memory_sizeof_proxy()>>2) /* vtable pointer + data */)
 
 #define OBJSIZE_SERVICEDESC \
  (((sizeof(DEPDesc) + 4) >> 2) \
@@ -188,16 +184,16 @@ void gc_findOnHeap(struct DomainDesc_s * domain, char *classname);
 
 
 #define OBJSIZE_DOMAINDESC \
-	  ( XMOFF /* magic */\
+      ( XMOFF /* magic */\
           + ((sizeof(struct DomainDesc_s)+4)>>2) \
           + 1 /* flags at index -1 */\
           + 1 /* vtable */)
 
 #define OBJSIZE_CPUDESC \
-	  ( XMOFF /* magic */\
-	  + ((sizeof(CPUDesc)+4)>>2) \
-	  + 1 /* flags at index -1 */\
-	  + 1 /* vtable */)
+      ( XMOFF /* magic */\
+      + ((sizeof(CPUDesc)+4)>>2) \
+      + 1 /* flags at index -1 */\
+      + 1 /* vtable */)
 
 
 #define OBJSIZE_ATOMVAR \
@@ -231,22 +227,22 @@ void gc_findOnHeap(struct DomainDesc_s * domain, char *classname);
     + 2 /* data */)
 
 #define OBJSIZE_THREADDESCPROXY \
-	  ( XMOFF /* magic */\
-	  + ((sizeof(ThreadDescProxy)+4)>>2) \
-	  + 1 /* flags at index -1 */\
-	  + 1 /* vtable */)
+      ( XMOFF /* magic */\
+      + ((sizeof(ThreadDescProxy)+4)>>2) \
+      + 1 /* flags at index -1 */\
+      + 1 /* vtable */)
 
 #define OBJSIZE_FOREIGN_THREADDESC \
-	  ( XMOFF /* magic */\
-	  + ((sizeof(ThreadDescForeignProxy)+4)>>2) \
-	  + 1 /* flags at index -1 */\
-	  + 1 /* vtable */)
+      ( XMOFF /* magic */\
+      + ((sizeof(ThreadDescForeignProxy)+4)>>2) \
+      + 1 /* flags at index -1 */\
+      + 1 /* vtable */)
 
 #define OBJSIZE_MAPPED_MEMORY \
-	  ( XMOFF /* magic */\
-	  + ((sizeof(MappedMemoryProxy)+4)>>2) \
-	  + 1 /* flags at index -1 */\
-	  + 1 /* vtable */)
+      ( XMOFF /* magic */\
+      + ((sizeof(MappedMemoryProxy)+4)>>2) \
+      + 1 /* flags at index -1 */\
+      + 1 /* vtable */)
 
 
 #define OBJSIZE_INTERCEPTINBOUNDINFO \
@@ -263,9 +259,9 @@ void gc_findOnHeap(struct DomainDesc_s * domain, char *classname);
 
 
 static inline ObjectHandle gc_allocDataInDomain(struct DomainDesc_s * domain,
-						int objsize, u32 flags)
+                                                int objsize, u32 flags)
 {
-	return domain->gc.allocDataInDomain(domain, objsize, flags);
+    return domain->gc.allocDataInDomain(domain, objsize, flags);
 }
 
 void gc_in(struct ObjectDesc_s * o, struct DomainDesc_s * domain);
@@ -281,27 +277,27 @@ jboolean isRef(jbyte * map, int total, int num);
 u32 gc_objSize2(ObjectDesc* obj, jint flags); 
 
 void gc_walkContinuesBlock(DomainDesc * domain, u32 * start, u32 ** top,
-			   HandleObject_t handleObject,
-			   HandleObject_t handleArray,
-			   HandleObject_t handlePortal,
-			   HandleObject_t handleMemory,
-			   HandleObject_t handleService,
-			   HandleObject_t handleCAS,
-			   HandleObject_t handleAtomVar,
-			   HandleObject_t handleDomainProxy,
-			   HandleObject_t handleCPUStateProxy,
-			   HandleObject_t handleServicePool,
-			   HandleObject_t handleStackProxy);
+                           HandleObject_t handleObject,
+                           HandleObject_t handleArray,
+                           HandleObject_t handlePortal,
+                           HandleObject_t handleMemory,
+                           HandleObject_t handleService,
+                           HandleObject_t handleCAS,
+                           HandleObject_t handleAtomVar,
+                           HandleObject_t handleDomainProxy,
+                           HandleObject_t handleCPUStateProxy,
+                           HandleObject_t handleServicePool,
+                           HandleObject_t handleStackProxy);
 
 void gc_walkContinuesBlock_Alt(DomainDesc * domain, u32 * start,
-			       u32 * top, HandleObject_t handleObject,
-			       HandleObject_t handleArray,
-			       HandleObject_t handlePortal,
-			       HandleObject_t handleMemory,
-			       HandleObject_t handleService,
-			       HandleObject_t handleCAS,
-			       HandleObject_t handleAtomVar,
-			       HandleObject_t handleDomainProxy);
+                               u32 * top, HandleObject_t handleObject,
+                               HandleObject_t handleArray,
+                               HandleObject_t handlePortal,
+                               HandleObject_t handleMemory,
+                               HandleObject_t handleService,
+                               HandleObject_t handleCAS,
+                               HandleObject_t handleAtomVar,
+                               HandleObject_t handleDomainProxy);
 
 
 ObjectHandle registerObject(DomainDesc * domain, ObjectDesc * obj);

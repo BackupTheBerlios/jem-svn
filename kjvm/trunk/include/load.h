@@ -94,4 +94,4 @@ extern code_t           *array_vtable;
 #define obj2ClassDescFAST(obj) ( *(ClassDesc**)(((ObjectDesc*)(obj))->vtable-1) )
 
 
-#endif				/* LOAD_H */
+#endif              /* LOAD_H */

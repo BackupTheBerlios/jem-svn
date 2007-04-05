@@ -128,6 +128,8 @@ ObjectDesc      *bootfs_getFile(ObjectDesc * self, ObjectDesc * filename);
 void            registerPortal(DomainDesc * domain, ObjectDesc * dep, char *name);
 Proxy           *lookupPortal(char *name);
 void            start_domain_zero(void *arg);
+void            atomicvariable_atomicUpdateUnblock(AtomicVariableProxy * self, ObjectDesc * value, 
+                                                   CPUStateProxy * cpuStateProxy);
 DomainProxy     *domainManager_createDomain(ObjectDesc * self,
                                         ObjectDesc * dname,
                                         ArrayDesc * cpuObjs,

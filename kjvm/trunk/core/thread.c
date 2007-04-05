@@ -206,22 +206,6 @@ static void destroyCurrentThread(void)
 }
 
 
-/*  unblocks the  given Thread   */
-inline void threadunblock(ThreadDesc * t)
-{
-    rt_task_resume(&t->task);
-    t->state = STATE_RUNNABLE;
-}
-
-
-/* blocks the current Thread */
-inline void threadblock(void)
-{
-    rt_task_suspend(&(curthr()->task));
-    curthr()->state = STATE_BLOCKEDUSER;
-}
-
-
 void reschedule(void)
 {
     rt_task_yield();

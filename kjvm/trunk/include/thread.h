@@ -143,6 +143,22 @@ static inline struct DomainDesc_s *curdom(void) {
 }
 
 
+/*  unblocks the  given Thread   */
+static inline void threadunblock(ThreadDesc * t)
+{
+    rt_task_resume(&t->task);
+    t->state = STATE_RUNNABLE;
+}
+
+
+/* blocks the current Thread */
+static inline void threadblock(void)
+{
+    rt_task_suspend(&(curthr()->task));
+    curthr()->state = STATE_BLOCKEDUSER;
+}
+
+
 void        threadsInit(void);
 ThreadDesc  *createThread(DomainDesc * domain, thread_start_t thread_start, void *param, int state, 
                           int prio, char *thName);

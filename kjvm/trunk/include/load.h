@@ -80,6 +80,8 @@ void        findClassDescAndMethodInObject(SharedLibDesc * lib, char *classname,
                                            ClassDesc ** classFound, MethodDesc ** methodFound);
 JClass      *findClassOrPrimitive(DomainDesc * domain, char *name);
 ObjectDesc  *specialAllocObject(ClassDesc * c);
+JClass      *classDesc2Class(DomainDesc * domain, ClassDesc * classDesc);
+ClassDesc   *handle2ClassDesc(ObjectDesc ** handle);
 
 extern SharedLibDesc    *sharedLibs;
 extern DEPDesc          **allDEPInstances;

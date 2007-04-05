@@ -39,7 +39,6 @@ extern vm_fkt_table_t vmsupport[];
 
 void vm_unsupported(void);
 
-ClassDesc *get_element_class(ClassDesc * c);
 jboolean is_interface(ClassDesc * c);
 jboolean implements_interface(ClassDesc * c, ClassDesc * ifa);
 jboolean check_assign(ClassDesc * variable_class, ClassDesc * reference_class);

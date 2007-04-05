@@ -22,11 +22,9 @@
 #ifndef SYMFIND_H
 #define SYMFIND_H
 
-char *findCoreSymbol(jint addr);
-u32 sizeCoreSymbol(const char *name);
-char *addrCoreSymbol(const char *name);
-void printCoreSymbolInformation(char *name);
-int eip_in_last_stackframe(u32 eip);
-int in_portalcall(u32 * eip);
+const char *findCoreSymbol(jint addr, char *namebuf);
+unsigned long addrCoreSymbol(const char *name);
+int eip_in_last_stackframe(void *eip);
+int in_portalcall(void *eip);
 
 #endif              /* SYMFIND_H */

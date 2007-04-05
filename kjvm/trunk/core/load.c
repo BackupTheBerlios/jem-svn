@@ -599,7 +599,12 @@ LibDesc *sharedLib2Lib(DomainDesc * domain, SharedLibDesc * slib)
     return domain->ndx_libs[slib->ndx];
 }
 
-static JClass *classDesc2Class(DomainDesc * domain, ClassDesc * classDesc)
+ClassDesc *handle2ClassDesc(ObjectDesc ** handle)
+{
+	return obj2ClassDesc(*handle);
+}
+
+JClass *classDesc2Class(DomainDesc * domain, ClassDesc * classDesc)
 {
     int ndx;
     char *name;

@@ -3,6 +3,7 @@ kjvm-objs := core/domain.o core/jem.o core/jemUPipe.o core/malloc.o core/jar.o \
                 core/portal.o core/call.o core/exception_handler.o \
 		core/memfs.o core/sched.o core/symfind.o core/vmsupport.o \
 		dom0/zero.o dom0/zero_AtomicVariable.o dom0/zero_BootFS.o \
+		dom0/zero_CAS.o \
                 gc/gc.o gc/gc_alloc.o
 
 ifeq ($(CONFIG_JEM_ENABLE_GC),y)

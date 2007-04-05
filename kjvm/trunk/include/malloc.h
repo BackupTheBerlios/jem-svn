@@ -80,6 +80,7 @@ char                **jemMallocTmpStringtable(DomainDesc * domain, TempMemory * 
 MethodDesc          *jemMallocMethoddesc(DomainDesc * domain);
 MethodDesc          *jemMallocMethoddescs(DomainDesc * domain, u32 number);
 ExceptionDesc       *jemMallocExceptiondescs(DomainDesc * domain, u32 number);
+ClassDesc           *jemMallocClassdesc(DomainDesc * domain, u32 namelen);
 ClassDesc           *jemMallocClassdescs(DomainDesc * domain, u32 number);
 char                *jemMallocString(DomainDesc * domain, u32 len);
 char                *jemMallocStaticsmap(DomainDesc * domain, u32 size);

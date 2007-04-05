@@ -32,6 +32,7 @@
 #include <linux/moduleparam.h>
 #include <native/task.h>
 #include <native/pipe.h>
+#include <native/event.h>
 #include "jemtypes.h"
 #include "jemConfig.h"
 #include "malloc.h"
@@ -43,14 +44,18 @@
 #include "load.h"
 #include "sched.h"
 #include "portal.h"
+#include "gc.h"
+#include "zero.h"
 
 #define VERSION "1.0.0"
 #define INITTASKPRIO 98
 #define INITTASKSTKSZ 8192
 #define DEFAULTHPSZ 33554432
+#define DOM0_PRIO 80
 
 
 static RT_TASK          initTaskDesc;
+RT_EVENT                jemEvents;
 static struct jvmConfig jvmConfigData;
 extern unsigned int     mqSize;
 extern unsigned int     jemHeapSz;
@@ -104,6 +109,9 @@ struct jvmConfig *getJVMConfig(void)
 
 static void jvmInitTask(void *cookie)
 {
+    ThreadDesc      *domainZero_thread;
+    unsigned long   evMask;
+
     if (jemUPHandshake()) return;
 
     if (readJVMConfig()) return;
@@ -116,7 +124,17 @@ static void jvmInitTask(void *cookie)
 
     portals_init();
 
+    java_lang_Object = createObjectClassDesc();
+    java_lang_Object_class = createObjectClass(java_lang_Object);
+
+    createArrayObjectVTableProto(domainZero);
+
     initPrimitiveClasses();
+    
+    domainZero_thread = createThread(domainZero, start_domain_zero, (void *) 0, STATE_RUNNABLE, 
+                                     DOM0_PRIO, "DomainZero:InitialThread");
+    rt_event_wait(&jemEvents, JEM_INIT_COMPLETE, &evMask, EV_ALL, TM_INFINITE);
+    terminateThread(domainZero_thread);
 
     printk(KERN_INFO "Jem/JVM initialization complete.\n");
 
@@ -153,9 +171,17 @@ int jem_init (void)
         return result;
     }
 
+    if ((result = rt_event_create(&jemEvents, "jemEvents", 0, EV_PRIO)) < 0) {
+        printk(KERN_ERR "Jem/JVM - Unable to create jem event group, code=%d\n", result);
+        jemDestroyUPipe();
+        jemDestroyHeap();
+        return result;
+    }
+
     result = rt_task_create(&initTaskDesc,"kInitTask",INITTASKSTKSZ,INITTASKPRIO,T_JOINABLE);
     if (result) {
         printk(KERN_ERR "Jem/JVM - Failed to create JVM init task, code=%d \n", result);
+        rt_event_delete(&jemEvents);
         jemDestroyUPipe();
         jemDestroyHeap();
         return result;
@@ -164,6 +190,7 @@ int jem_init (void)
     result = rt_task_start(&initTaskDesc,&jvmInitTask,NULL);
     if (result) {
         printk(KERN_ERR "Jem/JVM - Failed to start JVM init task, code=%d \n", result);
+        rt_event_delete(&jemEvents);
         jemDestroyUPipe();
         jemDestroyHeap();
         return result;

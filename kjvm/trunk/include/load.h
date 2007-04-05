@@ -81,6 +81,7 @@ void        findClassDescAndMethodInObject(SharedLibDesc * lib, char *classname,
 JClass      *findClassOrPrimitive(DomainDesc * domain, char *name);
 ObjectDesc  *specialAllocObject(ClassDesc * c);
 JClass      *classDesc2Class(DomainDesc * domain, ClassDesc * classDesc);
+void        createVTable(DomainDesc * domain, ClassDesc * c);
 ClassDesc   *handle2ClassDesc(ObjectDesc ** handle);
 
 extern SharedLibDesc    *sharedLibs;
@@ -88,7 +89,7 @@ extern DEPDesc          **allDEPInstances;
 extern int              numDEPInstances;
 extern DomainDesc       *domainZero;
 extern ClassDesc        *java_lang_Object;
-extern JClass           *java_lang_Object_Class;
+extern JClass           *java_lang_Object_class;
 extern code_t           *array_vtable;
 
 #define obj2ClassDesc(obj) ( *(ClassDesc**)(((ObjectDesc*)(obj))->vtable-1) )

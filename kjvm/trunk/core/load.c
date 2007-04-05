@@ -601,7 +601,7 @@ LibDesc *sharedLib2Lib(DomainDesc * domain, SharedLibDesc * slib)
 
 ClassDesc *handle2ClassDesc(ObjectDesc ** handle)
 {
-	return obj2ClassDesc(*handle);
+    return obj2ClassDesc(*handle);
 }
 
 JClass *classDesc2Class(DomainDesc * domain, ClassDesc * classDesc)
@@ -1803,7 +1803,7 @@ static void setCodeStart(SharedLibDesc * lib)
 }
 
 
-static void createVTable(DomainDesc * domain, ClassDesc * c)
+void createVTable(DomainDesc * domain, ClassDesc * c)
 {
     char **vtable;
     vtable = (char **) jemMallocVtable(domain, c->vtableSize + 1);

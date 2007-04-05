@@ -33,7 +33,6 @@ ArrayDesc               *allocArrayInDomain(DomainDesc * domain, ClassDesc * ele
 DomainProxy             *allocDomainProxyInDomain(DomainDesc * domain, DomainDesc * domainValue, u32 domainID);
 ThreadDescProxy         *allocThreadDescProxyInDomain(DomainDesc * domain, ClassDesc * c);
 ThreadDescForeignProxy  *allocThreadDescForeignProxyInDomain(DomainDesc * domain, ThreadDescProxy * src);
-CPUDesc                 *specialAllocCPUDesc(void);
 DomainDesc              *specialAllocDomainDesc(void);
 ArrayDesc               *vmSpecialAllocArray(ClassDesc * elemClass0, jint size);
 u32                     *specialAllocStaticFields(DomainDesc * domain, int numberFields);

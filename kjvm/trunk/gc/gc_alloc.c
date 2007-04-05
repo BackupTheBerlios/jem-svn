@@ -257,25 +257,6 @@ ClassDesc *stackClass = NULL;
 ClassDesc *domainClass = NULL;
 ClassDesc *cpuClass = NULL;
 
-CPUDesc *specialAllocCPUDesc(void)
-{
-    CPUDesc *c;
-    ObjectDesc *obj;
-
-    u32 *mem = (u32 *) jemMallocCpudesc(domainZero, OBJSIZE_CPUDESC * 4);
-    c = (CPUDesc *) (mem + 2 + XMOFF);
-    obj = CPUDesc2ObjectDesc(c);
-    setObjFlags(obj, OBJFLAGS_EXTERNAL_CPUDESC);    /* flags */
-    setObjMagic(obj, MAGIC_OBJECT);
-    if (cpuClass != NULL)
-        obj->vtable = cpuClass->vtable; /* vtable */
-    else
-        obj->vtable = NULL; /* during bootstrap of DomainZero! */
-    c->magic = MAGIC_CPU;
-    return c;
-}
-
-
 ObjectDesc *specialAllocObject(ClassDesc * c)
 {
     return allocObjectInDomain(curdom(), c);

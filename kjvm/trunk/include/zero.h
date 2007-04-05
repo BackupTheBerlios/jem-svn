@@ -71,18 +71,6 @@ static inline ThreadDesc *cpuState2thread(ObjectDesc * obj)
 }
 
 
-/* CPU */
-
-static inline ObjectDesc *cpuDesc2Obj(CPUDesc * cpu)
-{
-    return(ObjectDesc *) (((u32 *) cpu) - 1);
-}
-
-static inline CPUDesc *obj2cpuDesc(ObjectDesc * obj)
-{
-    return(CPUDesc *) (((u32 *) obj) + 1);
-}
-
 /**
  * Class -> jx/zero/VMClass (Object)
  */
@@ -120,28 +108,27 @@ static inline MethodDesc *obj2method(ObjectDesc * obj)
 /*************/
 /* functions */
 
-void init_irq_data(void);
-void init_zero_from_lib(DomainDesc * domain, SharedLibDesc * zeroLib);
-ClassDesc *createObjectClassDesc(void);
-JClass *createObjectClass(ClassDesc * java_lang_Object);
-void createArrayObjectVTableProto(DomainDesc * domain);
-ClassDesc *init_zero_class(char *ifname, MethodInfoDesc * methods,
+void            init_irq_data(void);
+void            init_zero_from_lib(DomainDesc * domain, SharedLibDesc * zeroLib);
+ObjectDesc      *init_zero_dep_without_thread(char *ifname, char *depname, MethodInfoDesc * methods, jint size, char *subname);
+ObjectDesc      *init_zero_dep(char *ifname, char *depname, MethodInfoDesc * methods, jint size, char *subname);
+ClassDesc       *createObjectClassDesc(void);
+JClass          *createObjectClass(ClassDesc * java_lang_Object);
+void            createArrayObjectVTableProto(DomainDesc * domain);
+ClassDesc       *init_zero_class(char *ifname, MethodInfoDesc * methods,
                            jint size, jint instanceSize, jbyte * typeMap,
                            char *subname);
-jint findZeroLibMethodIndex(DomainDesc * domain, char *className,
+jint            findZeroLibMethodIndex(DomainDesc * domain, char *className,
                             char *methodName, char *signature);
-void SMPcpuManager_register_LLScheduler(ObjectDesc * self,
-                                        ObjectDesc * cpu,
-                                        ObjectDesc * new_sched);
-void installObjectVtable(ClassDesc * c);
-void installInitialNaming(DomainDesc * srcDomain, DomainDesc * dstDomain,
+void            installObjectVtable(ClassDesc * c);
+void            installInitialNaming(DomainDesc * srcDomain, DomainDesc * dstDomain,
                           Proxy * naming);
-Proxy *getInitialNaming(void);
-ObjectDesc *bootfs_getFile(ObjectDesc * self, ObjectDesc * filename);
-
-
-/* in zero_DomainManager */
-DomainProxy *domainManager_createDomain(ObjectDesc * self,
+Proxy           *getInitialNaming(void);
+ObjectDesc      *bootfs_getFile(ObjectDesc * self, ObjectDesc * filename);
+void            registerPortal(DomainDesc * domain, ObjectDesc * dep, char *name);
+Proxy           *lookupPortal(char *name);
+void            start_domain_zero(void *arg);
+DomainProxy     *domainManager_createDomain(ObjectDesc * self,
                                         ObjectDesc * dname,
                                         ArrayDesc * cpuObjs,
                                         ArrayDesc * HLSNames,

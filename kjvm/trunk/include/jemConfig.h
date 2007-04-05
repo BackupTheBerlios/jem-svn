@@ -26,6 +26,8 @@
 #ifndef _JEMCONFIG_H
 #define _JEMCONFIG_H
 
+#include <native/event.h>
+
 #ifdef __KERNEL__
     #include <linux/types.h>
 
@@ -39,6 +41,9 @@
 
 #define CONFIG_CODE_BYTES (512 * 1024)
 #define XMOFF 1
+
+extern RT_EVENT     jemEvents;
+#define JEM_INIT_COMPLETE   1
 
 struct jvmConfig {
     unsigned int    maxDomains;

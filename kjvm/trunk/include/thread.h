@@ -153,6 +153,6 @@ void        thread_exit(void);
 void        terminateThread(ThreadDesc * t);
 ThreadDesc  *findThreadDesc(ThreadDescForeignProxy *proxy);
 void        thread_prepare_to_copy(void);
-
+void        freeThreadMem(ThreadDesc * t);
 
 #endif

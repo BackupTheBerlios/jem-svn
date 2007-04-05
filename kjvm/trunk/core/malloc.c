@@ -317,6 +317,14 @@ struct meta_s *jemMallocMetatable(DomainDesc * domain, u32 number)
     return (struct meta_s *) jemMallocCode(domain, number * sizeof(struct meta_s));
 }
 
+ClassDesc *jemMallocClassdesc(DomainDesc * domain, u32 namelen)
+{
+	char *m = jemMallocCode(domain, sizeof(ClassDesc) + namelen);
+	ClassDesc *cd = (ClassDesc *) m;
+	memset(m, 0, sizeof(ClassDesc) + namelen);
+	cd->name = m + sizeof(ClassDesc);
+	return cd;
+}
 
 ClassDesc *jemMallocClassdescs(DomainDesc * domain, u32 number)
 {

@@ -48,11 +48,6 @@ typedef struct ArrayDesc_s {
     jint                data[1];
 } ArrayDesc;
 
-typedef struct CPUDesc_s {
-    u32         magic;
-    int         cpu_id;
-} CPUDesc;
-
 
 #endif
 

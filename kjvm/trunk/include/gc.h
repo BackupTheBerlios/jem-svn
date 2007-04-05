@@ -189,13 +189,6 @@ void gc_findOnHeap(struct DomainDesc_s * domain, char *classname);
           + 1 /* flags at index -1 */\
           + 1 /* vtable */)
 
-#define OBJSIZE_CPUDESC \
-      ( XMOFF /* magic */\
-      + ((sizeof(CPUDesc)+4)>>2) \
-      + 1 /* flags at index -1 */\
-      + 1 /* vtable */)
-
-
 #define OBJSIZE_ATOMVAR \
     ( XMOFF /* magic */\
     + 1 /* flags at negative index */\

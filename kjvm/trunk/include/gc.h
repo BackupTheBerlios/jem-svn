@@ -262,7 +262,6 @@ jboolean isRef(jbyte * map, int total, int num);
 
 #define REF2HANDLE(ref) (&(ref))
 // JUMP to atomic code
-#define RETURN_FROMHANDLE(handle)  ASSERTOBJECT(*handle); return *handle;
 #define RETURN_UNREGHANDLE(handle) return unregisterObject(curdom(), handle);
 #define UNREGHANDLE(handle) unregisterObject(curdom(), handle);
 

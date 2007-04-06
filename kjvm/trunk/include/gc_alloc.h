@@ -39,6 +39,9 @@ u32                     *specialAllocStaticFields(DomainDesc * domain, int numbe
 InterceptInboundInfoProxy *allocInterceptInboundInfoProxyInDomain(DomainDesc * domain);
 ObjectDesc              *allocObjectInDomain(DomainDesc * domain, ClassDesc * c);
 ServiceThreadPool       *allocServicePoolInDomain(DomainDesc * domain);
+VMObjectProxy           *allocVMObjectProxyInDomain(DomainDesc * domain);
+CASProxy                *allocCASProxyInDomain(DomainDesc * domain, ClassDesc * c, u32 index);
+AtomicVariableProxy     *allocAtomicVariableProxyInDomain(DomainDesc * domain, ClassDesc * c);
 
 
 #endif              /* GC_ALLOC_H */

@@ -130,6 +130,8 @@ Proxy           *lookupPortal(char *name);
 void            start_domain_zero(void *arg);
 void            atomicvariable_atomicUpdateUnblock(AtomicVariableProxy * self, ObjectDesc * value, 
                                                    CPUStateProxy * cpuStateProxy);
+jint            cpuManager_dump(ObjectDesc * self, ObjectDesc * msg, ObjectDesc * ref);
+jint            cpuManager_receive(ObjectDesc * self, ObjectDesc * obj);
 DomainProxy     *domainManager_createDomain(ObjectDesc * self,
                                         ObjectDesc * dname,
                                         ArrayDesc * cpuObjs,

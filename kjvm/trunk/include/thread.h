@@ -96,6 +96,7 @@ typedef struct ThreadDesc_s {
     struct DEPDesc_s                *processingDEP; /* this thread is currently servicing a Portal */
     struct ObjectDesc_s             *portalReturn;  /* may contain object reference or numeric data ! */
     jint                            portalReturnType;   /* 0=numeric 1=reference 3=exception */
+    jint                            unblockedWithoutBeingBlocked;
 } ThreadDesc;
 
 

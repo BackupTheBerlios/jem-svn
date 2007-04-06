@@ -515,16 +515,8 @@ MethodInfoDesc domainManagerMethods[] = {
     ,
 };
 
-void init_domainmanager_portal()
+void init_domainmanager_portal(void)
 {
     init_zero_dep("jx/zero/DomainManager", "DomainManager", domainManagerMethods, sizeof(domainManagerMethods),
               "<jx/zero/DomainManager>");
-
-#ifdef PROFILE_EVENT_CREATEDOMAIN
-    event_createdomain_start = createNewEvent("CREATEDOMAIN_START");
-    event_createdomain_end = createNewEvent("CREATEDOMAIN_END");
-    event_initialthread_start = createNewEvent("INITIALTHREAD_STARTINIT");
-    event_initialthread_end = createNewEvent("INITIALTHREAD_ENDINIT");
-#endif
-
 }

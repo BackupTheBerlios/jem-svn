@@ -106,10 +106,12 @@ ThreadDesc *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, 
     thread->stack           = thread->task.thread_base.tcb.stackbase;
     thread->stackTop        = thread->stack + thread->task.thread_base.tcb.stacksize;
 
-    if ((result = rt_task_start(&thread->task, thread_start, param)) < 0) {
-        jemFreeThreadDesc(thread);
-        printk(KERN_ERR "Error starting Jem thread task, rc=%d\n", result);
-        return NULL;
+    if (thread->state != STATE_INIT) {
+        if ((result = rt_task_start(&thread->task, thread_start, param)) < 0) {
+            jemFreeThreadDesc(thread);
+            printk(KERN_ERR "Error starting Jem thread task, rc=%d\n", result);
+            return NULL;
+        }
     }
 
     return thread;

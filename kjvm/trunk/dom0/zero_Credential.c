@@ -50,7 +50,7 @@
  */
 ClassDesc *credentialvariableClass;
 
-void credentialvariable_set(CredentialProxy * self, ObjectDesc * value)
+static void credentialvariable_set(CredentialProxy * self, ObjectDesc * value)
 {
     if (curdom()->id != self->signerDomainID) {
         ObjectDesc *self = createExceptionInDomain(curdom(),
@@ -61,12 +61,12 @@ void credentialvariable_set(CredentialProxy * self, ObjectDesc * value)
     self->value = value;
 }
 
-ObjectDesc *credentialvariable_get(CredentialProxy * self)
+static ObjectDesc *credentialvariable_get(CredentialProxy * self)
 {
     return self->value;
 }
 
-jint credentialvariable_getSignerDomainID(CredentialProxy * self)
+static jint credentialvariable_getSignerDomainID(CredentialProxy * self)
 {
     return self->signerDomainID;
 }

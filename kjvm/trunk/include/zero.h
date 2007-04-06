@@ -118,8 +118,6 @@ void            createArrayObjectVTableProto(DomainDesc * domain);
 ClassDesc       *init_zero_class(char *ifname, MethodInfoDesc * methods,
                            jint size, jint instanceSize, jbyte * typeMap,
                            char *subname);
-jint            findZeroLibMethodIndex(DomainDesc * domain, char *className,
-                            char *methodName, char *signature);
 void            installObjectVtable(ClassDesc * c);
 void            installInitialNaming(DomainDesc * srcDomain, DomainDesc * dstDomain,
                           Proxy * naming);

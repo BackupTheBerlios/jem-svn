@@ -81,10 +81,6 @@ static inline struct ObjectDesc_s *DomainDesc2ObjectDesc(struct DomainDesc_s * d
     return(struct ObjectDesc_s *) (((u32 *) domain) - 1);
 }
 
-static inline struct ObjectDesc_s *CPUDesc2ObjectDesc(struct CPUDesc_s * cpu) {
-    return(struct ObjectDesc_s *) (((u32 *) cpu) - 1);
-}
-
 static inline struct ObjectDesc_s *ThreadDesc2ObjectDesc(struct ThreadDesc_s * thread) {
     return(struct ObjectDesc_s *) (((u32 *) thread) - 1);
 }

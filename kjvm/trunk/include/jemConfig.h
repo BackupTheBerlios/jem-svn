@@ -56,9 +56,11 @@ struct jvmConfig {
     unsigned int    heapReserve;
     unsigned int    defaultServicePrio;
     unsigned int    defaultThreadPrio;
+    unsigned int    defaultDomainPrio;
     unsigned int    serviceStackSz;
     unsigned int    serviceParamsSz;
     unsigned int    receivePortalQuota;
+    unsigned int    createDomainPortalQuota;
 };
 
 

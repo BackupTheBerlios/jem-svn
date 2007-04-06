@@ -133,7 +133,7 @@ static DomainDesc *specialAllocDomainDesc(void)
 
 
 DomainDesc *createDomain(char *domainName, jint gcinfo0, jint gcinfo1, jint gcinfo2, char *gcinfo3, jint gcinfo4, 
-                         u32 code_bytes, int gcImpl, ArrayDesc * schedinfo)
+                         u32 code_bytes, int gcImpl)
 {
     u8          *mem;
     DomainDesc  *domain;
@@ -215,7 +215,7 @@ void initDomainSystem(void)
     }
 
     domainZero = createDomain("DomainZero", jvmConfigData->heapBytesDom0, -1, -1, NULL, -1, 
-                              jvmConfigData->codeBytesDom0, GC_IMPLEMENTATION_DEFAULT, NULL);
+                              jvmConfigData->codeBytesDom0, GC_IMPLEMENTATION_DEFAULT);
     if (domainZero == NULL)
         printk(KERN_ERR "Cannot create domainzero.\n");
 

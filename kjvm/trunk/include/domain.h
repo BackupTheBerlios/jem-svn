@@ -123,7 +123,6 @@ typedef struct DomainDesc_s {
     u32                         preempted;
     u64                         cputime;
     u32                         currentThreadID;
-    struct CPUDesc_s            *cpu[CONFIG_NR_CPUS];   /* CPU Object(s) of this domain */
     struct ThreadDesc_s         *threads;
     struct ObjectDesc_s         *startClassName;
     struct ObjectDesc_s         *dcodeName;
@@ -171,7 +170,7 @@ typedef void (*domain1_f) (struct DomainDesc_s *, void *);
 void initDomainSystem(void);
 void deleteDomainSystem(void);
 struct DomainDesc_s *createDomain(char *domainName, jint gcinfo0, jint gcinfo1, jint gcinfo2, char *gcinfo3, jint gcinfo4,
-                                  u32 code_bytes, int gcImpl, struct ArrayDesc_s *schedinfo);
+                                  u32 code_bytes, int gcImpl);
 jint getNumberOfDomains(void);
 void domain_panic(struct DomainDesc_s * domain, char *msg);
 void foreachDomain(domain_f func);

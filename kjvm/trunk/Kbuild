@@ -6,6 +6,7 @@ kjvm-objs := core/domain.o core/jem.o core/jemUPipe.o core/malloc.o core/jar.o \
 		dom0/zero_CAS.o dom0/zero_Clock.o dom0/zero_ComponentManager.o \
 		dom0/zero_CPUManager.o dom0/zero_CPUState.o \
 		dom0/zero_Credential.o dom0/zero_Domain.o \
+		dom0/zero_DomainManager.o \
                 gc/gc.o gc/gc_alloc.o
 
 ifeq ($(CONFIG_JEM_ENABLE_GC),y)

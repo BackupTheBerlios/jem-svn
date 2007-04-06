@@ -52,7 +52,6 @@ struct InterceptPortalInfoProxy_s;
 struct jarentry_s;
 struct ObjectDesc_s;
 struct ArrayDesc_s;
-struct CPUDesc_s;
 struct SymbolDesc_s;
 struct SymbolDescStackMap_s;
 struct FieldDesc_s;

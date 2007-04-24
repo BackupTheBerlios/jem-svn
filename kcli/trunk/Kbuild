@@ -1,0 +1,7 @@
+kcli-objs := main.o libcli.o rx.o
+
+kcli.o: $(kcli-objs)
+	$(LD) -r -o $@ $(kcli-objs)
+
+obj-$(CONFIG_KCLI) += kcli.o
+

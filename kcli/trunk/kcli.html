@@ -1,0 +1,410 @@
+<HTML>
+<BODY>
+
+<H1>Kcli User's Reference</H1>
+
+<H2><A NAME="TOC">Table of Contents</A></H2>
+<OL>
+	<LI><A HREF="#Introduction">Introduction</A></LI>
+	<LI><A HREF="#history">History</A></LI>
+	<LI><A HREF="#editing">Command-Line Editing</A></LI>
+	<LI><A HREF="#filters">Filters</A></LI>
+	<LI><A HREF="#Example">Example</A></LI>
+	<LI><A HREF="#funcref">Function Reference</A></LI>
+	<OL>
+		<LI><A HREF="#cli_register_command">cli_register_command()</A></LI>
+		<LI><A HREF="#cli_unregister_command">cli_unregister_command()</A></LI>
+		<LI><A HREF="#cli_set_auth_callback">cli_set_auth_callback()</A></LI>
+		<LI><A HREF="#cli_allow_user">cli_allow_user()</A></LI>
+		<LI><A HREF="#cli_deny_user">cli_deny_user()</A></LI>
+		<LI><A HREF="#cli_set_banner">cli_set_banner()</A></LI>
+		<LI><A HREF="#cli_set_hostname">cli_set_hostname()</A></LI>
+		<LI><A HREF="#cli_regular">cli_regular()</A></LI>
+		<LI><A HREF="#cli_error">cli_error()</A></LI>
+		<LI><A HREF="#cli_print_callback">cli_print_callback()</A></LI>
+		<LI><A HREF="#cli_set_enable_callback">cli_set_enable_callback()</A></LI>
+		<LI><A HREF="#cli_allow_enable">cli_allow_enable()</A></LI>
+		<LI><A HREF="#cli_set_configmode">cli_set_configmode()</A></LI>
+		<LI><A HREF="#cli_print">cli_print()</A></LI>
+                <LI><A HREF="#cli_get">cli_get()</A></LI>
+	</OL>
+</OL>
+
+<H2><A NAME="funcref">1.0 Introduction</A></H2>
+<P>
+Kcli provides a consistent command line environment for other kernel modules,
+with a few common features between every module. The kcli module exports a 
+number of functions that other modules use to add their commands into the 
+common base and to customize the Kcli default behaviour.
+</P>
+
+<P>
+The Kcli module listens on a defined port for a Telnet connection. The port
+number is defined through the module configuration (menuconfig) or when the module is loaded using the cliPort module paramater. 
+</P>
+
+<H2><A NAME="history">2.0 History</A></H2>
+
+<P>
+Kcli keeps track of the last 256 commands you entered in the session.  To
+navigate through the history, use the up and down arrow keys (or ^P/^N).
+</P>
+
+<P>
+You can also enter "<EM>history</EM>" to get a list of all the commands
+in the history.
+</P>
+
+<H2><A NAME="editing">3.0 Command-Line Editing</A></H2>
+
+<P>
+You can edit the command currently at the prompt:
+<LI>Left and right arrows move the cursor around on the line, as do ^B/^F.</LI>
+<LI>^A moves the cursor to the start of line, ^E to the end.</LI>
+<LI>^H and DEL delete the character to the left of the cursor.</LI>
+<LI>^W deletes the word to the left of the cursor.</LI>
+<LI>^U clears the current line.</LI>
+
+<P>
+After changing the line and hitting enter, the new command line will be
+added to the end of the history.
+</P>
+
+<P>
+If you don't remember the command name that you want, you can press
+? at any time to get a list of available commands. If you enter ? when
+you are half-way through entering a word, you will get a list of all
+commands which match what you have already entered.
+</P>
+
+<H2><A NAME="filters">4.0 Filters</A></H2>
+
+<P>
+You can limit the output of any command to a subset of the total
+output by using any of the following filters.
+</P>
+
+<P>
+You specify the filters you want to use by appending <B>|</B> (pipe)
+to your command line, followed by the filter name, and any parameters
+that the filter requires.  Parameters may be quoted with '' or "".  If
+more parameters are provided than are expected by the filter,
+additional arguments are appended to the last, seperated by a single
+space (i.e. "<TT>| inc foo&nbsp;&nbsp;&nbsp;bar</TT>" is equivalent to
+"<TT>| inc 'foo bar'</TT>").
+</P>
+
+<H3>Available Filters</H3>
+
+<DL>
+    <DT><B>i</B>[<B>nclude</B>] <I>string</I>
+    <DT><B>ex</B>[<B>clude</B>] <I>string</I>
+	Include or exclude lines which contain the literal string
+	given by <I>string</I>.
+
+    <DT><B>beg</B>[<B>in</B>] <I>string</I>
+	Include all lines from the first which matches the given
+	<I>string</I>.
+
+    <DT><B>bet</B>[<B>ween</B>] <I>string1</I> <I>string2</I>
+	Include lines which include <I>string1</I> through to the
+	next line which matches <I>string2</I>.
+
+    <DT><B>c</B>[<B>ount</B>]
+    	<DD>A count of non-blank lines is output.
+
+    <DT><B>g</B>[<B>rep</B>] [<B>-vie</B>] <I>pattern</I>
+    <DT><B>eg</B>[<B>rep</B>] [<B>-vie</B>] <I>pattern</I>
+	Include lines which match the regular expression (or
+	extended regular expression) given by <I>pattern</I>.<BR>
+	The <B>-i</B> option makes the match case insensitive, <B>-v</B>
+	inverts the sense of the test (include lines which do not
+	match) and <B>-e</B> may be used on the off chance you wish to
+	search for a string matcing <B>^-[vie]+$</B>
+</DL>
+
+
+<H2><A NAME="Example">5.0 Example</A></H2>
+
+This section contains an example kernel module that uses the Kcli
+module, and extends it with a new command.
+
+<PRE>
+#include &lt;linux/module.h&gt;
+#include &lt;linux/types.h&gt;
+#include &lt;linux/kernel.h&gt;
+#include &lt;linux/string.h&gt;
+#include &lt;linux/errno.h&gt;
+#include "libcli.h"
+
+
+//-----------------------------------------------------------------------------
+// 
+// Global data.
+// 
+//-----------------------------------------------------------------------------
+
+static struct cli_def   *kcli;
+
+
+//-----------------------------------------------------------------------------
+// 
+// Kcli commands.
+// 
+//-----------------------------------------------------------------------------
+
+int cmd_test(struct cli_def *cli, char *command, char *argv[], int argc)
+{
+    int i;
+    <A HREF="#cli_print">cli_print</A>(cli, "called %s with \"%s\"", __FUNCTION__, command);
+    <A HREF="#cli_print">cli_print</A>(cli, "%d arguments:", argc);
+    for (i = 0; i < argc; i++)
+	<A HREF="#cli_print">cli_print</A>(cli, "	%s", argv[i]);
+
+    return CLI_OK;
+}
+
+//-----------------------------------------------------------------------------
+// 
+// Module initialization and cleanup.
+// 
+//-----------------------------------------------------------------------------
+
+
+void ktest_exit (void)
+{
+    <A HREF="#cli_unregister_command">cli_unregister_command</A>(kcli, "test");
+}
+
+int __init ktest_init (void)
+{
+    kcli    = <A HREF="#cli_get">cli_get</A>();
+    <A HREF="#cli_register_command">cli_register_command</A>(kcli, NULL, "test", cmd_test, PRIVILEGE_UNPRIVILEGED,
+    	MODE_EXEC, "A test command.");
+
+    return 0;
+}
+
+MODULE_AUTHOR("JavaDevices Software LLC");
+MODULE_LICENSE("GPL v2");
+MODULE_DESCRIPTION("A Kcli test module.");
+module_init(ktest_init);
+module_exit(ktest_exit);
+</PRE>
+
+<H2><A NAME="funcref">6.0 Function Reference</A></H2>
+
+<H3><A NAME="cli_register_command">6.1 cli_register_command(<EM>struct cli_def *cli, 
+struct cli_command *parent, char *command, 
+int (*callback)(struct cli_def *, char *, char **, int), 
+int privilege, int mode, char *help</EM>)</A></H3>
+
+<P>
+Add a command to the internal command tree.  Returns a <EM>struct
+cli_command *</EM>, which you can pass as <EM>parent</EM> to another
+call to <A HREF="#cli_register_command">cli_register_command()</A>.
+</P>
+
+<P>When the command has been entered by the user, <EM>callback</EM>
+is checked.  If it is not NULL, then the callback is called with:</P>
+<OL>
+	<LI>struct cli_def * - the handle of the cli structure.  This
+	    must be passed to all cli functions.</LI>
+	<LI>char * - the entire command which was entered.  This is after command
+	expansion.</LI>
+	<LI>char ** - the list of arguments entered</LI>
+	<LI>int - the number of arguments entered</LI>
+</OL>
+
+<P>The callback must return <EM>CLI_OK</EM> if the command was successful,
+<EM>CLI_ERROR</EM> if processing wasn't successful and the next matching
+command should be tried (if any), or <EM>CLI_QUIT</EM> to drop the
+connection (e.g. on a fatal error).</P>
+
+<P>If <EM>parent</EM> is NULL, the command is added to the top level of
+commands, otherwise it is a subcommand of <EM>parent</EM></P>
+
+<P>
+<EM>privilege</EM> should be set to either PRIVILEGE_PRIVILEGED or
+PRIVILEGE_UNPRIVILEGED.  If set to PRIVILEGE_PRIVILEGED then the user must have
+entered <EM>enable</EM> before running this command.
+</P>
+
+<P>
+<EM>mode</EM> should be set to MODE_EXEC for no configuration mode, MODE_CONFIG
+for generic configuration commands, or your own config level.  The user can enter
+the generic configuration level by entering <EM>configure terminal</EM>, and can
+return to MODE_EXEC by entering <EM>exit</EM> or <EM>CTRL-Z</EM>.  You can define
+commands to enter your own configuration levels, which should call the
+<A HREF="#cli_set_configmode">cli_set_configmode()</A> function.
+</P>
+
+<P>If <EM>help</EM> is provided, it is given to the user when the use
+the <EM>help</EM> command or press <B>?</B>.</P>
+
+<H3><A NAME="cli_unregister_command">6.2 cli_unregister_command(<EM>struct cli_def *cli, 
+char *command</EM>)</A></H3>
+
+<P>
+Remove a command <EM>command</EM> and all children.  There is not provision
+yet for removing commands at lower than the top level.
+</P>
+
+<H3><A NAME="cli_set_auth_callback">6.3 cli_set_auth_callback(<EM>struct cli_def *cli, 
+int (*auth_callback)(char *, char *)</EM>)</A></H3>
+
+<P>
+Enables or disables callback based authentication.
+</P>
+
+<P>If <EM>auth_callback</EM> is not NULL, then authentication will be
+required on connection.  <EM>auth_callback</EM> will be called with the
+<EM>username</EM> and <EM>password</EM> that the user enters.  </P>
+
+<P><EM>auth_callback</EM> must return a non-zero value if authentication
+is successful.  </P>
+
+<P> If <EM>auth_callback</EM> is NULL, then callback based authentication
+will be disabled.  </P>
+
+<H3><A NAME="cli_allow_user">6.4 cli_allow_user(<EM>struct cli_def *cli, 
+char *username, char *password</EM>)</A></H3>
+
+<P> Enables internal authentication, and adds <EM>username/password</EM>
+to the list of allowed users.  <P>
+
+<P> The internal list of users will be checked before callback based
+authentication is tried.  </P>
+
+<H3><A NAME="cli_deny_user">6.5 cli_deny_user(<EM>struct cli_def *cli, 
+char *username</EM>)</A></H3>
+
+<P>
+Removes <EM>username/password</EM> from the list of allowed users.
+</P>
+
+<P> If this is the last combination in the list, then internal
+authentication will be disabled.</P>
+
+<H3><A NAME="cli_set_banner">6.6 cli_set_banner(<EM>struct cli_def *cli, 
+char *banner</EM>)</A></H3>
+
+<P>
+Sets the greeting that clients will be presented with when they
+connect.  This may be a security warning for example.
+</P>
+
+<P>
+If this function is not called or called with a NULL argument, no banner 
+will be presented.
+</P>
+
+<H3><A NAME="cli_set_hostname">6.7 cli_set_hostname(<EM>struct cli_def *cli, 
+char *hostname</EM>)</A></H3>
+
+<P>
+Sets the hostname to be displayed as the first part of the prompt.
+</P>
+
+<H3><A NAME="cli_regular">6.8 cli_regular(<EM>struct cli_def *cli, 
+int(*callback)(struct cli_def *)</EM>)</A></H3>
+
+<P>
+Adds a callback function which will be called every second that a user
+is connected to the cli.  This can be used for regular processing such
+as debugging, time counting or implementing idle timeouts.
+</P>
+
+<P>
+Pass NULL as the callback function to disable this at runtime.
+</P>
+
+<P>
+If the callback function does not return CLI_OK, then the user will
+be disconnected.
+</P>
+
+<H3><A NAME="cli_print_callback">6.9 cli_print_callback(<EM>struct cli_def *cli, 
+void (*callback)(struct cli_def *, char *)</EM>)</A></H3>
+
+<P>
+Whenever the internal output functions, cli_print or cli_error,
+are called, the output generally goes to the user.  If you specify a
+callback using this function, then the output will be sent to that
+callback.  The function will be called once for each line, and it will
+be passed a single null-terminated string, without any newline
+characters.
+</P>
+
+<P>
+Specifying NULL as the callback parameter will make Kcli use the
+default cli_print function.
+</P>
+
+<H3><A NAME="cli_set_enable_callback">6.10 cli_set_enable_callback(<EM>struct cli_def *cli, 
+void (*callback)(struct cli_def *, char *)</EM>)</A></H3>
+
+<P>
+Just like <A HREF="#cli_set_auth_callback">cli_set_auth_callback</A> this takes a 
+pointer to a callback
+function to authorize privileged access.  However this callback only takes a
+single string - the password.
+</P>
+
+<H3><A NAME="cli_allow_enable">6.11 cli_allow_enable(<EM>struct cli_def *cli, 
+char *password</EM>)</A></H3>
+
+<P>
+This will allow a static password to be used for the <EM>enable</EM> command.
+This static password will be checked before running any enable callbacks.
+</P>
+
+<P>
+Set this to NULL to not have a static enable password.
+</P>
+
+<H3><A NAME="cli_set_configmode">6.12 cli_set_configmode(<EM>struct cli_def *cli, 
+int mode, char *string</EM>)</A></H3>
+
+<P>
+This will set the configuration mode.  Once set, commands will be restricted to
+only ones in the selected configuration mode, plus any set to MODE_ANY.
+The previous mode value is returned.
+</P>
+
+<P>
+The string passed will be used to build the prompt in the set configuration
+mode.  e.g. if you set the string <B>test</B>, the prompt will become:
+<PRE>
+hostname(config-test)#
+</PRE>
+</P>
+
+<H3><A NAME="cli_print">6.13 cli_print(<EM>struct cli_def *cli, char *format, ...</EM>)</A></H3>
+
+<P>
+This function should be called for any output generated by a command
+callback.
+</P>
+
+<P>
+It takes a printf() style format string and a variable number of arguments.
+</P>
+
+<P>
+Be aware that any output generated by cli_print will be passed through
+any filter currently being applied, and the output will be redirected
+to the <A HREF="#cli_print_callback">cli_print_callback()</A> if one has been
+specified.
+</P>
+
+<H3><A NAME="cli_get">6.14 <EM>struct cli_def *</EM>cli_get(<EM>void</EM>)</A></H3>
+
+<P>
+This function is called by modules external to Kcli to get a reference to 
+the cli struct, which is required in order to register new commands and 
+execute other Kcli functions.
+</P>
+
+</BODY>
+</HTML>

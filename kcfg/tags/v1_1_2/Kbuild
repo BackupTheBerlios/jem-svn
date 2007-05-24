@@ -1,0 +1,11 @@
+kcfg-objs := main.o hashtable.o simpleconfig.o
+
+kcfg.o: $(kcfg-objs)
+	$(LD) -r -o $@ $(kcfg-objs)
+
+obj-$(CONFIG_KCFG) += kcfg.o
+
+ifeq ($(CONFIG_KCFG_CLI),y)
+EXTRA_CFLAGS += -Idrivers/embedded/kcli
+endif
+

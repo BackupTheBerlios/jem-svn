@@ -299,15 +299,15 @@ void sim_timer_irq()
     /* not necessary for timer IRQ and SCHEUDLER */
 /*
   ifirstlevel_processed[cpuID][inumber[cpuID]]++;
-#ifdef DEBUG    
+#ifdef DEBUG
   check_current = 0;
 #endif
   *curthrP() = icurrent[cpuID];
     printf("back from %p (%s)   in %p (%s)\n",curt,curt->name,curthr(),curthr()->name);
-    
+
   ASSERT(ithreads[cpuID][inumber[cpuID]]->state == STATE_RUNNABLE);
   ithreads[cpuID][inumber[cpuID]]->state = STATE_AVAILABLE;
-#ifdef DEBUG    
+#ifdef DEBUG
   check_current = 1;
 #endif
 */

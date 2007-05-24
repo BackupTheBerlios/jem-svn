@@ -1,5 +1,5 @@
 //=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
+// This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
 // Copyright © 2007 JemStone Software LLC. All rights reserved.
@@ -8,15 +8,15 @@
 // Copyright © 2001-2002 Meik Felser. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
+// terms of the GNU General Public License, version 2, as published by the Free
 // Software Foundation.
 //
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //=================================================================================
@@ -100,7 +100,7 @@ u32 createService(DomainDesc * domain, ObjectDesc * depObj, ClassDesc * interfac
 static ThreadDesc *createServiceThread(DomainDesc * domain, int poolIndex, char *name)
 {
     ServiceThreadPool *pool = domain->pools[poolIndex];
-    ThreadDesc *thread = createThread(domain, receive_dep, (void *) poolIndex, STATE_RUNNABLE, 
+    ThreadDesc *thread = createThread(domain, receive_dep, (void *) poolIndex, STATE_RUNNABLE,
                                       getJVMConfig()->defaultServicePrio, "SVCPool");
     thread->nextInReceiveQueue  = pool->firstReceiver;
     pool->firstReceiver         = thread;
@@ -204,7 +204,7 @@ void installVtables(DomainDesc * domain, ClassDesc * c, MethodInfoDesc * methods
 
 
 /*********
- *  Portal invocation 
+ *  Portal invocation
  ****/
 
 static inline void portal_add_sender(DEPDesc * dep, ThreadDesc * thread)
@@ -409,7 +409,7 @@ void receive_portalcall(u32 poolIndex)
         source->state = STATE_PORTAL_WAIT_FOR_RETCOPY;
         if (returnType == 1) {
             ObjectDesc *ret0;
-            if (code != (code_t) memoryManager_alloc && code != (code_t) memoryManager_allocAligned && 
+            if (code != (code_t) memoryManager_alloc && code != (code_t) memoryManager_allocAligned &&
                 code != (code_t) bootfs_getFile) {  /* memory proxy has already been allocated in client heap */
               restart1:
                 curthr()->n_copied = 0;
@@ -421,7 +421,7 @@ void receive_portalcall(u32 poolIndex)
                 }
                 ret = ret0;
 
-            } 
+            }
             source->portalReturnType = 1;
         } else {
             source->portalReturnType = 0;
@@ -524,7 +524,7 @@ static u32 direct_send_portal(Proxy * proxy, ...)
 }
 
 
-/* -1 failure, 
+/* -1 failure,
    0 success */
 int findProxyCodeInDomain(DomainDesc * domain, char *addr, char **method, char **sig, ClassDesc ** classInfo)
 {
@@ -974,7 +974,7 @@ static ObjectDesc *copy_shallow_reference_internal(DomainDesc * src, DomainDesc 
         default:
             printk(KERN_ERR "UNKNOWN OBJECT TYPE 0x%x for object %p", flags, ref);
         }
-    } 
+    }
 
     return NULL;
 }

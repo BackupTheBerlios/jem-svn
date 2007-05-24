@@ -1,5 +1,5 @@
 //=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
+// This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
 // Copyright © 2007 JemStone Software LLC. All rights reserved.
@@ -7,22 +7,22 @@
 // Copyright © 1998-2002 Michael Golm, All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
+// terms of the GNU General Public License, version 2, as published by the Free
 // Software Foundation.
 //
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //==============================================================================
 // zero_ComponentManager.c
-// 
+//
 // DomainZero CPUManager
-// 
+//
 //==============================================================================
 
 #include <linux/module.h>
@@ -215,7 +215,7 @@ static ObjectDesc *cpuManager_createCPUState(ObjectDesc * self, ObjectDesc * ent
     sprintf(tName, "wk%d", threadNum++);
 
     thread =
-        createThreadInMem(sourceDomain, start_thread_using_entry, NULL, entry, 4096, STATE_INIT, 
+        createThreadInMem(sourceDomain, start_thread_using_entry, NULL, entry, 4096, STATE_INIT,
                           getJVMConfig()->defaultThreadPrio, tName);
     return thread2CPUState(thread);
 }
@@ -261,7 +261,7 @@ static jboolean cpuManager_start(ObjectDesc * self, CPUStateProxy * cpuStateProx
 
     if (cpuState->state != STATE_INIT) {
         printk(KERN_WARNING "Start: Thread %p is in state %d (%s)\n", cpuState, cpuState->state, get_state(cpuState));
-        result = JNI_FALSE; 
+        result = JNI_FALSE;
     } else {
         cpuState->state = STATE_RUNNABLE;
         if ((rc = rt_task_start(&cpuState->task, start_thread_using_entry, cpuState->createParam)) < 0) {
@@ -386,7 +386,7 @@ static void cpuManager_assertInterruptEnabled(ObjectDesc * self)
 
 static void cpuManager_executeClassConstructors(ObjectDesc * self, jint id)
 {
-    LibDesc *lib = (LibDesc *) id;  
+    LibDesc *lib = (LibDesc *) id;
     SharedLibDesc *sharedLib = lib->sharedLib;
     int i;
     for (i = 0; i < sharedLib->numberOfNeededLibs; i++) {

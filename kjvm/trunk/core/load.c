@@ -1,5 +1,5 @@
 //=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
+// This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
 // Copyright © 2007 JemStone Software LLC. All rights reserved.
@@ -8,15 +8,15 @@
 // Copyright © 2001-2002 Christian Wawersich
 //
 // Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
+// terms of the GNU General Public License, version 2, as published by the Free
 // Software Foundation.
 //
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //==============================================================================
@@ -334,7 +334,7 @@ ClassDesc *findSharedArrayClassDescByElemClass(ClassDesc * elemClass)
     return c;
 }
 
-/* creates a new array class 
+/* creates a new array class
 */
 static JClass *createArrayClass(DomainDesc * domain, char *name)
 {
@@ -626,7 +626,7 @@ JClass *classDesc2Class(DomainDesc * domain, ClassDesc * classDesc)
             ndx = (int) (classDesc - (slib->allClasses));
             return &(lib->allClasses[ndx]);
         }
-        
+
         printk(KERN_ERR "Could not find class %s in domain %s!\n", name, domain->domainName);
         return NULL;
     } else {
@@ -1238,7 +1238,7 @@ static SharedLibDesc *loadSharedLibrary(DomainDesc * domain, char *filename, Tem
                 readStringID(lib->allClasses[i].vtableSym[j + 2]);  /* type */
                 readInt(dummy);
             }
-        } 
+        }
 
         for (j = 0; j < lib->allClasses[i].numberOfMethods; j++) {
             lib->allClasses[i].methods[j].objectDesc_flags = OBJFLAGS_EXTERNAL_METHOD;
@@ -1428,7 +1428,7 @@ static SharedLibDesc *loadSharedLibrary(DomainDesc * domain, char *filename, Tem
                         }
                         break;
                     }
-                case 17:    // new version 
+                case 17:    // new version
                     {   /* StackMap */
                         SymbolDescStackMap *s;
                         int mapPos;

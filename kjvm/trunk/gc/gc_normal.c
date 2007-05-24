@@ -1,5 +1,5 @@
 //=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
+// This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
 // Copyright © 2007 Sombrio Systems Inc. All rights reserved.
@@ -8,25 +8,25 @@
 // Copyright © 2001-2002 Joerg Baumann. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
+// terms of the GNU General Public License, version 2, as published by the Free
 // Software Foundation.
 //
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //==============================================================================
 // gc_normal.c
-// 
+//
 // Jem/JVM Copying garbage collector implementation
-// 
+//
 //==============================================================================
 
-#ifdef CONFIG_JEM_ENABLE_GC 
+#ifdef CONFIG_JEM_ENABLE_GC
 #include <linux/module.h>
 #include <linux/types.h>
 #include <linux/kernel.h>
@@ -274,22 +274,22 @@ void gc_normal_gc(DomainDesc * domain)
 		GCM_NEW(domain).heapBorder2 = GCM_NEW(domain).heap2 + (GCM_NEW(domain).heapSize >> 2);
 		GCM_NEW(domain).heapTop2 = GCM_NEW(domain).heap2;
 	}
-#endif		
+#endif
 
-	/* 
+	/*
 	 * Init
 	 */
 	//freezeThreads(domain);
 
 	/*
-	 * Move directly reachable objects onto new heap 
+	 * Move directly reachable objects onto new heap
 	 */
 	walkRootSet(domain, gc_common_move_reference, gc_common_move_reference, gc_common_move_reference,
 		    gc_common_move_reference, gc_common_move_reference, gc_common_move_reference);
 
 	/*
 	 * All directly reachable objects are now on the new heap
-	 * Scan new heap 
+	 * Scan new heap
 	 */
 	gc_normal_walkHeap2(domain, gc_normal_scan_heap2_Object, gc_normal_scan_heap2_Array, NULL, NULL, gc_normal_scan_heap2_Service, NULL,
 			 gc_normal_scan_heap2_AtomVar, NULL, gc_normal_scan_heap2_CPUState, gc_normal_scan_heap2_ServicePool,
@@ -358,7 +358,7 @@ ObjectDesc *gc_normal_atMark(struct DomainDesc_s *domain)
 		GCM_NEW(domain).mark = NULL;
 		return NULL;
 	}
- 
+
 	obj = ptr2ObjectDesc(data);
 	flags = getObjFlags(obj);
 	switch (flags & FLAGS_MASK) {
@@ -426,7 +426,7 @@ void gc_normal_init(DomainDesc * domain, u32 heap_bytes)
 	GCM_NEW(domain).heap2       = (jint *) jxmalloc(heap_bytes MEMTYPE_HEAP);
 	GCM_NEW(domain).heapBorder2 = GCM_NEW(domain).heap2 + (heap_bytes >> 2);
 	GCM_NEW(domain).heapTop2    = GCM_NEW(domain).heap2;
-#endif	
+#endif
 
 	GCM_MOVE_COMMON(domain).allocHeap2  = gc_normal_allocHeap2;
 	GCM_MOVE_COMMON(domain).walkHeap2   = gc_normal_walkHeap2;
@@ -444,7 +444,7 @@ void gc_normal_init(DomainDesc * domain, u32 heap_bytes)
 	domain->gc.setMark                  = gc_normal_setMark;
 	domain->gc.atMark                   = gc_normal_atMark;
 }
-#endif			
+#endif
 
 
 

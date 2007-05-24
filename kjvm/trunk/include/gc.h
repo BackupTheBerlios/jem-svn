@@ -1,20 +1,20 @@
 //=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
+// This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
 // Copyright © 2007 JemStone Software LLC. All rights reserved.
 // Copyright © 1997-2001 The JX Group. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
+// terms of the GNU General Public License, version 2, as published by the Free
 // Software Foundation.
 //
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //==============================================================================
@@ -35,7 +35,7 @@
 #define GC_IMPLEMENTATION_COMPACTING 1
 #define GC_IMPLEMENTATION_BITMAP     2
 #define GC_IMPLEMENTATION_CHUNKED    3
-#define GC_IMPLEMENTATION_DEFAULT    GC_IMPLEMENTATION_NEW 
+#define GC_IMPLEMENTATION_DEFAULT    GC_IMPLEMENTATION_NEW
 #define OBJFLAGS_OBJECT               0x00000002
 #define OBJFLAGS_PORTAL               0x00000004
 #define OBJFLAGS_MEMORY               0x00000006
@@ -63,7 +63,7 @@
 #define XMONE XMOFF
 #define XMZERO 0
 
-void gc_init(struct DomainDesc_s *domain, u8 *memu, jint gcinfo0, jint gcinfo1, jint gcinfo2, char *gcinfo3, 
+void gc_init(struct DomainDesc_s *domain, u8 *memu, jint gcinfo0, jint gcinfo1, jint gcinfo2, char *gcinfo3,
              jint gcinfo4, int gcImpl);
 void gc_done(struct DomainDesc_s *domain);
 u32 gc_mem(void);
@@ -262,7 +262,7 @@ jboolean isRef(jbyte * map, int total, int num);
 #define UNREGHANDLE(handle) unregisterObject(curdom(), handle);
 
 #define gc_objSize(_o_) gc_objSize2(_o_, getObjFlags(_o_))
-u32 gc_objSize2(ObjectDesc* obj, jint flags); 
+u32 gc_objSize2(ObjectDesc* obj, jint flags);
 
 void gc_walkContinuesBlock(DomainDesc * domain, u32 * start, u32 ** top,
                            HandleObject_t handleObject,

@@ -1,26 +1,26 @@
 //=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
+// This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
 // Copyright © 2007 JemStone Software LLC. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
+// terms of the GNU General Public License, version 2, as published by the Free
 // Software Foundation.
 //
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //=================================================================================
 // jem.c
-// 
+//
 // Jem/JVM kernel module main.
-// 
+//
 //==============================================================================
 
 #include <linux/module.h>
@@ -130,8 +130,8 @@ static void jvmInitTask(void *cookie)
     createArrayObjectVTableProto(domainZero);
 
     initPrimitiveClasses();
-    
-    domainZero_thread = createThread(domainZero, start_domain_zero, (void *) 0, STATE_RUNNABLE, 
+
+    domainZero_thread = createThread(domainZero, start_domain_zero, (void *) 0, STATE_RUNNABLE,
                                      DOM0_PRIO, "DomainZero:InitialThread");
     rt_event_wait(&jemEvents, JEM_INIT_COMPLETE, &evMask, EV_ALL, TM_INFINITE);
     terminateThread(domainZero_thread);

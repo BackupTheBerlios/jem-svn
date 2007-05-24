@@ -1,5 +1,5 @@
 //=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
+// This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
 // Copyright © 2007 Sombrio Systems Inc. All rights reserved.
@@ -8,24 +8,24 @@
 // Copyright © 2001-2002 Joerg Baumann. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
+// terms of the GNU General Public License, version 2, as published by the Free
 // Software Foundation.
 //
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
-// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
+// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc.
 // at http://www.javadevices.com
 //=================================================================================
-// 
+//
 //=================================================================================
 
-#ifdef CONFIG_JEM_ENABLE_GC 
+#ifdef CONFIG_JEM_ENABLE_GC
 #include <linux/module.h>
 #include <linux/types.h>
 #include <linux/kernel.h>
@@ -50,8 +50,8 @@
 extern RT_MUTEX     svTableLock;
 
 
-/* 
- * visit all static refernces in class cl 
+/*
+ * visit all static refernces in class cl
  */
 static void walkClass(DomainDesc * domain, JClass * cl, HandleReference_t handler)
 {
@@ -94,8 +94,8 @@ void walkStatics(DomainDesc * domain, HandleReference_t handler)
 	}
 }
 
-/* 
- * visit all portals for this domain 
+/*
+ * visit all portals for this domain
  */
 void walkPortals(DomainDesc * domain, HandleReference_t handler)
 {
@@ -103,7 +103,7 @@ void walkPortals(DomainDesc * domain, HandleReference_t handler)
 	DEPDesc *d;
     int     result;
 
-	/* TODO: perform GC on copy of service table and use locking only to reinstall table 
+	/* TODO: perform GC on copy of service table and use locking only to reinstall table
 	 * all entries of original table must be marked as changing
 	 */
     result = rt_mutex_acquire(&svTableLock, TM_INFINITE);
@@ -127,7 +127,7 @@ void walkPortals(DomainDesc * domain, HandleReference_t handler)
 }
 
 /*
- * visit all registered objects (= in use by C core) for this domain 
+ * visit all registered objects (= in use by C core) for this domain
  */
 void walkRegistereds(DomainDesc * domain, HandleReference_t handler)
 {
@@ -141,7 +141,7 @@ void walkRegistereds(DomainDesc * domain, HandleReference_t handler)
 }
 
 /*
- * visit all special objects in this domain for this domain 
+ * visit all special objects in this domain for this domain
  */
 void walkSpecials(DomainDesc * domain, HandleReference_t handler)
 {
@@ -161,7 +161,7 @@ void walkSpecials(DomainDesc * domain, HandleReference_t handler)
 		handler(domain, (ObjectDesc **) & (domain->initialNamingProxy));
 
 	/*
-	 *  object references in domain control block 
+	 *  object references in domain control block
 	 */
 	if (domain->naming) {
 		handler(domain, (ObjectDesc **) & (domain->naming));
@@ -193,7 +193,7 @@ void walkInterrupHandlers(DomainDesc * domain, HandleReference_t handler)
 }
 
 /*
- * visit all non-heap references for this domain 
+ * visit all non-heap references for this domain
  */
 void walkRootSet(DomainDesc * domain, HandleReference_t stackHandler, HandleReference_t staticHandler,
 		 HandleReference_t portalHandler, HandleReference_t registeredHandler, HandleReference_t specialHandler,

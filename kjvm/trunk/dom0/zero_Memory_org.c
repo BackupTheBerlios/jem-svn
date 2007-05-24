@@ -142,7 +142,7 @@ static DZMemoryProxy *dzmemory_alloc();
 static DZMemoryProxy *dzmemory_collector();
 
 /*
- * Memory Portal 
+ * Memory Portal
  */
 static ClassDesc *memoryClass = NULL;
 ClassDesc *deviceMemoryClass = NULL;
@@ -152,7 +152,7 @@ void invalid_mem(MemoryProxy * _x_)
     printf("INVALMEM: %p %p\n", _x_->dz, _x_->mem);
     cpuManager_dump(NULL, NULL, _x_);
 
-    //  sys_panic("INVAL"); 
+    //  sys_panic("INVAL");
     exceptionHandler(THROW_InvalidMemory);
 }
 
@@ -623,7 +623,7 @@ static int dzmemory_split2(DZMemoryProxy * dzm, jint offset, DZMemoryProxy ** dz
 }
 
 /*
- * dzmemory_join 
+ * dzmemory_join
  *
  * Is joining dzm1 and dzm2 to a new dzmemory.
  * Caller should invalidate old dzmemorys.
@@ -1014,12 +1014,12 @@ void memory_set32(ObjectDesc * self, jint where, jint what)
        MemoryProxy * ptr = (MemoryProxy *)self;
        jint size = self->size;
 
-       // lock bus and set busy flag 
+       // lock bus and set busy flag
        asm volatile(...);
        CHECKVALID(self);
        if (where >= (size >> 2)) extern_panic("Writing Memory access out of range: %ld, %ld", where, size);
        ptr->data[where] = what;
-       // lock bus and clear busy flag 
+       // lock bus and clear busy flag
        asm volatile(...);
      */
 }
@@ -1955,7 +1955,7 @@ u4_t memory_sizeof_proxy()
 }
 
 /*******************************************
- *            INTRA-CORE INTERFACE 
+ *            INTRA-CORE INTERFACE
  *******************************************/
 u4_t memory_getSize(MemoryProxy * obj)
 {

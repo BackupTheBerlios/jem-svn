@@ -1,20 +1,20 @@
 //=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
+// This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
 // Copyright © 2007 JemStone Software LLC. All rights reserved.
 // Copyright © 1997-2001 The JX Group. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
+// terms of the GNU General Public License, version 2, as published by the Free
 // Software Foundation.
 //
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //==============================================================================
@@ -64,7 +64,7 @@ typedef struct GCDesc_s {
     struct ThreadDesc_s     *gcThread;
     code_t                  gcCode;
     void                    *data;
-    struct ObjectDesc_s     **registeredObjects; 
+    struct ObjectDesc_s     **registeredObjects;
     u64                     gcTime;
     u32                     gcRuns;
     u32                     gcBytesCollected;
@@ -179,7 +179,7 @@ char **malloc_tmp_stringtable(struct DomainDesc_s * domain, struct TempMemory_s 
 int findMethodAtAddrInDomain(struct DomainDesc_s * domain, u8 * addr,
                              struct MethodDesc_s ** method, struct ClassDesc_s ** classInfo,
                              jint * bytecodePos, jint * lineNumber);
-int findMethodAtAddr(u8 * addr, struct MethodDesc_s ** method, struct ClassDesc_s ** classInfo, 
+int findMethodAtAddr(u8 * addr, struct MethodDesc_s ** method, struct ClassDesc_s ** classInfo,
                      jint * bytecodePos, jint * lineNumber);
 int findProxyCode(struct DomainDesc_s * domain, char *addr, char **method, char **sig, struct ClassDesc_s ** classInfo);
 struct DomainDesc_s *findDomain(u32 id);

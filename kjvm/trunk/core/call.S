@@ -1,5 +1,5 @@
 //=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
+// This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
 // Copyright © 2007 JemStone Software LLC. All rights reserved.
@@ -7,21 +7,21 @@
 // Copyright © 1998-2002 Michael Golm. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
+// terms of the GNU General Public License, version 2, as published by the Free
 // Software Foundation.
 //
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //==============================================================================
 // call.S
-// 
-// 
+//
+//
 //==============================================================================
 
 
@@ -29,7 +29,7 @@
 	pushl %ebx;\
 	pushl %esi;\
 	pushl %edi
-	
+
 #define RESTORE_CALLER_REGISTERS \
 	popl %edi;\
 	popl %esi;\
@@ -48,7 +48,7 @@ callnative_special:
 	SAVE_CALLER_REGISTERS
 	movl	8(%ebp),%ecx	/* params */
         movl	20(%ebp),%edx	/* params_size */
-        decl	%edx 
+        decl	%edx
         js	.L29		/* jump if params_size == 0 */
 .L31:
         movl	(%ecx,%edx,4),%eax  /* move *(ecx+edx+4) to eax */
@@ -61,21 +61,21 @@ callnative_special:
         movl	16(%ebp),%ecx /* function */
 	call	*%ecx
 
-	/* cleanup stack */	
+	/* cleanup stack */
         movl	20(%ebp),%edx	/* params_size */
 	shll    $2,%edx
-	addl	%edx,%esp	
+	addl	%edx,%esp
 	addl	$4,%esp
 	RESTORE_CALLER_REGISTERS
 	leave
 	ret
-.global callnative_special_end	
-callnative_special_end:		
+.global callnative_special_end
+callnative_special_end:
 	.size callnative_special, callnative_special_end-callnative_special
 	nop
 
-	
-	
+
+
 	.text
 	.align 16
 /* Prototype:
@@ -87,10 +87,10 @@ callnative_special_portal:
 	pushl	%ebp
 	movl	%esp,%ebp
 	SAVE_CALLER_REGISTERS
-	
+
 	movl	8(%ebp),%ecx	/* params */
         movl	20(%ebp),%edx	/* params_size */
-        decl	%edx 
+        decl	%edx
         js	.L129		/* jump if params_size == 0 */
 .L131:
         movl	(%ecx,%edx,4),%eax  /* move *(ecx+edx+4) to eax */
@@ -103,20 +103,20 @@ callnative_special_portal:
         movl	16(%ebp),%ecx /* function */
 	call	*%ecx
 
-	/* cleanup stack */	
+	/* cleanup stack */
         movl	20(%ebp),%edx	/* params_size */
 	shll    $2,%edx
-	addl	%edx,%esp	
+	addl	%edx,%esp
 	addl	$4,%esp
 	RESTORE_CALLER_REGISTERS
 	leave
 	ret
-.global callnative_special_portal_end	
-callnative_special_portal_end:		
+.global callnative_special_portal_end
+callnative_special_portal_end:
 	.size callnative_special_portal, callnative_special_portal_end-callnative_special_portal
 	nop
 
-			
+
 /* Prototype:
  * word_t callnative_static(word_t *params, char *function, int params_size);
  */
@@ -128,7 +128,7 @@ callnative_static:
 	SAVE_CALLER_REGISTERS
         movl	8(%ebp),%ecx /* params */
         movl	16(%ebp),%edx  /* params_size */
-        decl	%edx 
+        decl	%edx
         js	.L12  /* jump if params_size == 0 */
 .L11:
         movl	(%ecx,%edx,4),%eax  /* move *(ecx+edx) to eax */
@@ -139,16 +139,16 @@ callnative_static:
         movl	12(%ebp),%ecx /* function */
         call	*%ecx
 
-	/* cleanup stack */	
+	/* cleanup stack */
         movl	16(%ebp),%edx	/* params_size */
 	shll    $2,%edx
-	addl	%edx,%esp	
+	addl	%edx,%esp
 	addl	$4,%esp
 	RESTORE_CALLER_REGISTERS
 	leave
 	ret
 .global callnative_static_end
-callnative_static_end:		
+callnative_static_end:
 	.size callnative_static, callnative_static_end-callnative_static
 	nop
 
@@ -166,12 +166,12 @@ callnative_irq:
         movl	12(%ebp),%ecx	/* function */
         call	*%ecx
 
-	/* cleanup stack */	
+	/* cleanup stack */
 	addl	$4,%esp
 	RESTORE_CALLER_REGISTERS
 	leave
 	ret
-.Lcallnative_irq_end:		
+.Lcallnative_irq_end:
 	.size callnative_irq, .Lcallnative_irq_end-callnative_irq
 
 /* Prototype:
@@ -184,6 +184,6 @@ callnative_handler:
 	movl    12(%esp),%eax
 	movl    8(%esp),%esp
 	jmp     *%eax
-.Lcallnative_handler_end:		
+.Lcallnative_handler_end:
 	.size callnative_handler, .Lcallnative_handler_end-callnative_handler
-		
+

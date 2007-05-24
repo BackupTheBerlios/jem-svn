@@ -1,23 +1,23 @@
 //=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
+// This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
 // Copyright © 2007 JemStone Software LLC. All rights reserved.
 // Copyright © 1997-2001 The JX Group. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
+// terms of the GNU General Public License, version 2, as published by the Free
 // Software Foundation.
 //
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
-// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
+// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc.
 // at http://www.javadevices.com
 //=================================================================================
 //
@@ -89,7 +89,7 @@ typedef struct ThreadDesc_s {
     u32                             blockedInDomainID;  /* this thread is currently waiting for a service of that domain (detect terminated domain)*/
     u32                             blockedInServiceIndex;  /* index of the service this thread is waiting for */
     u32                             callerDomainID;
-    jint                            *myparams;  
+    jint                            *myparams;
     jint                            depMethodIndex;
     jint                            *depParams;
     struct ObjectDesc_s             *portalParameter;   /* implizit parameter passed during a portal call */
@@ -161,10 +161,10 @@ static inline void threadblock(void)
 
 
 void        threadsInit(void);
-ThreadDesc  *createThread(DomainDesc * domain, thread_start_t thread_start, void *param, int state, 
+ThreadDesc  *createThread(DomainDesc * domain, thread_start_t thread_start, void *param, int state,
                           int prio, char *thName);
 ThreadDesc  *createInitialDomainThread(DomainDesc * domain, int state, int schedParam);
-ThreadDesc  *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param, 
+ThreadDesc  *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param,
                                ObjectDesc * entry, u32 stackSize, int state, int prio, char *tName);
 void        thread_exit(void);
 void        terminateThread(ThreadDesc * t);

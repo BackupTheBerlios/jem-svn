@@ -20,7 +20,7 @@ config JEM
 
 config JEM_CODE_FRAGMENTS
 	int "Maximum number of code fragments per domain"
-	default 30 
+	default 30
 	depends on JEM
 	---help---
 	  Amount of space to allocate for code storage. Code space is allocated
@@ -29,7 +29,7 @@ config JEM_CODE_FRAGMENTS
 
 config JEM_MAX_SERVICES
 	int "Maximum number of services per domain"
-	default 1500 
+	default 1500
 	depends on JEM
 	---help---
 	  Maximum number of services that can be created in a domain
@@ -45,11 +45,11 @@ config JEM_ENABLE_GC
 	depends on JEM
 	default true
 	---help---
-	  Compile in support for the garbage collector. The default collector is a 
-	  copying collector, which means that garbage collection consists of 
-	  allocating a new heap and copying referenced objects to the new heap. 
+	  Compile in support for the garbage collector. The default collector is a
+	  copying collector, which means that garbage collection consists of
+	  allocating a new heap and copying referenced objects to the new heap.
 	  This method requires double the heap memory for a domain while the
-	  gc is operating. There are other GC algorithms (below) that can be 
+	  gc is operating. There are other GC algorithms (below) that can be
 	  compiled in and selected for the domain in the boot.rc file.
 
 config JEM_DYNAMIC_HEAP
@@ -57,13 +57,13 @@ config JEM_DYNAMIC_HEAP
 	depends on JEM_ENABLE_GC
 	default false
 	---help---
-	  The default collector is a copying collector, which means that 
-	  garbage collection consists of allocating a new heap and copying 
+	  The default collector is a copying collector, which means that
+	  garbage collection consists of allocating a new heap and copying
 	  referenced objects to the new heap. This configuration item
 	  controls when the second heap is allocated. If this item is set
 	  on the second heap will be allocated when the garbage collection
-	  runs and is freed when garbage collection is done, i.e., it is 
-	  dynamic allocation. If this item is set off, the second heap 
+	  runs and is freed when garbage collection is done, i.e., it is
+	  dynamic allocation. If this item is set off, the second heap
 	  is allocated at initialization time, and is never freed.
 
 config JEM_COMPACTING_GC
@@ -72,7 +72,7 @@ config JEM_COMPACTING_GC
 	default false
 	---help---
 	  Compile in support for the compacting garbage collector. The boot.rc
-	  file must indicate which domains will use this GC, otherwise the 
+	  file must indicate which domains will use this GC, otherwise the
 	  default copying collector will be used.
 
 config JEM_BITMAP_GC

@@ -1,5 +1,5 @@
 //=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
+// This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
 // Copyright © 2007 JemStone Software LLC. All rights reserved.
@@ -7,22 +7,22 @@
 // Copyright © 1998-2002 Michael Golm. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
+// terms of the GNU General Public License, version 2, as published by the Free
 // Software Foundation.
 //
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
 //==============================================================================
 // domain.c
-// 
+//
 // Jem/JVM domain implementation
-// 
+//
 //==============================================================================
 
 #include <linux/module.h>
@@ -132,7 +132,7 @@ static DomainDesc *specialAllocDomainDesc(void)
 }
 
 
-DomainDesc *createDomain(char *domainName, jint gcinfo0, jint gcinfo1, jint gcinfo2, char *gcinfo3, jint gcinfo4, 
+DomainDesc *createDomain(char *domainName, jint gcinfo0, jint gcinfo1, jint gcinfo2, char *gcinfo3, jint gcinfo4,
                          u32 code_bytes, int gcImpl)
 {
     u8          *mem;
@@ -214,7 +214,7 @@ void initDomainSystem(void)
         return;
     }
 
-    domainZero = createDomain("DomainZero", jvmConfigData->heapBytesDom0, -1, -1, NULL, -1, 
+    domainZero = createDomain("DomainZero", jvmConfigData->heapBytesDom0, -1, -1, NULL, -1,
                               jvmConfigData->codeBytesDom0, GC_IMPLEMENTATION_DEFAULT);
     if (domainZero == NULL)
         printk(KERN_ERR "Cannot create domainzero.\n");
@@ -264,7 +264,7 @@ static int findByteCodePosition(MethodDesc * method, u8 * addr)
 }
 
 
-int findMethodAtAddrInDomain(DomainDesc * domain, u8 * addr, MethodDesc ** method, ClassDesc ** classInfo, 
+int findMethodAtAddrInDomain(DomainDesc * domain, u8 * addr, MethodDesc ** method, ClassDesc ** classInfo,
                              jint * bytecodePos, jint * lineNumber)
 {
     int g, h, i, j, k, l, m;
@@ -365,7 +365,7 @@ int findMethodAtAddrInDomain(DomainDesc * domain, u8 * addr, MethodDesc ** metho
 }
 
 
-/* -1 failure, 
+/* -1 failure,
    0 success */
 int findMethodAtAddr(u8 * addr, MethodDesc ** method, ClassDesc ** classInfo, jint * bytecodePos, jint * lineNumber)
 {
@@ -436,7 +436,7 @@ DomainDesc *findDomain(u32 id)
 
 
 DomainDesc *findDomainByName(char *name)
-{   
+{
     DomainDesc *domain;
     char *mem;
     DomainDesc *ret = NULL;

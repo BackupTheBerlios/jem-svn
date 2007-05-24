@@ -1,29 +1,29 @@
 //=================================================================================
-// This file is part of Jem, a real time Java operating system designed for 
+// This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
 // Copyright © JemStone Software LLC. All rights reserved.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free 
+// terms of the GNU General Public License, version 2, as published by the Free
 // Software Foundation.
 //
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 // A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License along with 
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, 
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
-// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc. 
+// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc.
 // at http://www.javadevices.com
 //=================================================================================
-// 
+//
 // Thread management
-// 
+//
 //=================================================================================
-// 
+//
 #include <linux/module.h>
 #include <linux/types.h>
 #include <linux/kernel.h>
@@ -74,7 +74,7 @@ void jemTaskHook(void *cookie)
     rt_mutex_release(&thread->domain->gc.gcLock);
 }
 
-ThreadDesc *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param, 
+ThreadDesc *createThreadInMem(DomainDesc * domain, thread_start_t thread_start, void *param,
                               ObjectDesc * entry, u32 stackSize, int state, int prio, char *tName)
 {
     int                 result;
@@ -127,7 +127,7 @@ ThreadDesc *createInitialDomainThread(DomainDesc * domain, int state, int prio)
 }
 
 
-ThreadDesc *createThread(DomainDesc * domain, thread_start_t thread_start, void *param, int state, 
+ThreadDesc *createThread(DomainDesc * domain, thread_start_t thread_start, void *param, int state,
                          int prio, char *thName)
 {
     ThreadDesc *t = createThreadInMem(domain, thread_start, param, NULL, 1024, state, prio, thName);
@@ -234,7 +234,7 @@ void thread_prepare_to_copy(void)
 {
     ThreadDesc *cur = curthr();
     cur->max_copied = curdom()->scratchMemSize / sizeof(struct copied_s);
-    cur->copied = (struct copied_s *) curdom()->scratchMem; 
+    cur->copied = (struct copied_s *) curdom()->scratchMem;
     curthr()->n_copied = 0;
 }
 

@@ -2,27 +2,27 @@
 // This file is part of Kcli, a command line interface in a Linux kernel
 // module for embedded Linux applications.
 //
-// Copyright © 2007 JavaDevices Software LLC. 
+// Copyright © 2007 JavaDevices Software LLC.
 //
 // Kcli is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the 
+// terms of the GNU General Public License, version 2, as published by the
 // Free Software Foundation.
 //
-// Kcli is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
+// Kcli is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 // details.
 //
 // You will find documentation for Kcli at http://www.javadevices.com
-// 
+//
 // You will find the maintainers and current source code of Kcli at BerliOS:
 //    http://developer.berlios.de/projects/jem/
-// 
+//
 //=============================================================================
 // main.c
-// 
+//
 // Kcli module infrastructure.
-// 
+//
 //=============================================================================
 
 #include <linux/module.h>
@@ -40,7 +40,7 @@
 #include <linux/platform_device.h>
 #include "libcli.h"
 
-#define VERSION "1.1.2"
+#define VERSION "1.2.0"
 
 unsigned int     cliPort = CONFIG_KCLI_PORT;
 module_param(cliPort, uint, 444);
@@ -48,18 +48,18 @@ MODULE_PARM_DESC (cliPort, "Port that the cli will listen on.");
 
 
 //-----------------------------------------------------------------------------
-// 
+//
 // Prototypes.
-// 
+//
 //-----------------------------------------------------------------------------
 
 static void     kcli_start_cli(void);
 
 
 //-----------------------------------------------------------------------------
-// 
+//
 // Global data.
-// 
+//
 //-----------------------------------------------------------------------------
 
 static struct sockaddr_in       cliServerAddr;
@@ -71,9 +71,9 @@ struct socket                   *clientSocket;
 
 
 //-----------------------------------------------------------------------------
-// 
+//
 // Driver registration and attributes.
-// 
+//
 //-----------------------------------------------------------------------------
 
 struct kcli_device_driver {
@@ -88,13 +88,13 @@ static struct kcli_device_driver kcli_driver = {
     },
 };
 
-static ssize_t kcli_banner_attribute_show(struct device_driver *driver, char *buf) 
+static ssize_t kcli_banner_attribute_show(struct device_driver *driver, char *buf)
 {
     return sprintf(buf, "%s\n", kcli->banner);
 }
 
-static ssize_t kcli_banner_attribute_store(struct device_driver *driver, 
-                                          const char *buf, size_t count) 
+static ssize_t kcli_banner_attribute_store(struct device_driver *driver,
+                                          const char *buf, size_t count)
 {
     cli_set_banner(kcli, (char *) buf);
     return count;
@@ -102,13 +102,13 @@ static ssize_t kcli_banner_attribute_store(struct device_driver *driver,
 
 static DRIVER_ATTR(banner, 0644, kcli_banner_attribute_show, kcli_banner_attribute_store);
 
-static ssize_t kcli_hostname_attribute_show(struct device_driver *driver, char *buf) 
+static ssize_t kcli_hostname_attribute_show(struct device_driver *driver, char *buf)
 {
     return sprintf(buf, "%s\n", kcli->hostname);
 }
 
-static ssize_t kcli_hostname_attribute_store(struct device_driver *driver, 
-                                          const char *buf, size_t count) 
+static ssize_t kcli_hostname_attribute_store(struct device_driver *driver,
+                                          const char *buf, size_t count)
 {
     cli_set_hostname(kcli, (char *) buf);
     return count;
@@ -123,9 +123,9 @@ static struct driver_attribute *const kcli_drv_attrs[] = {
 
 
 //-----------------------------------------------------------------------------
-// 
+//
 // Exported functions..
-// 
+//
 //-----------------------------------------------------------------------------
 
 struct cli_def *cli_get(void)
@@ -135,9 +135,9 @@ struct cli_def *cli_get(void)
 EXPORT_SYMBOL(cli_get);
 
 //-----------------------------------------------------------------------------
-// 
+//
 // Module tasks.
-// 
+//
 //-----------------------------------------------------------------------------
 
 struct cli_loop_work {
@@ -194,9 +194,9 @@ static void kcli_cli_conn(struct work_struct *work)
 
 
 //-----------------------------------------------------------------------------
-// 
+//
 // Module initialization and cleanup.
-// 
+//
 //-----------------------------------------------------------------------------
 
 static void kcli_start_cli(void)

@@ -2,34 +2,36 @@
 // This file is part of Kcli, a command line interface in a Linux kernel
 // module for embedded Linux applications.
 //
-// Copyright © 2007 JavaDevices Software LLC. 
-// 
+// Copyright © 2007 JavaDevices Software LLC.
+//
 // This file was derived directly from libcli, which is a user space library
 // developed by David Parrish and Brendan O'Dea. The original source code
 // file contains no specific copyright notice, but, it was released under
 // the GNU Lesser General Public License, and this file retains that
 // license.
-// 
-// This file is free software; you can redistribute it and/or modify it under 
-// the terms of the GNU Lesser General Public License, version 2.1, as published 
+//
+// This file is free software; you can redistribute it and/or modify it under
+// the terms of the GNU Lesser General Public License, version 2.1, as published
 // by the Free Software Foundation.
 //
-// Kcli is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
+// Kcli is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 // details.
 //
 // You will find documentation for Kcli at http://www.javadevices.com
-// 
+//
 // You will find the maintainers and current source code of Kcli at BerliOS:
 //    http://developer.berlios.de/projects/jem/
-// 
+//
 //=============================================================================
 // libcli.h
-// 
+//
 // Embedded CLI interface.
-// 
+//
 //=============================================================================
+
+#include <asm/semaphore.h>
 
 #ifndef __LIBCLI_H__
 #define __LIBCLI_H__
@@ -71,6 +73,7 @@ struct cli_def {
     char *_name_buf;
     char *_print_buf;
     int _print_bufsz;
+    struct semaphore cli_mtx;
 };
 
 struct cli_filter {

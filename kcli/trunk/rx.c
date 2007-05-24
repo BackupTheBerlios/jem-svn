@@ -2,8 +2,8 @@
 // This file is part of Kcli, a command line interface in a Linux kernel
 // module for embedded Linux applications.
 //
-// Copyright © 2007 JavaDevices Software LLC. 
-// 
+// Copyright © 2007 JavaDevices Software LLC.
+//
 // This file was derived directly from diet libc, which is a user space
 // C library developed by Felix von Leitner. The original source code
 // file contains no specific copyright notice, but, it was released under
@@ -11,24 +11,24 @@
 // license.
 //
 // Kcli is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the 
+// terms of the GNU General Public License, version 2, as published by the
 // Free Software Foundation.
 //
-// Kcli is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
+// Kcli is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 // details.
 //
 // You will find documentation for Kcli at http://www.javadevices.com
-// 
+//
 // You will find the maintainers and current source code of Kcli at BerliOS:
 //    http://developer.berlios.de/projects/jem/
-// 
+//
 //=============================================================================
 // rx.c
-// 
+//
 // Kcli regular expressions implementation.
-// 
+//
 //=============================================================================
 
 #include <linux/module.h>

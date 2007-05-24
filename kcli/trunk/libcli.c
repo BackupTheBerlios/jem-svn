@@ -2,33 +2,33 @@
 // This file is part of Kcli, a command line interface in a Linux kernel
 // module for embedded Linux applications.
 //
-// Copyright © 2007 JavaDevices Software LLC. 
-// 
+// Copyright © 2007 JavaDevices Software LLC.
+//
 // This file was derived directly from libcli, which is a user space library
 // developed by David Parrish and Brendan O'Dea. The original source code
 // file contains no specific copyright notice, but, it was released under
 // the GNU Lesser General Public License, and this file retains that
 // license.
-// 
-// This file is free software; you can redistribute it and/or modify it under 
-// the terms of the GNU Lesser General Public License, version 2.1, as published 
+//
+// This file is free software; you can redistribute it and/or modify it under
+// the terms of the GNU Lesser General Public License, version 2.1, as published
 // by the Free Software Foundation.
 //
-// Kcli is distributed in the hope that it will be useful, but WITHOUT ANY 
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
+// Kcli is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 // details.
 //
 // You will find documentation for Kcli at http://www.javadevices.com
-// 
+//
 // You will find the maintainers and current source code of Kcli at BerliOS:
 //    http://developer.berlios.de/projects/jem/
-// 
+//
 //=============================================================================
 // libcli.c
-// 
+//
 // Embedded CLI implementation.
-// 
+//
 //=============================================================================
 
 #include <linux/module.h>
@@ -100,13 +100,17 @@ static char *strdup(char *s)
 void cli_set_auth_callback(struct cli_def *cli,
                            int (*auth_callback)(char *, char *))
 {
+    down(&cli->cli_mtx);
     cli->auth_callback = auth_callback;
+    up(&cli->cli_mtx);
 }
 
 void cli_set_enable_callback(struct cli_def *cli,
                              int (*enable_callback)(char *))
 {
+    down(&cli->cli_mtx);
     cli->enable_callback = enable_callback;
+    up(&cli->cli_mtx);
 }
 
 void cli_allow_user(struct cli_def *cli, char *username, char *password)
@@ -116,6 +120,7 @@ void cli_allow_user(struct cli_def *cli, char *username, char *password)
     n->password = strdup(password);
     n->next = 0;
 
+    down(&cli->cli_mtx);
     if (cli->users) {
         struct unp *u = cli->users;
         while (u->next)
@@ -124,12 +129,15 @@ void cli_allow_user(struct cli_def *cli, char *username, char *password)
         u->next = n;
     } else
         cli->users = n;
+    up(&cli->cli_mtx);
 }
 
 void cli_allow_enable(struct cli_def *cli, char *password)
 {
+    down(&cli->cli_mtx);
     kfree(cli->enable_password);
     cli->enable_password = strdup(password);
+    up(&cli->cli_mtx);
 }
 
 void cli_deny_user(struct cli_def *cli, char *username)
@@ -137,6 +145,7 @@ void cli_deny_user(struct cli_def *cli, char *username)
     struct unp *u;
     struct unp *p;
 
+    down(&cli->cli_mtx);
     for (p = 0, u = cli->users; u; p = u, u = u->next) {
         if (strcmp(username, u->username))
             continue;
@@ -151,32 +160,39 @@ void cli_deny_user(struct cli_def *cli, char *username)
         kfree(u);
         break;
     }
+    up(&cli->cli_mtx);
 }
 
 void cli_set_banner(struct cli_def *cli, char *banner)
 {
+    down(&cli->cli_mtx);
     if (cli->banner) free_z(cli->banner);
     if (banner && *banner)
         cli->banner = strdup(banner);
     if (cli->banner[strlen(cli->banner)-1] == '\n') {
         cli->banner[strlen(cli->banner)-1] = '\0';
     }
+    up(&cli->cli_mtx);
 }
 
 void cli_set_hostname(struct cli_def *cli, char *hostname)
 {
+    down(&cli->cli_mtx);
     if (cli->hostname) free_z(cli->hostname);
     if (hostname && *hostname)
         cli->hostname = strdup(hostname);
     if (cli->hostname[strlen(cli->hostname)-1] == '\n') {
         cli->hostname[strlen(cli->hostname)-1] = '\0';
     }
+    up(&cli->cli_mtx);
 }
 
 void cli_set_promptchar(struct cli_def *cli, char *promptchar)
 {
+    down(&cli->cli_mtx);
     if (cli->promptchar) kfree(cli->promptchar);
     cli->promptchar = strdup(promptchar);
+    up(&cli->cli_mtx);
 }
 
 int cli_set_privilege(struct cli_def *cli, int priv)
@@ -199,8 +215,11 @@ static void set_modestring(struct cli_def *cli, char *modestring)
 
 int cli_set_configmode(struct cli_def *cli, int mode, char *config_desc)
 {
-    int old = cli->mode;
-    cli->mode = mode;
+    int old;
+
+    down(&cli->cli_mtx);
+    old         = cli->mode;
+    cli->mode   = mode;
 
     if (mode != old) {
         if (!cli->mode) {
@@ -215,6 +234,7 @@ int cli_set_configmode(struct cli_def *cli, int mode, char *config_desc)
         }
     }
 
+    up(&cli->cli_mtx);
     return old;
 }
 
@@ -292,7 +312,9 @@ struct cli_command *cli_register_command(struct cli_def *cli,
         }
     }
 
+    down(&cli->cli_mtx);
     build_shortest(cli, parent ? parent : cli->commands);
+    up(&cli->cli_mtx);
     return c;
 }
 
@@ -304,6 +326,7 @@ int cli_unregister_command(struct cli_def *cli, char *command)
     if (!(command && cli->commands))
         return CLI_ERROR;
 
+    down(&cli->cli_mtx);
     for (c = cli->commands; c; p = c, c = c->next) {
         if (strcmp(c->command, command))
             continue;
@@ -316,8 +339,10 @@ int cli_unregister_command(struct cli_def *cli, char *command)
         kfree(c->command);
         kfree(c->help);
         kfree(c);
+        up(&cli->cli_mtx);
         return CLI_OK;
     }
+    up(&cli->cli_mtx);
 
     return CLI_ERROR;
 }
@@ -443,6 +468,8 @@ struct cli_def *cli_init() {
 
     if (!(cli = kzalloc(sizeof(struct cli_def), GFP_KERNEL)))
         return NULL;
+
+    init_MUTEX(&cli->cli_mtx);
 
     cli_register_command(cli, 0, "help", cmd_help, PRIVILEGE_UNPRIVILEGED,
                          MODE_ANY, "Show available commands");

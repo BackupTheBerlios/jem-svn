@@ -33,14 +33,14 @@
 <H2><A NAME="funcref">1.0 Introduction</A></H2>
 <P>
 Kcli provides a consistent command line environment for other kernel modules,
-with a few common features between every module. The kcli module exports a 
-number of functions that other modules use to add their commands into the 
+with a few common features between every module. The kcli module exports a
+number of functions that other modules use to add their commands into the
 common base and to customize the Kcli default behaviour.
 </P>
 
 <P>
 The Kcli module listens on a defined port for a Telnet connection. The port
-number is defined through the module configuration (menuconfig) or when the module is loaded using the cliPort module paramater. 
+number is defined through the module configuration (menuconfig) or when the module is loaded using the cliPort module paramater.
 </P>
 
 <H2><A NAME="history">2.0 History</A></H2>
@@ -139,18 +139,18 @@ module, and extends it with a new command.
 
 
 //-----------------------------------------------------------------------------
-// 
+//
 // Global data.
-// 
+//
 //-----------------------------------------------------------------------------
 
 static struct cli_def   *kcli;
 
 
 //-----------------------------------------------------------------------------
-// 
+//
 // Kcli commands.
-// 
+//
 //-----------------------------------------------------------------------------
 
 int cmd_test(struct cli_def *cli, char *command, char *argv[], int argc)
@@ -165,9 +165,9 @@ int cmd_test(struct cli_def *cli, char *command, char *argv[], int argc)
 }
 
 //-----------------------------------------------------------------------------
-// 
+//
 // Module initialization and cleanup.
-// 
+//
 //-----------------------------------------------------------------------------
 
 
@@ -194,9 +194,9 @@ module_exit(ktest_exit);
 
 <H2><A NAME="funcref">6.0 Function Reference</A></H2>
 
-<H3><A NAME="cli_register_command">6.1 cli_register_command(<EM>struct cli_def *cli, 
-struct cli_command *parent, char *command, 
-int (*callback)(struct cli_def *, char *, char **, int), 
+<H3><A NAME="cli_register_command">6.1 cli_register_command(<EM>struct cli_def *cli,
+struct cli_command *parent, char *command,
+int (*callback)(struct cli_def *, char *, char **, int),
 int privilege, int mode, char *help</EM>)</A></H3>
 
 <P>
@@ -242,7 +242,7 @@ commands to enter your own configuration levels, which should call the
 <P>If <EM>help</EM> is provided, it is given to the user when the use
 the <EM>help</EM> command or press <B>?</B>.</P>
 
-<H3><A NAME="cli_unregister_command">6.2 cli_unregister_command(<EM>struct cli_def *cli, 
+<H3><A NAME="cli_unregister_command">6.2 cli_unregister_command(<EM>struct cli_def *cli,
 char *command</EM>)</A></H3>
 
 <P>
@@ -250,7 +250,7 @@ Remove a command <EM>command</EM> and all children.  There is not provision
 yet for removing commands at lower than the top level.
 </P>
 
-<H3><A NAME="cli_set_auth_callback">6.3 cli_set_auth_callback(<EM>struct cli_def *cli, 
+<H3><A NAME="cli_set_auth_callback">6.3 cli_set_auth_callback(<EM>struct cli_def *cli,
 int (*auth_callback)(char *, char *)</EM>)</A></H3>
 
 <P>
@@ -267,7 +267,7 @@ is successful.  </P>
 <P> If <EM>auth_callback</EM> is NULL, then callback based authentication
 will be disabled.  </P>
 
-<H3><A NAME="cli_allow_user">6.4 cli_allow_user(<EM>struct cli_def *cli, 
+<H3><A NAME="cli_allow_user">6.4 cli_allow_user(<EM>struct cli_def *cli,
 char *username, char *password</EM>)</A></H3>
 
 <P> Enables internal authentication, and adds <EM>username/password</EM>
@@ -276,7 +276,7 @@ to the list of allowed users.  <P>
 <P> The internal list of users will be checked before callback based
 authentication is tried.  </P>
 
-<H3><A NAME="cli_deny_user">6.5 cli_deny_user(<EM>struct cli_def *cli, 
+<H3><A NAME="cli_deny_user">6.5 cli_deny_user(<EM>struct cli_def *cli,
 char *username</EM>)</A></H3>
 
 <P>
@@ -286,7 +286,7 @@ Removes <EM>username/password</EM> from the list of allowed users.
 <P> If this is the last combination in the list, then internal
 authentication will be disabled.</P>
 
-<H3><A NAME="cli_set_banner">6.6 cli_set_banner(<EM>struct cli_def *cli, 
+<H3><A NAME="cli_set_banner">6.6 cli_set_banner(<EM>struct cli_def *cli,
 char *banner</EM>)</A></H3>
 
 <P>
@@ -295,18 +295,18 @@ connect.  This may be a security warning for example.
 </P>
 
 <P>
-If this function is not called or called with a NULL argument, no banner 
+If this function is not called or called with a NULL argument, no banner
 will be presented.
 </P>
 
-<H3><A NAME="cli_set_hostname">6.7 cli_set_hostname(<EM>struct cli_def *cli, 
+<H3><A NAME="cli_set_hostname">6.7 cli_set_hostname(<EM>struct cli_def *cli,
 char *hostname</EM>)</A></H3>
 
 <P>
 Sets the hostname to be displayed as the first part of the prompt.
 </P>
 
-<H3><A NAME="cli_regular">6.8 cli_regular(<EM>struct cli_def *cli, 
+<H3><A NAME="cli_regular">6.8 cli_regular(<EM>struct cli_def *cli,
 int(*callback)(struct cli_def *)</EM>)</A></H3>
 
 <P>
@@ -324,7 +324,7 @@ If the callback function does not return CLI_OK, then the user will
 be disconnected.
 </P>
 
-<H3><A NAME="cli_print_callback">6.9 cli_print_callback(<EM>struct cli_def *cli, 
+<H3><A NAME="cli_print_callback">6.9 cli_print_callback(<EM>struct cli_def *cli,
 void (*callback)(struct cli_def *, char *)</EM>)</A></H3>
 
 <P>
@@ -341,17 +341,17 @@ Specifying NULL as the callback parameter will make Kcli use the
 default cli_print function.
 </P>
 
-<H3><A NAME="cli_set_enable_callback">6.10 cli_set_enable_callback(<EM>struct cli_def *cli, 
+<H3><A NAME="cli_set_enable_callback">6.10 cli_set_enable_callback(<EM>struct cli_def *cli,
 void (*callback)(struct cli_def *, char *)</EM>)</A></H3>
 
 <P>
-Just like <A HREF="#cli_set_auth_callback">cli_set_auth_callback</A> this takes a 
+Just like <A HREF="#cli_set_auth_callback">cli_set_auth_callback</A> this takes a
 pointer to a callback
 function to authorize privileged access.  However this callback only takes a
 single string - the password.
 </P>
 
-<H3><A NAME="cli_allow_enable">6.11 cli_allow_enable(<EM>struct cli_def *cli, 
+<H3><A NAME="cli_allow_enable">6.11 cli_allow_enable(<EM>struct cli_def *cli,
 char *password</EM>)</A></H3>
 
 <P>
@@ -363,7 +363,7 @@ This static password will be checked before running any enable callbacks.
 Set this to NULL to not have a static enable password.
 </P>
 
-<H3><A NAME="cli_set_configmode">6.12 cli_set_configmode(<EM>struct cli_def *cli, 
+<H3><A NAME="cli_set_configmode">6.12 cli_set_configmode(<EM>struct cli_def *cli,
 int mode, char *string</EM>)</A></H3>
 
 <P>
@@ -401,8 +401,8 @@ specified.
 <H3><A NAME="cli_get">6.14 <EM>struct cli_def *</EM>cli_get(<EM>void</EM>)</A></H3>
 
 <P>
-This function is called by modules external to Kcli to get a reference to 
-the cli struct, which is required in order to register new commands and 
+This function is called by modules external to Kcli to get a reference to
+the cli struct, which is required in order to register new commands and
 execute other Kcli functions.
 </P>
 

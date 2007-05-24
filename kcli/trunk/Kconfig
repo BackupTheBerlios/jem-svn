@@ -13,7 +13,7 @@ config KCLI
           entirely in the kernel, and this module is intended to provide
           a command line interface facility for this case. The current version
           has been designed primarily for device debug and diagnostic
-          applications. This version is not secure, thus, it should not 
+          applications. This version is not secure, thus, it should not
           be enabled for devices that are not on closed networks.
 
           Kcli is not accessible via user space sockets. If one tries to

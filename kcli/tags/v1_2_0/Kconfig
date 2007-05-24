@@ -1,0 +1,38 @@
+#
+# KCLI configuration
+#
+menu "Command Line Interface (KCLI)"
+
+config KCLI
+        tristate "Kernel-based Command Line Interface (kcli) support"
+        depends on EXPERIMENTAL
+        ---help---
+          Kcli is a command line interface that runs in the kernel. It
+          is meant for embedded Linux applications where there may not
+          be a user space application. Some embedded applications run
+          entirely in the kernel, and this module is intended to provide
+          a command line interface facility for this case. The current version
+          has been designed primarily for device debug and diagnostic
+          applications. This version is not secure, thus, it should not
+          be enabled for devices that are not on closed networks.
+
+          Kcli is not accessible via user space sockets. If one tries to
+          open a socket on the kcli device using a socket call from
+          libc, it will return EINVAL. One can telnet to Kcli from
+          anywhere, but, it is not a normal user space socket device.
+
+          To compile this as a module, choose M here: the module
+          will be called kcli.
+
+          If unsure, say N.
+
+config KCLI_PORT
+        int "Port the cli listens on."
+        default 23
+        depends on KCLI
+        ---help---
+          This variable defines the port the cli will listen on by default. The
+          port may be changed at module load time with the cliPort module
+          parameter.
+
+endmenu

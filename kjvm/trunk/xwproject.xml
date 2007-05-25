@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xwproject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../eclipse/plugins/net.sf.xweaver_0.9.5.200705022127/src/xsd/xwproject.xsd" xwHome="../../../../eclipse/plugins/net.sf.xweaver_0.9.5.200705022127" version="1.0">
+  <base name="Kjvm" indentChar="tab" indentCount="1" language="C">
+    <filetypes inlineSuffix="_inl.h" declarationSuffix=".h" definitionSuffix=".c" />
+  </base>
+  <woven name="Kjvm_woven" path="../Kjvm_woven" aspect="aspects/License.ax">
+    <weave>
+      <include name="core/jem.c" />
+    </weave>
+  </woven>
+</xwproject>
+

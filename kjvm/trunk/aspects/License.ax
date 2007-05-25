@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ax:aspect xmlns:ax="http://control.ee.ethz.ch/XWeaver/AspectX" xmlns:cpp="http://www.sdml.info/srcML/cpp" xmlns:java="http://www.sdml.info/srcML/java" xmlns:src="http://www.sdml.info/srcML/src" xmlns:util="http://www.pnp-software.com/util" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="License">
+  <ax:advice name="LicenseText" type="add">
+    <ax:pointcut constraint="not(*[position() = 1 and self::src:comment[@type='block']])" type="src:unit">
+      <ax:description>Unlicensed Files</ax:description>
+    </ax:pointcut>
+    <ax:codeModifier type="comment">
+      <ax:text>//=================================================================================</ax:text>
+      <ax:text>// This file is part of Jem, a real time Java operating system designed for</ax:text>
+      <ax:text>// embedded systems.</ax:text>
+      <ax:text>//</ax:text>
+      <ax:text>// Copyright (C) 2007 Sombrio Systems Inc. All rights reserved.</ax:text>
+      <ax:text>//</ax:text>
+      <ax:text>// Jem is free software; you can redistribute it and/or modify it under the</ax:text>
+      <ax:text>// terms of the GNU General Public License, version 2, as published by the Free</ax:text>
+      <ax:text>// Software Foundation.</ax:text>
+      <ax:text>//</ax:text>
+      <ax:text>// Jem is distributed in the hope that it will be useful, but WITHOUT ANY</ax:text>
+      <ax:text>// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR</ax:text>
+      <ax:text>// A PARTICULAR PURPOSE. See the GNU General Public License for more details.</ax:text>
+      <ax:text>//</ax:text>
+      <ax:text>// You should have received a copy of the GNU General Public License along with</ax:text>
+      <ax:text>// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,</ax:text>
+      <ax:text>// Fifth Floor, Boston, MA 02110-1301, USA</ax:text>
+      <ax:text>//</ax:text>
+      <ax:text>//=================================================================================</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+</ax:aspect>

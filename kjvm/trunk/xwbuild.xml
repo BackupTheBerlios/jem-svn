@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="default" name="Kjvm">
+
+   <!-- Project Name -->
+   <property name="ProjectName" value="Kjvm"/>
+
+   <!-- Install directory of XWeaver-->
+   <property name="XWeaverHome" location="../../../../eclipse/plugins/net.sf.xweaver_0.9.5.200705022127"/>
+
+   <!-- Log file for XWeaver tests-->
+   <property name="XWeaverTest_logFile" location="XWeaverTestLog.txt"/>
+
+   <!-- Log file for XWeaver performance tests-->
+   <property name="XWeaverPerfTest_logFile" location="XWeaverPerfTestLog.txt"/>
+
+   <!-- Custom targets declarations -->
+   <taskdef name="src2srcmlc" classname="net.sf.xweaver.srcml.ant.Src2SrcMLC"/>
+   <taskdef name="srcml2src" classname="net.sf.xweaver.srcml.ant.SrcML2Src"/>
+   <taskdef name="axw" classname="net.sf.xweaver.ant.AXWeave"/>
+   <taskdef name="axc" classname="net.sf.xweaver.ant.AXCompile"/>
+   <taskdef name="axl" classname="net.sf.xweaver.ant.AXLocate"/>
+   <target name="init">
+      <tstamp/>
+   </target>
+   <target name="default" depends="init">
+      <echo>  The following aspects (targets) can be woven:${line.separator}</echo>
+      <echo>    Kjvm_woven</echo>
+      <echo>  General Targets: </echo>
+      <echo>    WeaveAll</echo>
+      <echo>  Test Suite:</echo>
+      <echo>    XWeaverTestAll</echo>
+      <echo>    WeaveAndTestAll</echo>
+      <echo>    Kjvm_woven_XWeaverTest</echo>
+   </target>
+
+   <!-- ================================= 
+        target: Kjvm_woven_Clean
+      ================================= -->
+   <target name="Kjvm_woven_Clean" description="Clean Kjvm_woven">
+      <delete dir="../Kjvm_woven/.xwTemp/License/"/>
+   </target>
+
+   <!-- ================================= 
+        target: Kjvm_woven
+      ================================= -->
+   <target name="Kjvm_woven" description="Weave Kjvm_woven">
+      <echo>${XWeaverPerfTest_logFile}</echo>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${line.separator}WeaveKjvm_woven${line.separator}===============${line.separator}${line.separator}</echo>
+      <tstamp>
+         <format property="d7" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d7}: Start WeaveKjvm_woven${line.separator}</echo>
+
+   <!-- Create directories -->
+      <mkdir dir="../Kjvm_woven/.xwTemp/License/"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/License/srcML"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/License/locators"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/License/srcMLAnnotated"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/License/srcMLWoven"/>
+      <mkdir dir="../Kjvm_woven"/>
+      <tstamp>
+         <format property="d9" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d9}: Start src2srcml${line.separator}</echo>
+      <src2srcmlc destdir="../Kjvm_woven/.xwTemp/License/srcML" executable="${XWeaverHome}/resources/srcML/windows/src2srcml.exe" os="Windows XP, Windows 98, Windows 95, Windows NT" language="C" srcdir=".">
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="core/jem.c"/>
+      </src2srcmlc>
+      <src2srcmlc destdir="../Kjvm_woven/.xwTemp/License/srcML" executable="${XWeaverHome}/resources/srcML/linux/src2srcml" os="Linux" language="C" srcdir=".">
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="core/jem.c"/>
+      </src2srcmlc>
+      <tstamp>
+         <format property="d12" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d12}: Start axc${line.separator}</echo>
+      <axc xwhome="${XWeaverHome}" aspect="aspects/License.ax" locator="../Kjvm_woven/.xwTemp/License/locators/License.xsl">
+         <param name="inlineSuffix" expression="_inl.h"/>
+         <param name="declarationSuffix" expression=".h"/>
+         <param name="definitionSuffix" expression=".c"/>
+      </axc>
+      <tstamp>
+         <format property="d14" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d14}: Start axl${line.separator}</echo>
+      <axl xwhome="${XWeaverHome}" locator="../Kjvm_woven/.xwTemp/License/locators/License.xsl" srcdir="../Kjvm_woven/.xwTemp/License/srcML" destdir="../Kjvm_woven/.xwTemp/License/srcMLAnnotated" includes="**/*.xml"/>
+      <tstamp>
+         <format property="d16" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d16}: Start axw${line.separator}</echo>
+      <axw srcdir="../Kjvm_woven/.xwTemp/License/srcMLAnnotated" destdir="../Kjvm_woven/.xwTemp/License/srcMLWoven" indentchar="tab" indentcount="1" includes="**/*.xml" xsl="${XWeaverHome}/src/xsl/main/weaver/main_cpp.xsl"/>
+      <tstamp>
+         <format property="d18" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d18}: Start srcml2src${line.separator}</echo>
+      <srcml2src xwhome="${XWeaverHome}" srcdir="../Kjvm_woven/.xwTemp/License/srcMLWoven" destdir="../Kjvm_woven" includes="**/*.xml"/>
+      <tstamp>
+         <format property="d20" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d20}: End WeaveKjvm_woven${line.separator}</echo>
+   </target>
+
+   <!-- ================================= 
+          target: WeaveAll
+        ================================= -->
+   <target name="WeaveAll" description="Weaves all defined targets" depends="Kjvm_woven"/>
+
+   <!-- ================================= 
+          target: CleanAll
+        ================================= -->
+   <target name="CleanAll" description="Clean all defined targets" depends="Kjvm_woven_Clean"/>
+
+   <!-- ================================= 
+          target: XWeaverTestAll
+        ================================= -->
+   <target name="XWeaverTestAll" description="Tests all woven sources" depends=""/>
+
+   <!-- ================================= 
+          target: WeaveAndTestAll
+        ================================= -->
+   <target name="WeaveAndTestAll" description="Weave and tests all" depends="WeaveAll, XWeaverTestAll"/>
+</project>

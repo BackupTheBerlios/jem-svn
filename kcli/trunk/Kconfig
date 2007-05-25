@@ -5,7 +5,6 @@ menu "Command Line Interface (KCLI)"
 
 config KCLI
         tristate "Kernel-based Command Line Interface (kcli) support"
-        depends on EXPERIMENTAL
         ---help---
           Kcli is a command line interface that runs in the kernel. It
           is meant for embedded Linux applications where there may not

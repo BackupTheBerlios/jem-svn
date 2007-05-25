@@ -2,7 +2,7 @@
 // This file is part of Kcli, a command line interface in a Linux kernel
 // module for embedded Linux applications.
 //
-// Copyright © 2007 JavaDevices Software LLC.
+// Copyright (C) 2007 Christopher Stone.
 //
 // Kcli is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License, version 2, as published by the
@@ -40,7 +40,7 @@
 #include <linux/platform_device.h>
 #include "libcli.h"
 
-#define VERSION "1.2.0"
+#define VERSION "1.2.1"
 
 unsigned int     cliPort = CONFIG_KCLI_PORT;
 module_param(cliPort, uint, 444);
@@ -262,7 +262,7 @@ static int __init kcli_init (void)
     return 0;
 }
 
-MODULE_AUTHOR("JavaDevices Software LLC");
+MODULE_AUTHOR("Christopher Stone");
 MODULE_LICENSE("GPL v2");
 MODULE_DESCRIPTION("An embedded command line interface.");
 MODULE_VERSION(VERSION);

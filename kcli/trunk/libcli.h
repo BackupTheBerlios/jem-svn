@@ -2,7 +2,7 @@
 // This file is part of Kcli, a command line interface in a Linux kernel
 // module for embedded Linux applications.
 //
-// Copyright © 2007 JavaDevices Software LLC.
+// Copyright (C) 2007 Christopher Stone.
 //
 // This file was derived directly from libcli, which is a user space library
 // developed by David Parrish and Brendan O'Dea. The original source code

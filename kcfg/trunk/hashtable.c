@@ -2,7 +2,7 @@
 // This file is part of Kcfg, a simple configuration system in a Linux kernel
 // module for embedded Linux applications.
 //
-// Copyright (C) 2007 JavaDevices Software LLC.
+// Copyright (C) 2007 Christopher Stone.
 // Copyright (C) 2006 Jeffrey S. Dutky
 //
 // This file was derived directly from the simple configuration system,

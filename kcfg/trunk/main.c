@@ -2,7 +2,7 @@
 // This file is part of Kcfg, a simple configuration system in a Linux kernel
 // module for embedded Linux applications.
 //
-// Copyright (C) 2007 JavaDevices Software LLC.
+// Copyright (C) 2007 Christopher Stone.
 //
 // Kcfg is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License, version 2, as published by the
@@ -39,7 +39,7 @@
 #include "libcli.h"
 #endif
 
-#define VERSION "1.1.2"
+#define VERSION "1.1.3"
 
 static char *filename = CONFIG_KCFG_FILENAME;
 module_param(filename, charp, 444);
@@ -270,7 +270,7 @@ static int __init kcfg_init (void)
     return 0;
 }
 
-MODULE_AUTHOR("JavaDevices Software LLC");
+MODULE_AUTHOR("Christopher Stone");
 MODULE_LICENSE("GPL v2");
 MODULE_DESCRIPTION("An embedded module configuration interface.");
 MODULE_VERSION(VERSION);

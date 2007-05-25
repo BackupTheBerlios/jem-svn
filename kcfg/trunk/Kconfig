@@ -5,11 +5,10 @@ menu "Simple Configuration Utility (KCFG)"
 
 config KCFG
         tristate "Kernel-based configuration (kcfg) support"
-        depends on EXPERIMENTAL
         ---help---
           Kcfg is a kernel module that reads a configuration file containing
-	  name value pairs. The configuration values can then be queried
-	  by other kernel modulues through an exported API.
+	      name value pairs. The configuration values can then be queried
+	      by other kernel modulues through an exported API.
 
           To compile this as a module, choose M here: the module
           will be called kcfg.
@@ -29,10 +28,10 @@ config KCFG_CLI
         bool "Include the config command line interface."
         default false
         depends on KCLI
-	depends on KCFG
+	    depends on KCFG
         ---help---
           This variable will compile in a command line interface that can
-	  be used to query configuration values, load new files, etc. The
-	  CLI depends on the KCLI kernel module.
+	      be used to query configuration values, load new files, etc. The
+	      CLI depends on the kcli kernel module.
 
 endmenu

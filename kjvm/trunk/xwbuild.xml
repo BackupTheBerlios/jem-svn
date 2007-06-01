@@ -37,7 +37,10 @@
         target: Kjvm_woven_Clean
       ================================= -->
    <target name="Kjvm_woven_Clean" description="Clean Kjvm_woven">
+      <delete dir="../Kjvm_woven/.xwTemp/CommandLineInterface/"/>
+      <delete dir="../Kjvm_woven/.xwTemp/MallocStatistics/"/>
       <delete dir="../Kjvm_woven/.xwTemp/License/"/>
+      <delete dir="../Kjvm_woven/.xwTemp/Cleanup/"/>
    </target>
 
    <!-- ================================= 
@@ -47,9 +50,115 @@
       <echo>${XWeaverPerfTest_logFile}</echo>
       <echo append="true" file="${XWeaverPerfTest_logFile}">${line.separator}WeaveKjvm_woven${line.separator}===============${line.separator}${line.separator}</echo>
       <tstamp>
-         <format property="d7" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+         <format property="d11498" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
       </tstamp>
-      <echo append="true" file="${XWeaverPerfTest_logFile}">${d7}: Start WeaveKjvm_woven${line.separator}</echo>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11498}: Start WeaveKjvm_woven${line.separator}</echo>
+
+   <!-- Create directories -->
+      <mkdir dir="../Kjvm_woven/.xwTemp/CommandLineInterface/"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/CommandLineInterface/srcML"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/CommandLineInterface/locators"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/CommandLineInterface/srcMLAnnotated"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/CommandLineInterface/srcMLWoven"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/CommandLineInterface/woven"/>
+      <tstamp>
+         <format property="d11500" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11500}: Start src2srcml${line.separator}</echo>
+      <src2srcmlc destdir="../Kjvm_woven/.xwTemp/CommandLineInterface/srcML" executable="${XWeaverHome}/resources/srcML/windows/src2srcml.exe" os="Windows XP, Windows 98, Windows 95, Windows NT" language="C" srcdir=".">
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="core/jem.c"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="core/malloc.c"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="core/domain.c"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/object.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/domain.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/gc.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/jemtypes.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/zero.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/load.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/portal.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/code.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/zero_Memory.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/thread.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/malloc.h"/>
+      </src2srcmlc>
+      <src2srcmlc destdir="../Kjvm_woven/.xwTemp/CommandLineInterface/srcML" executable="${XWeaverHome}/resources/srcML/linux/src2srcml" os="Linux" language="C" srcdir=".">
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="core/jem.c"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="core/malloc.c"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="core/domain.c"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/object.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/domain.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/gc.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/jemtypes.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/zero.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/load.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/portal.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/code.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/zero_Memory.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/thread.h"/>
+         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="include/malloc.h"/>
+      </src2srcmlc>
+      <tstamp>
+         <format property="d11503" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11503}: Start axc${line.separator}</echo>
+      <axc xwhome="${XWeaverHome}" aspect="aspects/CommandLineInterface.ax" locator="../Kjvm_woven/.xwTemp/CommandLineInterface/locators/CommandLineInterface.xsl">
+         <param name="inlineSuffix" expression="_inl.h"/>
+         <param name="declarationSuffix" expression=".h"/>
+         <param name="definitionSuffix" expression=".c"/>
+      </axc>
+      <tstamp>
+         <format property="d11505" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11505}: Start axl${line.separator}</echo>
+      <axl xwhome="${XWeaverHome}" locator="../Kjvm_woven/.xwTemp/CommandLineInterface/locators/CommandLineInterface.xsl" srcdir="../Kjvm_woven/.xwTemp/CommandLineInterface/srcML" destdir="../Kjvm_woven/.xwTemp/CommandLineInterface/srcMLAnnotated" includes="**/*.xml"/>
+      <tstamp>
+         <format property="d11507" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11507}: Start axw${line.separator}</echo>
+      <axw srcdir="../Kjvm_woven/.xwTemp/CommandLineInterface/srcMLAnnotated" destdir="../Kjvm_woven/.xwTemp/CommandLineInterface/srcMLWoven" indentchar="space" indentcount="1" includes="**/*.xml" xsl="${XWeaverHome}/src/xsl/main/weaver/main_cpp.xsl"/>
+      <tstamp>
+         <format property="d11509" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11509}: Start srcml2src${line.separator}</echo>
+      <srcml2src xwhome="${XWeaverHome}" srcdir="../Kjvm_woven/.xwTemp/CommandLineInterface/srcMLWoven" destdir="../Kjvm_woven/.xwTemp/CommandLineInterface/woven" includes="**/*.xml"/>
+
+   <!-- Create directories -->
+      <mkdir dir="../Kjvm_woven/.xwTemp/MallocStatistics/"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/MallocStatistics/srcML"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/MallocStatistics/locators"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/MallocStatistics/srcMLAnnotated"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/MallocStatistics/srcMLWoven"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/MallocStatistics/woven"/>
+      <tstamp>
+         <format property="d11511" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11511}: Start src2srcml${line.separator}</echo>
+      <src2srcmlc destdir="../Kjvm_woven/.xwTemp/MallocStatistics/srcML" executable="${XWeaverHome}/resources/srcML/windows/src2srcml.exe" os="Windows XP, Windows 98, Windows 95, Windows NT" language="C" srcdir="../Kjvm_woven/.xwTemp/CommandLineInterface/woven"/>
+      <src2srcmlc destdir="../Kjvm_woven/.xwTemp/MallocStatistics/srcML" executable="${XWeaverHome}/resources/srcML/linux/src2srcml" os="Linux" language="C" srcdir="../Kjvm_woven/.xwTemp/CommandLineInterface/woven"/>
+      <tstamp>
+         <format property="d11514" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11514}: Start axc${line.separator}</echo>
+      <axc xwhome="${XWeaverHome}" aspect="aspects/MallocStatistics.ax" locator="../Kjvm_woven/.xwTemp/MallocStatistics/locators/MallocStatistics.xsl">
+         <param name="inlineSuffix" expression="_inl.h"/>
+         <param name="declarationSuffix" expression=".h"/>
+         <param name="definitionSuffix" expression=".c"/>
+      </axc>
+      <tstamp>
+         <format property="d11516" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11516}: Start axl${line.separator}</echo>
+      <axl xwhome="${XWeaverHome}" locator="../Kjvm_woven/.xwTemp/MallocStatistics/locators/MallocStatistics.xsl" srcdir="../Kjvm_woven/.xwTemp/MallocStatistics/srcML" destdir="../Kjvm_woven/.xwTemp/MallocStatistics/srcMLAnnotated" includes="**/*.xml"/>
+      <tstamp>
+         <format property="d11518" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11518}: Start axw${line.separator}</echo>
+      <axw srcdir="../Kjvm_woven/.xwTemp/MallocStatistics/srcMLAnnotated" destdir="../Kjvm_woven/.xwTemp/MallocStatistics/srcMLWoven" indentchar="space" indentcount="1" includes="**/*.xml" xsl="${XWeaverHome}/src/xsl/main/weaver/main_cpp.xsl"/>
+      <tstamp>
+         <format property="d11520" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11520}: Start srcml2src${line.separator}</echo>
+      <srcml2src xwhome="${XWeaverHome}" srcdir="../Kjvm_woven/.xwTemp/MallocStatistics/srcMLWoven" destdir="../Kjvm_woven/.xwTemp/MallocStatistics/woven" includes="**/*.xml"/>
 
    <!-- Create directories -->
       <mkdir dir="../Kjvm_woven/.xwTemp/License/"/>
@@ -57,45 +166,79 @@
       <mkdir dir="../Kjvm_woven/.xwTemp/License/locators"/>
       <mkdir dir="../Kjvm_woven/.xwTemp/License/srcMLAnnotated"/>
       <mkdir dir="../Kjvm_woven/.xwTemp/License/srcMLWoven"/>
-      <mkdir dir="../Kjvm_woven"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/License/woven"/>
       <tstamp>
-         <format property="d9" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+         <format property="d11522" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
       </tstamp>
-      <echo append="true" file="${XWeaverPerfTest_logFile}">${d9}: Start src2srcml${line.separator}</echo>
-      <src2srcmlc destdir="../Kjvm_woven/.xwTemp/License/srcML" executable="${XWeaverHome}/resources/srcML/windows/src2srcml.exe" os="Windows XP, Windows 98, Windows 95, Windows NT" language="C" srcdir=".">
-         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="core/jem.c"/>
-      </src2srcmlc>
-      <src2srcmlc destdir="../Kjvm_woven/.xwTemp/License/srcML" executable="${XWeaverHome}/resources/srcML/linux/src2srcml" os="Linux" language="C" srcdir=".">
-         <include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="core/jem.c"/>
-      </src2srcmlc>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11522}: Start src2srcml${line.separator}</echo>
+      <src2srcmlc destdir="../Kjvm_woven/.xwTemp/License/srcML" executable="${XWeaverHome}/resources/srcML/windows/src2srcml.exe" os="Windows XP, Windows 98, Windows 95, Windows NT" language="C" srcdir="../Kjvm_woven/.xwTemp/MallocStatistics/woven"/>
+      <src2srcmlc destdir="../Kjvm_woven/.xwTemp/License/srcML" executable="${XWeaverHome}/resources/srcML/linux/src2srcml" os="Linux" language="C" srcdir="../Kjvm_woven/.xwTemp/MallocStatistics/woven"/>
       <tstamp>
-         <format property="d12" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+         <format property="d11525" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
       </tstamp>
-      <echo append="true" file="${XWeaverPerfTest_logFile}">${d12}: Start axc${line.separator}</echo>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11525}: Start axc${line.separator}</echo>
       <axc xwhome="${XWeaverHome}" aspect="aspects/License.ax" locator="../Kjvm_woven/.xwTemp/License/locators/License.xsl">
          <param name="inlineSuffix" expression="_inl.h"/>
          <param name="declarationSuffix" expression=".h"/>
          <param name="definitionSuffix" expression=".c"/>
       </axc>
       <tstamp>
-         <format property="d14" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+         <format property="d11527" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
       </tstamp>
-      <echo append="true" file="${XWeaverPerfTest_logFile}">${d14}: Start axl${line.separator}</echo>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11527}: Start axl${line.separator}</echo>
       <axl xwhome="${XWeaverHome}" locator="../Kjvm_woven/.xwTemp/License/locators/License.xsl" srcdir="../Kjvm_woven/.xwTemp/License/srcML" destdir="../Kjvm_woven/.xwTemp/License/srcMLAnnotated" includes="**/*.xml"/>
       <tstamp>
-         <format property="d16" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+         <format property="d11529" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
       </tstamp>
-      <echo append="true" file="${XWeaverPerfTest_logFile}">${d16}: Start axw${line.separator}</echo>
-      <axw srcdir="../Kjvm_woven/.xwTemp/License/srcMLAnnotated" destdir="../Kjvm_woven/.xwTemp/License/srcMLWoven" indentchar="tab" indentcount="1" includes="**/*.xml" xsl="${XWeaverHome}/src/xsl/main/weaver/main_cpp.xsl"/>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11529}: Start axw${line.separator}</echo>
+      <axw srcdir="../Kjvm_woven/.xwTemp/License/srcMLAnnotated" destdir="../Kjvm_woven/.xwTemp/License/srcMLWoven" indentchar="space" indentcount="1" includes="**/*.xml" xsl="${XWeaverHome}/src/xsl/main/weaver/main_cpp.xsl"/>
       <tstamp>
-         <format property="d18" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+         <format property="d11531" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
       </tstamp>
-      <echo append="true" file="${XWeaverPerfTest_logFile}">${d18}: Start srcml2src${line.separator}</echo>
-      <srcml2src xwhome="${XWeaverHome}" srcdir="../Kjvm_woven/.xwTemp/License/srcMLWoven" destdir="../Kjvm_woven" includes="**/*.xml"/>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11531}: Start srcml2src${line.separator}</echo>
+      <srcml2src xwhome="${XWeaverHome}" srcdir="../Kjvm_woven/.xwTemp/License/srcMLWoven" destdir="../Kjvm_woven/.xwTemp/License/woven" includes="**/*.xml"/>
+
+   <!-- Create directories -->
+      <mkdir dir="../Kjvm_woven/.xwTemp/Cleanup/"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/Cleanup/srcML"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/Cleanup/locators"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/Cleanup/srcMLAnnotated"/>
+      <mkdir dir="../Kjvm_woven/.xwTemp/Cleanup/srcMLWoven"/>
+      <mkdir dir="../Kjvm_woven"/>
       <tstamp>
-         <format property="d20" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+         <format property="d11533" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
       </tstamp>
-      <echo append="true" file="${XWeaverPerfTest_logFile}">${d20}: End WeaveKjvm_woven${line.separator}</echo>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11533}: Start src2srcml${line.separator}</echo>
+      <src2srcmlc destdir="../Kjvm_woven/.xwTemp/Cleanup/srcML" executable="${XWeaverHome}/resources/srcML/windows/src2srcml.exe" os="Windows XP, Windows 98, Windows 95, Windows NT" language="C" srcdir="../Kjvm_woven/.xwTemp/License/woven"/>
+      <src2srcmlc destdir="../Kjvm_woven/.xwTemp/Cleanup/srcML" executable="${XWeaverHome}/resources/srcML/linux/src2srcml" os="Linux" language="C" srcdir="../Kjvm_woven/.xwTemp/License/woven"/>
+      <tstamp>
+         <format property="d11536" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11536}: Start axc${line.separator}</echo>
+      <axc xwhome="${XWeaverHome}" aspect="aspects/Cleanup.ax" locator="../Kjvm_woven/.xwTemp/Cleanup/locators/Cleanup.xsl">
+         <param name="inlineSuffix" expression="_inl.h"/>
+         <param name="declarationSuffix" expression=".h"/>
+         <param name="definitionSuffix" expression=".c"/>
+      </axc>
+      <tstamp>
+         <format property="d11538" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11538}: Start axl${line.separator}</echo>
+      <axl xwhome="${XWeaverHome}" locator="../Kjvm_woven/.xwTemp/Cleanup/locators/Cleanup.xsl" srcdir="../Kjvm_woven/.xwTemp/Cleanup/srcML" destdir="../Kjvm_woven/.xwTemp/Cleanup/srcMLAnnotated" includes="**/*.xml"/>
+      <tstamp>
+         <format property="d11540" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11540}: Start axw${line.separator}</echo>
+      <axw srcdir="../Kjvm_woven/.xwTemp/Cleanup/srcMLAnnotated" destdir="../Kjvm_woven/.xwTemp/Cleanup/srcMLWoven" indentchar="space" indentcount="1" includes="**/*.xml" xsl="${XWeaverHome}/src/xsl/main/weaver/main_cpp.xsl"/>
+      <tstamp>
+         <format property="d11542" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11542}: Start srcml2src${line.separator}</echo>
+      <srcml2src xwhome="${XWeaverHome}" srcdir="../Kjvm_woven/.xwTemp/Cleanup/srcMLWoven" destdir="../Kjvm_woven" includes="**/*.xml"/>
+      <tstamp>
+         <format property="d11544" pattern="yyyy/MM/dd HH:mm:ss.SSS"/>
+      </tstamp>
+      <echo append="true" file="${XWeaverPerfTest_logFile}">${d11544}: End WeaveKjvm_woven${line.separator}</echo>
    </target>
 
    <!-- ================================= 

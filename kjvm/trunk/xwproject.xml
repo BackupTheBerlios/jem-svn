@@ -1,11 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xwproject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../eclipse/plugins/net.sf.xweaver_0.9.5.200705022127/src/xsd/xwproject.xsd" xwHome="../../../../eclipse/plugins/net.sf.xweaver_0.9.5.200705022127" version="1.0">
-  <base name="Kjvm" indentChar="tab" indentCount="1" language="C">
+  <base name="Kjvm" indentChar="space" indentCount="1" language="C">
     <filetypes inlineSuffix="_inl.h" declarationSuffix=".h" definitionSuffix=".c" />
   </base>
-  <woven name="Kjvm_woven" path="../Kjvm_woven" aspect="aspects/License.ax">
+  <woven name="Kjvm_woven" path="../Kjvm_woven">
+    <aspects>
+      <file href="aspects/CommandLineInterface.ax" />
+      <file href="aspects/MallocStatistics.ax" />
+      <file href="aspects/License.ax" />
+      <file href="aspects/Cleanup.ax" />
+    </aspects>
     <weave>
       <include name="core/jem.c" />
+      <include name="core/malloc.c" />
+      <include name="core/domain.c" />
+      <include name="include/object.h" />
+      <include name="include/domain.h" />
+      <include name="include/gc.h" />
+      <include name="include/jemtypes.h" />
+      <include name="include/zero.h" />
+      <include name="include/load.h" />
+      <include name="include/portal.h" />
+      <include name="include/code.h" />
+      <include name="include/zero_Memory.h" />
+      <include name="include/thread.h" />
+      <include name="include/malloc.h" />
     </weave>
   </woven>
 </xwproject>

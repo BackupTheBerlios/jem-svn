@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ax:aspect xmlns:ax="http://control.ee.ethz.ch/XWeaver/AspectX" xmlns:cpp="http://www.sdml.info/srcML/cpp" xmlns:java="http://www.sdml.info/srcML/java" xmlns:src="http://www.sdml.info/srcML/src" xmlns:util="http://www.pnp-software.com/util" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="MallocStatistics">
+  <ax:description>This aspect adds code that will keep track of
+the amount of memory allocated and which one of
+several categories that the memory is used for.
+The aspect also adds a command to the CLI that
+will allow the information to be displayed.
+
+Dependencies: CommandLineInterface.ax</ax:description>
+  <ax:include href="FunctionPointcuts.ax"/>
+  <ax:include href="UnitPointcuts.ax"/>
+
+
+  <ax:advice name="Advice_0" type="add">
+    <ax:description>Add new global variables for malloc statistics.</ax:description>
+    <ax:pointcutRef aspect="UnitPointcuts" ref="malloc_c" type="src:unit"/>
+    <ax:codeModifier type="declaration">
+      <ax:text>
+struct alloc_stat_s {
+    u32 heap;
+    u32 code;
+    u32 stack;
+    u32 memobj;
+    u32 profiling;
+    u32 emulation;
+    u32 tmp;
+    u32 dcb;
+    u32 other;
+};
+
+static struct alloc_stat_s alloc_stat;
+
+static unsigned long  totalAllocedRam;
+static unsigned long  peakAllocedRam;
+static unsigned long	totalAllocations;
+static unsigned long  maxAllocSize;
+
+static void jemMallocIncrement(u32 size, int memtype);
+static void jemMallocDecrement(u32 size, int memtype);
+static int  jemMalloc_stat_cmd(struct cli_def *cli, char *command, char *argv[], int argc);
+      </ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_1" type="add">
+    <ax:description>Add new variables and functions for malloc statistics.</ax:description>
+    <ax:pointcutRef aspect="UnitPointcuts" ref="malloc_c" type="src:unit"/>
+    <ax:codeModifier type="definition">
+      <ax:text>
+
+static void jemMallocIncrement(u32 size, int memtype)
+{
+    totalAllocedRam += size;
+    totalAllocations++;
+    if (totalAllocedRam > peakAllocedRam) peakAllocedRam = totalAllocedRam;
+    if (size > maxAllocSize) maxAllocSize = size;
+
+    switch (memtype) {
+    case MEMTYPE_HEAP:
+        alloc_stat.heap += size;
+        break;
+    case MEMTYPE_CODE:
+        alloc_stat.code += size;
+        break;
+    case MEMTYPE_MEMOBJ:
+        alloc_stat.memobj += size;
+        break;
+    case MEMTYPE_PROFILING:
+        alloc_stat.profiling += size;
+        break;
+    case MEMTYPE_STACK:
+        alloc_stat.stack += size;
+        break;
+    case MEMTYPE_EMULATION:
+        alloc_stat.emulation += size;
+        break;
+    case MEMTYPE_TMP:
+        alloc_stat.tmp += size;
+        break;
+    case MEMTYPE_DCB:
+        alloc_stat.dcb += size;
+        break;
+    case MEMTYPE_OTHER:
+        alloc_stat.other += size;
+        break;
+    default:
+        printk(KERN_WARNING &quot;Allocation MEMTYPE unknown.\n&quot;);
+        alloc_stat.other += size;
+    }
+}
+
+
+static void jemMallocDecrement(u32 size, int memtype)
+{
+    switch (memtype) {
+    case MEMTYPE_HEAP:
+        alloc_stat.heap -= size;
+        break;
+    case MEMTYPE_CODE:
+        alloc_stat.code -= size;
+        break;
+    case MEMTYPE_MEMOBJ:
+        alloc_stat.memobj -= size;
+        break;
+    case MEMTYPE_PROFILING:
+        alloc_stat.profiling -= size;
+        break;
+    case MEMTYPE_STACK:
+        alloc_stat.stack -= size;
+        break;
+    case MEMTYPE_EMULATION:
+        alloc_stat.emulation -= size;
+        break;
+    case MEMTYPE_TMP:
+        alloc_stat.tmp -= size;
+        break;
+    case MEMTYPE_DCB:
+        alloc_stat.dcb -= size;
+        break;
+    case MEMTYPE_OTHER:
+        alloc_stat.other -= size;
+        break;
+    default:
+        printk(KERN_WARNING &quot;Free MEMTYPE unknown\n&quot;);
+    }
+
+    totalAllocedRam -= size;
+    totalAllocations--;
+}
+
+#define K(x) ((x) &lt;&lt; (PAGE_SHIFT - 10))
+
+static int jemMalloc_stat_cmd(struct cli_def *cli, char *command, char *argv[], int argc)
+{
+    struct sysinfo mi;
+
+    si_meminfo( &amp;mi );
+
+  	cli_print(kcli, "Allocated memory: ......... %ld kB", totalAllocedRam/1024);
+  	cli_print(kcli, "Peak allocated memory: .... %ld kB", peakAllocedRam/1024);
+    if (totalAllocations > 0)
+        cli_print(kcli, "Average allocation size: .. %ld kB", (totalAllocedRam / totalAllocations)/1024);
+  	cli_print(kcli, "Available memory: ......... %ld kB", K(mi.freeram));
+  	cli_print(kcli, "Used for:");
+  	cli_print(kcli, "   Heap      %9ld", alloc_stat.heap);
+  	cli_print(kcli, "   Code      %9ld", alloc_stat.code);
+  	cli_print(kcli, "   Stack     %9ld", alloc_stat.stack);
+  	cli_print(kcli, "   Memobj    %9ld", alloc_stat.memobj);
+  	cli_print(kcli, "   Profiling %9ld", alloc_stat.profiling);
+  	cli_print(kcli, "   Emulation %9ld", alloc_stat.emulation);
+  	cli_print(kcli, "   Tmp       %9ld", alloc_stat.tmp);
+  	cli_print(kcli, "   DCB       %9ld", alloc_stat.dcb);
+  	cli_print(kcli, "   Other     %9ld", alloc_stat.other);
+
+    return CLI_OK;
+}
+</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_2" type="replace">
+    <ax:description>Add memtype parameter to jemMalloc()</ax:description>
+    <ax:pointcut constraint="contains(.,'size')" type="src:name">
+      <ax:and>
+        <ax:restriction type="within">
+          <ax:pointcut type="src:parameter_list"/>
+        </ax:restriction>
+        <ax:or>
+          <ax:restriction type="within">
+            <ax:pointcutRef aspect="FunctionPointcuts" ref="jemMalloc" type="src:function"/>
+          </ax:restriction>
+          <ax:restriction type="within">
+            <ax:pointcutRef aspect="FunctionPointcuts" ref="jemMallocDecl" type="src:function_decl"/>
+          </ax:restriction>
+        </ax:or>
+      </ax:and>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>size, int memtype</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_3" type="begin">
+    <ax:description>Add code to increment counters.</ax:description>
+    <ax:pointcutRef aspect="FunctionPointcuts" ref="jemMalloc" type="src:function"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>   jemMallocIncrement(size, memtype);</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_4" type="begin">
+    <ax:description>Add malloc stats initialization code.</ax:description>
+    <ax:pointcutRef aspect="FunctionPointcuts" ref="jemMallocInit" type="src:function"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>
+   totalAllocedRam      = 0;
+   peakAllocedRam       = 0;
+   totalAllocations     = 0;
+   maxAllocSize         = 0;
+   alloc_stat.heap      = 0;
+   alloc_stat.code      = 0;
+   alloc_stat.memobj    = 0;
+   alloc_stat.profiling = 0;
+   alloc_stat.stack     = 0;
+   alloc_stat.emulation = 0;
+   alloc_stat.tmp       = 0;
+   alloc_stat.dcb       = 0;
+   alloc_stat.other     = 0;
+
+   cli_register_command(kcli, jem_command, "mem", jemMalloc_stat_cmd, 
+      PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Display memory usage statistics");</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_5" type="begin">
+    <ax:description>Add code to decrement malloc stats.</ax:description>
+    <ax:pointcutRef aspect="FunctionPointcuts" ref="jemFree" type="src:function"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>   jemMallocDecrement(size, memtype);</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_6" type="replace">
+    <ax:description>Insert memtype value.</ax:description>
+    <ax:pointcut constraint="contains(.,'MEMTYPE_OTHER')" type="src:comment"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, MEMTYPE_OTHER</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_7" type="replace">
+    <ax:description>Insert memtype value.</ax:description>
+    <ax:pointcut constraint="contains(.,'MEMTYPE_DCB')" type="src:comment"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, MEMTYPE_DCB</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_8" type="replace">
+    <ax:pointcut constraint="contains(.,'MEMTYPE_CODE')" type="src:comment"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, MEMTYPE_CODE</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_9" type="replace">
+    <ax:description>Insert memtype value.</ax:description>
+    <ax:pointcut constraint="contains(.,'MEMTYPE_HEAP')" type="src:comment"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, MEMTYPE_HEAP</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_10" type="replace">
+    <ax:description>Insert memtype value.</ax:description>
+    <ax:pointcut constraint="contains(.,'MEMTYPE_STACK')" type="src:comment"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, MEMTYPE_STACK</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_11" type="replace">
+    <ax:description>Insert memtype value.</ax:description>
+    <ax:pointcut constraint="contains(.,'MEMTYPE_MEMOBJ')" type="src:comment"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, MEMTYPE_MEMOBJ</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_12" type="replace">
+    <ax:description>Insert memtype value.</ax:description>
+    <ax:pointcut constraint="contains(.,'MEMTYPE_PROFILING')" type="src:comment"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, MEMTYPE_PROFILING</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_13" type="replace">
+    <ax:description>Insert memtype value.</ax:description>
+    <ax:pointcut constraint="contains(.,'MEMTYPE_EMULATION')" type="src:comment"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, MEMTYPE_EMULATION</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_14" type="replace">
+    <ax:description>Insert memtype value.</ax:description>
+    <ax:pointcut constraint="contains(.,'MEMTYPE_TMP')" type="src:comment"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, MEMTYPE_TMP</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_15" type="replace">
+    <ax:description>Add size parameter to jemFree call in domain.c</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect domain->code_bytes')" type="src:comment">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="terminateDomain" type="src:function"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, domain->code_bytes</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_16" type="replace">
+    <ax:description>Add size parameter to jemFree call in domain.c</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect domain->scratchMemSize')" type="src:comment">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="terminateDomain" type="src:function"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, domain->scratchMemSize</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_17" type="replace">
+    <ax:description>Add size and memtype parameter to jemFree()</ax:description>
+    <ax:pointcut constraint="contains(.,'addr')" type="src:name">
+      <ax:and>
+        <ax:restriction type="within">
+          <ax:pointcut type="src:parameter_list"/>
+        </ax:restriction>
+        <ax:or>
+          <ax:restriction type="within">
+            <ax:pointcutRef aspect="FunctionPointcuts" ref="jemFree" type="src:function"/>
+          </ax:restriction>
+          <ax:restriction type="within">
+            <ax:pointcutRef aspect="FunctionPointcuts" ref="jemFreeDecl" type="src:function_decl"/>
+          </ax:restriction>
+        </ax:or>
+      </ax:and>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>addr, u32 size, int memtype</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_18" type="replace">
+    <ax:description>Add new declarations for malloc statistics.</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect declaration')" type="src:comment">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="UnitPointcuts" ref="malloc_h" type="src:unit"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text> #define MEMTYPE_OTHER  0
+#define MEMTYPE_HEAP   1
+#define MEMTYPE_STACK 2
+#define MEMTYPE_MEMOBJ 3
+#define MEMTYPE_CODE   4
+#define MEMTYPE_PROFILING   5
+#define MEMTYPE_EMULATION   6
+#define MEMTYPE_TMP   7
+#define MEMTYPE_DCB   8</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_19" type="replace">
+    <ax:description>Add code to increment counters.</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect MallocStatistics')" type="src:comment">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="jemMallocCode" type="src:function"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>jemMallocIncrement(chunksize, MEMTYPE_CODE);</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_20" type="replace">
+    <ax:description>Add size and memtype parameter to jemFree()</ax:description>
+    <ax:pointcut constraint="contains(.,'tpxy')" type="src:name">
+      <ax:and>
+        <ax:restriction type="within">
+          <ax:pointcut constraint="src:name='jemFree'" type="src:call"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcut type="src:argument_list"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcutRef aspect="FunctionPointcuts" ref="jemFreeThreadDesc" type="src:function"/>
+        </ax:restriction>
+      </ax:and>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>tpxy, sizeof(ThreadDescProxy), MEMTYPE_DCB</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_21" type="replace">
+    <ax:description>Add size and memtype parameter to jemFree()</ax:description>
+    <ax:pointcut constraint="contains(.,'start')" type="src:name">
+      <ax:and>
+        <ax:restriction type="within">
+          <ax:pointcut constraint="src:name='jemFree'" type="src:call"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcut type="src:argument_list"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcutRef aspect="FunctionPointcuts" ref="jemFreeTmp" type="src:function"/>
+        </ax:restriction>
+      </ax:and>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>start, m->size, MEMTYPE_TMP</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+</ax:aspect>

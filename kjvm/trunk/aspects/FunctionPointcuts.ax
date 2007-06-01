@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ax:aspect xmlns:ax="http://control.ee.ethz.ch/XWeaver/AspectX" xmlns:cpp="http://www.sdml.info/srcML/cpp" xmlns:java="http://www.sdml.info/srcML/java" xmlns:src="http://www.sdml.info/srcML/src" xmlns:util="http://www.pnp-software.com/util" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="FunctionPointcuts">
+
+  <ax:pointcut constraint="src:name='jemMalloc'" name="jemMalloc" type="src:function">
+    <ax:description>Select the jemMalloc function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemMalloc'" name="jemMallocDecl" type="src:function_decl">
+    <ax:description>Select the jemMalloc function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemMallocCode'" name="jemMallocCode" type="src:function">
+    <ax:description>Select the jemMallocCode function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemFree'" name="jemFree" type="src:function">
+    <ax:description>Select the jemFree function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemFree'" name="jemFreeDecl" type="src:function_decl">
+    <ax:description>Select the jemFree function declaration.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='terminateDomain'" name="terminateDomain" type="src:function">
+    <ax:description>Select the terminateDomain function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemMallocInit'" name="jemMallocInit" type="src:function">
+    <ax:description>Select the jemMallocInit function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemFreeThreadDesc'" name="jemFreeThreadDesc" type="src:function">
+    <ax:description>Select the jemFreeThreadDesc function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemFreeTmp'" name="jemFreeTmp" type="src:function">
+    <ax:description>Select the jemFreeTmp function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jem_init'" name="jem_init" type="src:function">
+    <ax:description>Select the jem_init function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jem_exit'" name="jem_exit" type="src:function">
+    <ax:description>Select the jem_exit function.</ax:description>
+  </ax:pointcut>
+
+
+</ax:aspect>

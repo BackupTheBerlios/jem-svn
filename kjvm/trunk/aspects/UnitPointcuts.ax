@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ax:aspect xmlns:ax="http://control.ee.ethz.ch/XWeaver/AspectX" xmlns:cpp="http://www.sdml.info/srcML/cpp" xmlns:java="http://www.sdml.info/srcML/java" xmlns:src="http://www.sdml.info/srcML/src" xmlns:util="http://www.pnp-software.com/util" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="UnitPointcuts">
+  <ax:description>This aspect contains pointcuts that will select files.</ax:description>
+
+
+  <ax:pointcut name="malloc_c" type="src:unit">
+    <ax:restriction type="contain">
+      <ax:pointcutRef aspect="FunctionPointcuts" ref="jemMalloc" type="src:function"/>
+    </ax:restriction>
+  </ax:pointcut>
+
+
+  <ax:pointcut name="malloc_h" type="src:unit">
+    <ax:restriction type="contain">
+      <ax:pointcutRef aspect="FunctionPointcuts" ref="jemMallocDecl" type="src:function_decl"/>
+    </ax:restriction>
+  </ax:pointcut>
+
+
+  <ax:pointcut name="jem_c" type="src:unit">
+    <ax:restriction type="contain">
+      <ax:pointcutRef aspect="FunctionPointcuts" ref="jem_init" type="src:function"/>
+    </ax:restriction>
+  </ax:pointcut>
+
+
+</ax:aspect>

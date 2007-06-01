@@ -5,11 +5,11 @@
       <ax:description>Unlicensed Files</ax:description>
     </ax:pointcut>
     <ax:codeModifier type="comment">
-      <ax:text>//=================================================================================</ax:text>
+      <ax:text>//==============================================================================</ax:text>
       <ax:text>// This file is part of Jem, a real time Java operating system designed for</ax:text>
       <ax:text>// embedded systems.</ax:text>
       <ax:text>//</ax:text>
-      <ax:text>// Copyright (C) 2007 Sombrio Systems Inc. All rights reserved.</ax:text>
+      <ax:text>// Copyright (C) 2007 Christopher Stone. </ax:text>
       <ax:text>//</ax:text>
       <ax:text>// Jem is free software; you can redistribute it and/or modify it under the</ax:text>
       <ax:text>// terms of the GNU General Public License, version 2, as published by the Free</ax:text>
@@ -23,7 +23,7 @@
       <ax:text>// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,</ax:text>
       <ax:text>// Fifth Floor, Boston, MA 02110-1301, USA</ax:text>
       <ax:text>//</ax:text>
-      <ax:text>//=================================================================================</ax:text>
+      <ax:text>//==============================================================================</ax:text>
     </ax:codeModifier>
   </ax:advice>
 </ax:aspect>

@@ -1,178 +1,45 @@
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for
-// embedded systems.
-//
-// Copyright © 2007 2007 JemStone Software LLC. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-// Copyright © 1998-2002 Michael Golm. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-//=================================================================================
-// File: malloc.c
+// Additional Copyrights:
+// 	Copyright (C) 1997-2001 The JX Group.
+// 	Copyright (C) 1998-2002 Michael Golm.
+//==============================================================================
 //
 // Jem/JVM memory allocation implementation.
 //
-//===========================================================================
+//==============================================================================
 
 #include <linux/module.h>
 #include <linux/types.h>
 #include <linux/kernel.h>
-#include <native/queue.h>
-#include <native/heap.h>
+#include <linux/mm.h>
 #include "jemtypes.h"
 #include "malloc.h"
-#include "messages.h"
-#include "jemUPipe.h"
 #include "domain.h"
 #include "gc.h"
 #include "load.h"
 #include "zero.h"
+// @aspect include
 
-#define MEMTYPE_PARAM , memtype
-
-
-static RT_HEAP      jemHeap;
-unsigned int        jemHeapSz=0;
-static unsigned int allocRam = 0;
-
-struct alloc_stat_s {
-    u32 heap;
-    u32 code;
-    u32 stack;
-    u32 memobj;
-    u32 profiling;
-    u32 emulation;
-    u32 tmp;
-    u32 dcb;
-    u32 other;
-};
-static struct alloc_stat_s alloc_stat;
-
+// TEMP TEMP TEMP
+DomainDesc   		*domainZero;
 
 int jemMallocInit(void)
 {
-    int     result;
-
-    if ((result = rt_heap_create(&jemHeap, "jemHeap", jemHeapSz, H_PRIO|H_MAPPABLE)) < 0) {
-        printk(KERN_ERR "Can not create Jem/JVM heap of size %d, code=%d.\n", jemHeapSz, result);
-        return result;
-    }
-
+	// @aspect	
     return 0;
 }
 
 
-int jemDestroyHeap(void)
+void *jemMalloc(u32 size)
 {
-    return rt_heap_delete(&jemHeap);
+	// @aspect
+    return kmalloc(size, GFP_KERNEL);
 }
 
 
-static void *jemMallocInternal(u32 size, u32 ** start MEMTYPE_INFO)
+void jemFree(void *addr)
 {
-    void    *addr = NULL;
-
-    if (rt_heap_alloc(&jemHeap, size, TM_NONBLOCK, &addr)) {
-        return NULL;
-    }
-
-    allocRam += size;
-
-    switch (memtype) {
-    case MEMTYPE_HEAP_PARAM:
-        alloc_stat.heap += size;
-        break;
-    case MEMTYPE_CODE_PARAM:
-        alloc_stat.code += size;
-        break;
-    case MEMTYPE_MEMOBJ_PARAM:
-        alloc_stat.memobj += size;
-        break;
-    case MEMTYPE_PROFILING_PARAM:
-        alloc_stat.profiling += size;
-        break;
-    case MEMTYPE_STACK_PARAM:
-        alloc_stat.stack += size;
-        break;
-    case MEMTYPE_EMULATION_PARAM:
-        alloc_stat.emulation += size;
-        break;
-    case MEMTYPE_TMP_PARAM:
-        alloc_stat.tmp += size;
-        break;
-    case MEMTYPE_DCB_PARAM:
-        alloc_stat.dcb += size;
-        break;
-    case MEMTYPE_OTHER_PARAM:
-        alloc_stat.other += size;
-        break;
-    default:
-        printk(KERN_WARNING "Allocation MEMTYPE unknown.\n");
-        alloc_stat.other += size;
-    }
-
-    memset(addr, 0, size);
-
-    *start = addr;
-    return addr;
-}
-
-
-void *jemMalloc(u32 size MEMTYPE_INFO)
-{
-    u32 *start;
-    return jemMallocInternal(size, &start MEMTYPE_PARAM);
-}
-
-
-void jemFree(void *addr, u32 size MEMTYPE_INFO)
-{
-
-    switch (memtype) {
-    case MEMTYPE_HEAP_PARAM:
-        alloc_stat.heap -= size;
-        break;
-    case MEMTYPE_CODE_PARAM:
-        alloc_stat.code -= size;
-        break;
-    case MEMTYPE_MEMOBJ_PARAM:
-        alloc_stat.memobj -= size;
-        break;
-    case MEMTYPE_PROFILING_PARAM:
-        alloc_stat.profiling -= size;
-        break;
-    case MEMTYPE_STACK_PARAM:
-        alloc_stat.stack -= size;
-        break;
-    case MEMTYPE_EMULATION_PARAM:
-        alloc_stat.emulation -= size;
-        break;
-    case MEMTYPE_TMP_PARAM:
-        alloc_stat.tmp -= size;
-        break;
-    case MEMTYPE_DCB_PARAM:
-        alloc_stat.dcb -= size;
-        break;
-    case MEMTYPE_OTHER_PARAM:
-        alloc_stat.other -= size;
-        break;
-    default:
-        printk(KERN_WARNING "Free MEMTYPE unknown\n");
-    }
-
-    allocRam -= size;
-    rt_heap_free(&jemHeap, addr);
+	// @aspect
+    kfree(addr);
 }
 
 
@@ -190,7 +57,8 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
     }
 
     if (domain->cur_code == -1) {
-        domain->code[0] = (char *) jemMalloc(chunksize MEMTYPE_CODE);
+    	// @aspect MallocStatistics    
+        domain->code[0] = (char *) vmalloc(chunksize);
         domain->codeBorder[0] = domain->code[0] + chunksize;
         domain->codeTop[0] = domain->code[0];
         domain->cur_code = 0;
@@ -206,7 +74,8 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
             rt_mutex_release(&domain->domainMemLock);
             return NULL;
         }
-        domain->code[c]         = (char *) jemMalloc(chunksize MEMTYPE_CODE);
+    	// @aspect MallocStatistics    
+        domain->code[c]         = (char *) vmalloc(chunksize);
         domain->codeBorder[c]   = domain->code[c] + chunksize;
         domain->codeTop[c]      = domain->code[c];
         domain->cur_code        = c;
@@ -231,7 +100,7 @@ ThreadDescProxy *jemMallocThreadDescProxy(ClassDesc * c)
 {
     ThreadDescProxy     *proxy;
 
-    if ((proxy = jemMalloc(sizeof(ThreadDescProxy) MEMTYPE_DCB)) == NULL) return NULL;
+    if ((proxy = jemMalloc(sizeof(ThreadDescProxy) /* MEMTYPE_DCB */)) == NULL) return NULL;
     if (c != NULL)
         proxy->vtable = c->vtable;
     else
@@ -243,7 +112,7 @@ ThreadDescProxy *jemMallocThreadDescProxy(ClassDesc * c)
 void jemFreeThreadDesc(ThreadDesc *t)
 {
     ThreadDescProxy *tpxy    = (ThreadDescProxy *) ThreadDesc2ObjectDesc(t);
-    jemFree(tpxy, sizeof(ThreadDescProxy) MEMTYPE_DCB);
+    jemFree(tpxy);
 }
 
 
@@ -254,20 +123,20 @@ JClass *jemMallocClasses(DomainDesc * domain, u32 number)
 
 ClassDesc *jemMallocPrimitiveclassdesc(DomainDesc * domain, u32 namelen)
 {
-    char *m                 = jemMallocCode(domain, sizeof(ClassDesc) + namelen);
-    ClassDesc *cd  = (ClassDesc *) m;
+    char *m      	= jemMallocCode(domain, sizeof(ClassDesc) + namelen);
+    ClassDesc *cd  	= (ClassDesc *) m;
     memset(m, 0, sizeof(ClassDesc) + namelen);
-    cd->name = m + sizeof(ClassDesc);
+    cd->name 		= m + sizeof(ClassDesc);
     return cd;
 }
 
 ClassDesc *jemMallocArrayclassdesc(DomainDesc * domain, u32 namelen)
 {
-    char *m = jemMallocCode(domain, sizeof(ClassDesc) + namelen + (11 + 1) * 4);    // vtable
-    ClassDesc *cd = (ClassDesc *) m;
+    char *m 		= jemMallocCode(domain, sizeof(ClassDesc) + namelen + (11 + 1) * 4);    // vtable
+    ClassDesc *cd 	= (ClassDesc *) m;
     memset(m, 0, sizeof(ClassDesc) + namelen);
-    cd->name = m + sizeof(ClassDesc);
-    cd->vtable = (code_t *) m + sizeof(ClassDesc) + namelen + 4 /* classptr at negative offset */ ;
+    cd->name 		= m + sizeof(ClassDesc);
+    cd->vtable 		= (code_t *) m + sizeof(ClassDesc) + namelen + 4 /* classptr at negative offset */ ;
     return cd;
 }
 
@@ -276,7 +145,7 @@ TempMemory *jemMallocTmp(u32 size)
     TempMemory *t;
     char *m;
     size += sizeof(TempMemory);
-    m = jemMalloc(size MEMTYPE_TMP);
+    m = jemMalloc(size /* MEMTYPE_TMP */);
     t = (TempMemory *) m;
     t->size = size;
     t->start = m;
@@ -287,7 +156,7 @@ TempMemory *jemMallocTmp(u32 size)
 
 void jemFreeTmp(TempMemory * m)
 {
-    jemFree(m->start, m->size MEMTYPE_TMP);
+    jemFree(m->start);
 }
 
 LibDesc *jemMallocLibdesc(DomainDesc * domain)
@@ -299,11 +168,11 @@ static u32 sharedLibID = 1;
 
 SharedLibDesc *jemMallocSharedlibdesc(DomainDesc * domain, u32 namelen)
 {
-    char *m = jemMallocCode(domain, sizeof(SharedLibDesc) + namelen);
-    SharedLibDesc *sl = (SharedLibDesc *) m;
+    char *m 			= jemMallocCode(domain, sizeof(SharedLibDesc) + namelen);
+    SharedLibDesc *sl 	= (SharedLibDesc *) m;
     memset(m, 0, sizeof(SharedLibDesc) + namelen);
-    sl->name = m + sizeof(SharedLibDesc);   /* name allocated immediately after LibDesc */
-    sl->id = sharedLibID++;
+    sl->name 	= m + sizeof(SharedLibDesc);   /* name allocated immediately after LibDesc */
+    sl->id 		= sharedLibID++;
     return sl;
 }
 
@@ -454,7 +323,6 @@ u8 *jemMallocNativecode(DomainDesc * domain, u32 size)
     return (u8 *) (((u32) jemMallocCode(domain, size + 4) + 3) & (u32) ~ 0x3);
 }
 
-
 struct nameValue_s *jemMallocDomainzeroNamevalue(u32 namelen)
 {
     char *m = jemMallocCode(domainZero, sizeof(struct nameValue_s) + namelen);
@@ -467,4 +335,3 @@ code_t *jemMallocVtable(DomainDesc * domain, u32 number)
 {
     return (code_t *) jemMallocCode(domain, number * sizeof(code_t));
 }
-

@@ -1,23 +1,6 @@
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for
-// embedded systems.
-//
-// Copyright © 2007 JemStone Software LLC. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-// Copyright © 1998-2002 Michael Golm. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
+// Additional Copyrights:
+// 	Copyright (C) 1997-2001 The JX Group.
+// 	Copyright (C) 1998-2002 Michael Golm.
 //==============================================================================
 // domain.c
 //
@@ -42,9 +25,9 @@
 #include "exception_handler.h"
 #include "sched.h"
 
+DomainDesc   		*domainZero;
 static u32          numberOfDomains = 0;
 static u32          currentDomainID = 0;
-static DomainDesc   *domainZero;
 static char         *domainMem = NULL;
 static char         *domainMemBorder = NULL;
 static char         *domainMemCurrent = NULL;
@@ -147,7 +130,7 @@ DomainDesc *createDomain(char *domainName, jint gcinfo0, jint gcinfo1, jint gcin
     domain->maxNumberOfLibs = getJVMConfig()->maxNumberLibs;
     domain->numberOfLibs    = 0;
     domain->arrayClasses    = NULL;
-    domain->scratchMem      = jemMalloc(getJVMConfig()->domScratchMemSz MEMTYPE_OTHER);
+    domain->scratchMem      = jemMalloc(getJVMConfig()->domScratchMemSz /* MEMTYPE_OTHER */ );
     domain->scratchMemSize  = getJVMConfig()->domScratchMemSz;
 
     domain->cur_code = -1;
@@ -195,7 +178,7 @@ void initDomainSystem(void)
     int                 result;
     struct jvmConfig    *jvmConfigData = getJVMConfig();
 
-    domainMem           = (char *) jemMalloc((DOMAINMEM_SIZEBYTES * jvmConfigData->maxDomains) MEMTYPE_DCB);
+    domainMem           = (char *) jemMalloc((DOMAINMEM_SIZEBYTES * jvmConfigData->maxDomains) /* MEMTYPE_DCB */);
     domainMemStart      = domainMem;
     numberOfDomains     = 0;
     domainMemCurrent    = domainMem;
@@ -544,13 +527,19 @@ void terminateDomain(DomainDesc * domain)
     /* free unshared code segments */
     for (j = 0; j < domain->cur_code + 1; j++) {
         size = (char *) (domain->codeBorder[j]) - (char *) (domain->code[j]);
-        jemFree(domain->code[j], domain->code_bytes /*size */ MEMTYPE_CODE);
+        jemFree(domain->code[j]
+        		/* @aspect domain->code_bytes */
+        		/* @aspect MEMTYPE_CODE */
+        		);
         domain->code[j] = domain->codeBorder[j] = domain->codeTop[j] = NULL;
     }
 
     gc_done(domain);
 
-    jemFree(domain->scratchMem, domain->scratchMemSize MEMTYPE_OTHER);
+    jemFree(domain->scratchMem
+    		/* @aspect domain->scratchMemSize */
+    		/* @aspect MEMTYPE_OTHER */
+    		);
 
     rt_mutex_delete(&domain->domainMemLock);
     rt_mutex_delete(&domain->domainHeapLock);

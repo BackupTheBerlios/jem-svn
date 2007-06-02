@@ -527,7 +527,7 @@ void terminateDomain(DomainDesc * domain)
     /* free unshared code segments */
     for (j = 0; j < domain->cur_code + 1; j++) {
         size = (char *) (domain->codeBorder[j]) - (char *) (domain->code[j]);
-        jemFree(domain->code[j]
+        jemFreeCode(domain->code[j]
         		/* @aspect domain->code_bytes */
         		/* @aspect MEMTYPE_CODE */
         		);

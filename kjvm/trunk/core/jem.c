@@ -15,13 +15,32 @@
 #include <linux/moduleparam.h>
 #include "jemtypes.h"
 #include "malloc.h"
+#include "jemConfig.h"
+#include "simpleconfig.h"
 // @aspect include
 
-#define VERSION "1.0.0"
+#define VERSION "0.1.0"
+
+static struct jvmConfig jConfig;
+
+struct jvmConfig *getJVMConfig(void) 
+{
+	return &jConfig;
+} 
+
+static void loadConfig(void)
+{
+	char *val;
+	
+    if (!cfg_getval("jem_code_fragments", &val)) val="30";
+    sscanf(val, "%ud", &jConfig.codeFragments);
+
+	return;
+}
 
 void jem_exit (void)
 {
-	// @aspect
+	// @aspect begin
     printk(KERN_INFO "Jem/JVM is shutdown.\n");
 }
 
@@ -31,7 +50,9 @@ int jem_init (void)
 
     printk(KERN_INFO "Jem/JVM version %s\n", VERSION);
     
-    // @aspect insert
+    loadConfig();
+    
+    // @aspect cli
 
     // Initialize memory subsystem
     if ((result = jemMallocInit()) < 0) return result;

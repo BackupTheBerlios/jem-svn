@@ -12,6 +12,7 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include "jemtypes.h"
+#include "jemConfig.h"
 #include "malloc.h"
 #include "domain.h"
 #include "gc.h"
@@ -24,21 +25,21 @@ DomainDesc   		*domainZero;
 
 int jemMallocInit(void)
 {
-	// @aspect	
+	// @aspect begin
     return 0;
 }
 
 
 void *jemMalloc(u32 size)
 {
-	// @aspect
+	// @aspect begin
     return kmalloc(size, GFP_KERNEL);
 }
 
 
 void jemFree(void *addr)
 {
-	// @aspect
+	// @aspect begin
     kfree(addr);
 }
 
@@ -50,11 +51,7 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
     u32     c;
     u32     chunksize = domain->code_bytes;
 
-    int result = rt_mutex_acquire(&domain->domainMemLock, TM_INFINITE);
-    if (result < 0) {
-        printk(KERN_ERR "Error acquiring domain memory lock, code=%d\n", result);
-        return NULL;
-    }
+	// @aspect Lock
 
     if (domain->cur_code == -1) {
     	// @aspect MallocStatistics    
@@ -69,9 +66,8 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
 
     if (nextObj > domain->codeBorder[c]) {
         c++;
-        if (c == CONFIG_JEM_CODE_FRAGMENTS) {
+        if (c == getJVMConfig()->codeFragments) {
             printk(KERN_ERR "Out of code space for domain.\n");
-            rt_mutex_release(&domain->domainMemLock);
             return NULL;
         }
     	// @aspect MallocStatistics    
@@ -82,7 +78,6 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
         nextObj                 = domain->codeTop[c] + size;
         if (nextObj > domain->codeBorder[c]) {
             printk(KERN_ERR "Can`t allocate %i byte for code space\n", size);
-            rt_mutex_release(&domain->domainMemLock);
             return NULL;
         }
     }
@@ -90,9 +85,14 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
     data                = domain->codeTop[c];
     domain->codeTop[c]  = nextObj;
 
-    rt_mutex_release(&domain->domainMemLock);
-
     return data;
+}
+
+
+void jemFreeCode(void *addr)
+{
+	// @aspect begin
+    vfree(addr);
 }
 
 

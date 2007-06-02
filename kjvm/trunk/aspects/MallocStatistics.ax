@@ -1,4 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+//==============================================================================
+// This file is part of Jem, a real time Java operating system designed for
+// embedded systems.
+//
+// Copyright (C) 2007 Christopher Stone. 
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+//==============================================================================
+-->
+
 <ax:aspect xmlns:ax="http://control.ee.ethz.ch/XWeaver/AspectX" xmlns:cpp="http://www.sdml.info/srcML/cpp" xmlns:java="http://www.sdml.info/srcML/java" xmlns:src="http://www.sdml.info/srcML/src" xmlns:util="http://www.pnp-software.com/util" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="MallocStatistics">
   <ax:description>This aspect adds code that will keep track of
 the amount of memory allocated and which one of
@@ -187,7 +209,7 @@ static int jemMalloc_stat_cmd(struct cli_def *cli, char *command, char *argv[], 
     <ax:description>Add code to increment counters.</ax:description>
     <ax:pointcutRef aspect="FunctionPointcuts" ref="jemMalloc" type="src:function"/>
     <ax:codeModifier type="codeFragment">
-      <ax:text>   jemMallocIncrement(size, memtype);</ax:text>
+      <ax:text>jemMallocIncrement(size, memtype);</ax:text>
     </ax:codeModifier>
   </ax:advice>
 
@@ -197,21 +219,21 @@ static int jemMalloc_stat_cmd(struct cli_def *cli, char *command, char *argv[], 
     <ax:pointcutRef aspect="FunctionPointcuts" ref="jemMallocInit" type="src:function"/>
     <ax:codeModifier type="codeFragment">
       <ax:text>
-   totalAllocedRam      = 0;
-   peakAllocedRam       = 0;
-   totalAllocations     = 0;
-   maxAllocSize         = 0;
-   alloc_stat.heap      = 0;
-   alloc_stat.code      = 0;
-   alloc_stat.memobj    = 0;
-   alloc_stat.profiling = 0;
-   alloc_stat.stack     = 0;
-   alloc_stat.emulation = 0;
-   alloc_stat.tmp       = 0;
-   alloc_stat.dcb       = 0;
-   alloc_stat.other     = 0;
+totalAllocedRam      = 0;
+peakAllocedRam       = 0;
+totalAllocations     = 0;
+maxAllocSize         = 0;
+alloc_stat.heap      = 0;
+alloc_stat.code      = 0;
+alloc_stat.memobj    = 0;
+alloc_stat.profiling = 0;
+alloc_stat.stack     = 0;
+alloc_stat.emulation = 0;
+alloc_stat.tmp       = 0;
+alloc_stat.dcb       = 0;
+alloc_stat.other     = 0;
 
-   cli_register_command(kcli, jem_command, "mem", jemMalloc_stat_cmd, 
+cli_register_command(kcli, jem_command, "mem", jemMalloc_stat_cmd, 
       PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Display memory usage statistics");</ax:text>
     </ax:codeModifier>
   </ax:advice>
@@ -219,9 +241,14 @@ static int jemMalloc_stat_cmd(struct cli_def *cli, char *command, char *argv[], 
 
   <ax:advice name="Advice_5" type="begin">
     <ax:description>Add code to decrement malloc stats.</ax:description>
-    <ax:pointcutRef aspect="FunctionPointcuts" ref="jemFree" type="src:function"/>
+    <ax:pointcut type="src:function">
+      <ax:or>
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="jemFree" type="src:function"/>
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="jemFreeCode" type="src:function"/>
+      </ax:or>
+    </ax:pointcut>
     <ax:codeModifier type="codeFragment">
-      <ax:text>   jemMallocDecrement(size, memtype);</ax:text>
+      <ax:text>jemMallocDecrement(size, memtype);</ax:text>
     </ax:codeModifier>
   </ax:advice>
 
@@ -345,6 +372,12 @@ static int jemMalloc_stat_cmd(struct cli_def *cli, char *command, char *argv[], 
           </ax:restriction>
           <ax:restriction type="within">
             <ax:pointcutRef aspect="FunctionPointcuts" ref="jemFreeDecl" type="src:function_decl"/>
+          </ax:restriction>
+          <ax:restriction type="within">
+            <ax:pointcutRef aspect="FunctionPointcuts" ref="jemFreeCode" type="src:function"/>
+          </ax:restriction>
+          <ax:restriction type="within">
+            <ax:pointcutRef aspect="FunctionPointcuts" ref="jemFreeCodeDecl" type="src:function_decl"/>
           </ax:restriction>
         </ax:or>
       </ax:and>

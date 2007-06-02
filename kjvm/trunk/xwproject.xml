@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xwproject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../eclipse/plugins/net.sf.xweaver_0.9.5.200705022127/src/xsd/xwproject.xsd" xwHome="../../../../eclipse/plugins/net.sf.xweaver_0.9.5.200705022127" version="1.0">
-  <base name="Kjvm" indentChar="space" indentCount="1" language="C">
+  <base name="Kjvm" indentChar="space" indentCount="4" language="C">
     <filetypes inlineSuffix="_inl.h" declarationSuffix=".h" definitionSuffix=".c" />
   </base>
   <woven name="Kjvm_woven" path="../Kjvm_woven">
     <aspects>
       <file href="aspects/CommandLineInterface.ax" />
       <file href="aspects/MallocStatistics.ax" />
+      <file href="aspects/XenoRTDMLock.ax" />
       <file href="aspects/License.ax" />
       <file href="aspects/Cleanup.ax" />
     </aspects>
@@ -19,6 +20,7 @@
       <include name="include/gc.h" />
       <include name="include/jemtypes.h" />
       <include name="include/zero.h" />
+      <include name="include/jemConfig.h" />
       <include name="include/load.h" />
       <include name="include/portal.h" />
       <include name="include/code.h" />

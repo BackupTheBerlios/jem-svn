@@ -4,6 +4,7 @@
 
 #ifndef _PORTAL_H
 #define _PORTAL_H
+// @aspect include
 
 #define PORTAL_RETURN_TYPE_NUMERIC   0
 #define PORTAL_RETURN_TYPE_REFERENCE 1
@@ -33,7 +34,7 @@ typedef struct ServiceThreadPool_s {
     struct ThreadDesc_s *firstWaitingSender;
     struct ThreadDesc_s *lastWaitingSender;
     u32                 index;
-    RT_MUTEX            poolLock;
+    // @aspect struct ServiceThreadPool_s
 } ServiceThreadPool;
 
 typedef struct DEPDesc_s {

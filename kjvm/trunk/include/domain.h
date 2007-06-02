@@ -6,9 +6,8 @@
 #define _DOMAIN_H
 
 #include <linux/types.h>
-#include <native/mutex.h>
-#include <native/sem.h>
 #include "object.h"
+// @aspect include
 
 #define DOMAIN_TERMINATED_EXCEPTION  (-1)
 #define DOMAIN_STATE_FREE        0
@@ -49,7 +48,6 @@ typedef struct GCDesc_s {
     u32                     epoch;
     jboolean                active;
     struct ThreadDesc_s     *gcSuspended;
-    RT_MUTEX                gcLock;
     ObjectHandle (*allocDataInDomain) (struct DomainDesc_s * domain,
                                        int objsize, u32 flags);
     void (*done) (struct DomainDesc_s * domain);
@@ -77,6 +75,7 @@ typedef struct GCDesc_s {
     void (*printInfo) (struct DomainDesc_s * domain);
     void (*setMark)(struct DomainDesc_s *domain);
     struct ObjectDesc_s * (*atMark)(struct DomainDesc_s *domain);
+    // @aspect struct GCDesc_s
 } GCDesc;
 
 
@@ -108,7 +107,6 @@ typedef struct DomainDesc_s {
     struct ArrayDesc_s          *initialPortals;
     struct DEPDesc_s            *services[CONFIG_JEM_MAX_SERVICES];
     struct ServiceThreadPool_s  *pools[CONFIG_JEM_MAX_SERVICES];
-    RT_SEM                      serviceSem;
     int                         state;
     u32                         id;
     struct ThreadDesc_s         *firstThreadInRunQueue;
@@ -135,8 +133,7 @@ typedef struct DomainDesc_s {
     u32                         inhibitGCFlag;  /* 1==no GC allowed; 0==GC allowed */
     u32                         portal_statistics_copyout_rcv;
     u32                         portal_statistics_copyin_rcv;
-    RT_MUTEX                    domainMemLock;
-    RT_MUTEX                    domainHeapLock;
+    // @aspect struct DomainDesc_s
 } DomainDesc;
 
 

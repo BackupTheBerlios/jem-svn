@@ -23,6 +23,7 @@ int                 jemMallocInit(void);
 void                *jemMalloc(u32 size);
 char                *jemMallocCode(struct DomainDesc_s *domain, u32 size);
 void                jemFree(void *addr);
+void                jemFreeCode(void *addr);
 void                jemFreeThreadDesc(ThreadDesc *t);
 ThreadDescProxy     *jemMallocThreadDescProxy(ClassDesc * c);
 JClass              *jemMallocClasses(DomainDesc * domain, u32 number);

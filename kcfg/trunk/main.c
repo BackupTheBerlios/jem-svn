@@ -39,7 +39,7 @@
 #include "libcli.h"
 #endif
 
-#define VERSION "1.1.3"
+#define VERSION "1.1.4"
 
 static char *filename = CONFIG_KCFG_FILENAME;
 module_param(filename, charp, 444);

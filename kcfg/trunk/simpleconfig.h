@@ -125,7 +125,4 @@ int cfg_valtype(char *name);
 ** returns zero if the string can't be typed or is null */
 int cfg_strtype(char *str);
 
-/* return library version and author/copyright/license information */
-void cfg_info(int *ver, int *rev, int *bld, char *auth, int authlen,
-    char *copy, int copylen, char *lic, int liclen);
 #endif

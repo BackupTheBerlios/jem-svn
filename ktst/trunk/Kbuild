@@ -1,0 +1,8 @@
+ktst-objs := AssertImpl.o RepeatedTest.o stdImpl.o TestCaller.o TestCase.o \
+				TestResult.o TestRunner.o TestSuite.o main.o
+
+ktst.o: $(ktst-objs)
+	$(LD) -r -o $@ $(ktst-objs)
+
+obj-$(CONFIG_KTST) += ktst.o
+

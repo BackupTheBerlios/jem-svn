@@ -1,0 +1,28 @@
+#
+# KTST configuration
+#
+menu "Module Unit Testing Interface (KTST)"
+
+config KTST
+        tristate "Module Unit Testing Interface (ktst) support"
+        depends on KCFG
+        depends on KCLI
+        ---help---
+          Ktst is a unit testing interface for kernel modules. It
+          is meant for embedded Linux applications where there may not
+          be any user space space. Some embedded applications run
+          entirely in the kernel, and this module is intended to provide
+          a unit testing interface facility for this case. 
+          
+          Ktst depends on Kcli, which is a kernel command line
+          interface. Ktst adds commands to Kcli to run test cases.
+          
+          Ktst also depends on Kcfg, which it uses to load it's internal
+          configuration parameters.
+
+          To compile this as a module, choose M here: the module
+          will be called ktst.
+
+          If unsure, say N.
+
+endmenu

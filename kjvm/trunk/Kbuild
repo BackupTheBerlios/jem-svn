@@ -11,15 +11,11 @@ kjvm-objs := core/jem.o core/malloc.o
 #		dom0/zero_DomainManager.o \
 #               gc/gc.o gc/gc_alloc.o
 
-ifeq ($(CONFIG_JEM_ENABLE_GC),y)
-kjvm-objs += gc/gc_normal.o gc/gc_stack.o gc/gc_impl.o
-endif
-
 
 kjvm.o: $(kjvm-objs)
 	$(LD) -r -o $@ $(kjvm-objs)
 
 obj-$(CONFIG_JEM) += kjvm.o
 
-EXTRA_CFLAGS += -I/opt/xenomai/include -Idrivers/embedded/kjvm/include -Idrivers/embedded/kcli -Idrivers/embedded/kcfg
+EXTRA_CFLAGS += -I/opt/xenomai/include -Idrivers/embedded/kjvm/include -Idrivers/embedded/kcli -Idrivers/embedded/kcfg -Idrivers/embedded/ktst
 

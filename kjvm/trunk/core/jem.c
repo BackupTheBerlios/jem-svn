@@ -53,6 +53,7 @@ int jem_init (void)
     loadConfig();
     
     // @aspect cli
+    // @aspect test
 
     // Initialize memory subsystem
     if ((result = jemMallocInit()) < 0) return result;

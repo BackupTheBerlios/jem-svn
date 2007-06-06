@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+//==============================================================================
+// This file is part of Jem, a real time Java operating system designed for
+// embedded systems.
+//
+// Copyright (C) 2007 Christopher Stone. 
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+//==============================================================================
+-->
+
+<ax:aspect xmlns:ax="http://control.ee.ethz.ch/XWeaver/AspectX" xmlns:cpp="http://www.sdml.info/srcML/cpp" xmlns:java="http://www.sdml.info/srcML/java" xmlns:src="http://www.sdml.info/srcML/src" xmlns:util="http://www.pnp-software.com/util" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="TestMalloc">
+  <ax:description>This aspect adds test cases for the malloc.c functions.
+  Dependencies: MallocStatistics.ax</ax:description>
+  <ax:include href="FunctionPointcuts.ax"/>
+  <ax:include href="UnitPointcuts.ax"/>
+
+
+  <ax:advice name="TestMallocAdvice_1" type="add">
+    <ax:description>Add new variables and functions for malloc statistics.</ax:description>
+    <ax:pointcutRef aspect="UnitPointcuts" ref="malloc_c" type="src:unit"/>
+    <ax:codeModifier type="definition">
+      <ax:text>
+
+//==============================================================================
+//
+// Testcases.
+//
+//==============================================================================
+
+static void setUpMalloc(void)
+{
+    int i;
+
+    for (i=0; i&lt;10; i++)
+      if (testRef[i] != NULL) 
+      {
+          jemFree(testRef[i], TESTMALLOCSZ, i);
+          testRef[i] = NULL;
+      }
+}
+
+
+static void setUpFree(void)
+{
+    int i;
+
+    for (i=0; i&lt;10; i++)
+      if (testRef[i] == NULL) 
+      {
+          testRef[i] = jemMalloc(TESTMALLOCSZ, i);
+      }
+}
+
+
+static void tearDown(void)
+{
+}
+
+
+static void test_jemMalloc(void) 
+{
+    testRef[MEMTYPE_OTHER] = jemMalloc(TESTMALLOCSZ, MEMTYPE_OTHER);
+    TEST_ASSERT_NOT_NULL(testRef[MEMTYPE_OTHER]);
+    testRef[MEMTYPE_HEAP] = jemMalloc(TESTMALLOCSZ, MEMTYPE_HEAP);
+    TEST_ASSERT_NOT_NULL(testRef[MEMTYPE_HEAP]);
+    testRef[MEMTYPE_CODE] = jemMalloc(TESTMALLOCSZ, MEMTYPE_CODE);
+    TEST_ASSERT_NOT_NULL(testRef[MEMTYPE_CODE]);
+    testRef[MEMTYPE_STACK] = jemMalloc(TESTMALLOCSZ, MEMTYPE_STACK);
+    TEST_ASSERT_NOT_NULL(testRef[MEMTYPE_STACK]);
+    testRef[MEMTYPE_MEMOBJ] = jemMalloc(TESTMALLOCSZ, MEMTYPE_MEMOBJ);
+    TEST_ASSERT_NOT_NULL(testRef[MEMTYPE_MEMOBJ]);
+    testRef[MEMTYPE_PROFILING] = jemMalloc(TESTMALLOCSZ, MEMTYPE_PROFILING);
+    TEST_ASSERT_NOT_NULL(testRef[MEMTYPE_PROFILING]);
+    testRef[MEMTYPE_EMULATION] = jemMalloc(TESTMALLOCSZ, MEMTYPE_EMULATION);
+    TEST_ASSERT_NOT_NULL(testRef[MEMTYPE_EMULATION]);
+    testRef[MEMTYPE_TMP] = jemMalloc(TESTMALLOCSZ, MEMTYPE_TMP);
+    TEST_ASSERT_NOT_NULL(testRef[MEMTYPE_TMP]);
+    testRef[MEMTYPE_DCB] = jemMalloc(TESTMALLOCSZ, MEMTYPE_DCB);
+    TEST_ASSERT_NOT_NULL(testRef[MEMTYPE_DCB]);
+    testRef[9] = jemMalloc(TESTMALLOCSZ, 9);
+    TEST_ASSERT_NOT_NULL(testRef[9]);
+}
+
+
+static void test_jemFree(void)
+{
+    int i;
+
+    for (i=0; i&lt;10; i++)
+      if (testRef[i] != NULL) 
+      {
+          jemFree(testRef[i], TESTMALLOCSZ, i);
+          testRef[i] = NULL;
+      }
+}
+
+
+static TestRef MallocAll_tests(void)
+{
+  EMB_UNIT_TESTFIXTURES(fixtures) {
+    new_TestFixture("test_jemMalloc",test_jemMalloc),
+    new_TestFixture("test_jemFree",test_jemFree),
+  };
+  EMB_UNIT_TESTCALLER(MallocAllTest,"All malloc tests",setUpMalloc,tearDown,fixtures);
+
+  return (TestRef)&amp;MallocAllTest;
+}
+
+
+static TestRef Malloc_test1(void)
+{
+  EMB_UNIT_TESTFIXTURES(fixtures) {
+    new_TestFixture("test_jemMalloc",test_jemMalloc),
+  };
+  EMB_UNIT_TESTCALLER(MallocTest1,"Malloc jemMalloc test",setUpMalloc,tearDown,fixtures);
+
+  return (TestRef)&amp;MallocTest1;
+}
+
+
+static TestRef Malloc_test2(void)
+{
+  EMB_UNIT_TESTFIXTURES(fixtures) {
+    new_TestFixture("test_jemFree",test_jemFree),
+  };
+  EMB_UNIT_TESTCALLER(MallocTest2,"Malloc jemFree test",setUpFree,tearDown,fixtures);
+
+  return (TestRef)&amp;MallocTest2;
+}
+
+
+static int jemMalloc_test_cmd(struct cli_def *cli, char *command, char *argv[], int argc)
+{
+    unsigned int state=0;
+
+    if (argc &gt; 0)
+    {
+        state = 1;
+        if (!strncmp(argv[0], "list", 4)) state = 2;
+        if (!strncmp(argv[0], "all", 3)) state = 0;
+        if (!strncmp(argv[0], "t1", 2)) state = 3;
+        if (!strncmp(argv[0], "t2", 2)) state = 4;
+    }
+
+    switch (state) 
+    {
+        case 0:
+          TestRunner_start();
+          TestRunner_runTest(MallocAll_tests());
+          TestRunner_end();
+          cli_print(cli, "\r\n");
+          break;
+        case 1:
+          cli_print(cli, "Invalid argument, try 'malloc list'\r\n");
+          break;
+        case 2:
+          cli_print(cli, "malloc takes one of the following arguments:\r\n");
+          cli_print(cli, "  list - display this text\r\n");
+          cli_print(cli, "  all  - run all tests\r\n");
+          cli_print(cli, "  t1   - run jemMalloc test\r\n");
+          cli_print(cli, "  t2   - run jemFree test\r\n");
+          break;
+        case 3:
+          TestRunner_start();
+          TestRunner_runTest(Malloc_test1());
+          TestRunner_end();
+          cli_print(cli, "\r\n");
+          break;
+        case 4:
+          TestRunner_start();
+          TestRunner_runTest(Malloc_test2());
+          TestRunner_end();
+          cli_print(cli, "\r\n");
+          break;
+    }
+
+    return CLI_OK;
+}
+
+</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="TestMallocAdvice_2" type="add">
+    <ax:description>Add new global variables for malloc statistics.</ax:description>
+    <ax:pointcutRef aspect="UnitPointcuts" ref="malloc_c" type="src:unit"/>
+    <ax:codeModifier type="declaration">
+      <ax:text>
+// Testcase declarations
+extern struct cli_command *jemtst_command;
+static char               *testRef[10];
+
+#define TESTMALLOCSZ  2000
+
+static int jemMalloc_test_cmd(struct cli_def *cli, char *command, char *argv[], int argc);
+      </ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="TestMallocAdvice_3" type="replace">
+    <ax:description>Add test framework header include.</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect include')" type="src:comment">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="UnitPointcuts" ref="malloc_c" type="src:unit"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>#include "embUnit.h"
+// @aspect include</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="TestMallocAdvice_4" type="begin">
+    <ax:description>Add malloc testcase initialization code.</ax:description>
+    <ax:pointcutRef aspect="FunctionPointcuts" ref="jemMallocInit" type="src:function"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>
+cli_register_command(kcli, NULL, "malloc", jemMalloc_test_cmd, 
+      PRIVILEGE_UNPRIVILEGED, CLI_TEST_MODE, "Run malloc unit tests.");</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="TestMallocAdvice_5" type="begin">
+    <ax:description>Add code to unregister malloc test cli.</ax:description>
+    <ax:pointcutRef aspect="FunctionPointcuts" ref="jem_exit" type="src:function"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>cli_unregister_command(kcli, "malloc");</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  </ax:aspect>

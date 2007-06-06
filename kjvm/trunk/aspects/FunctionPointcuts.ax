@@ -74,6 +74,11 @@
   </ax:pointcut>
 
 
+  <ax:pointcut constraint="src:name='unitTestInit'" name="unitTestInit" type="src:function">
+    <ax:description>Select the unitTestInit function.</ax:description>
+  </ax:pointcut>
+
+
   <ax:pointcut constraint="src:name='createService'" name="createServiceDecl" type="src:function_decl">
     <ax:description>Select the createService function declaration.</ax:description>
   </ax:pointcut>

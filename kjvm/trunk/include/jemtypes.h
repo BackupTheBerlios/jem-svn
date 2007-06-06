@@ -67,4 +67,6 @@ typedef void (*code_t) (void);
 #endif
 #define XMOFF 1
 
+#define CLI_TEST_MODE 100
+
 #endif              /* _JEMTYPES_H */

@@ -87,9 +87,9 @@ typedef struct DomainDesc_s {
     struct LibDesc_s             **ndx_libs;    /* system width libindex-list */
     jint                        **sfields;
     struct ClassDesc_s           *arrayClasses;
-    char                        *codeBorder[CONFIG_JEM_CODE_FRAGMENTS]; /* pointer to border of code segment (last allocated word  + 1) */
-    char                        *code[CONFIG_JEM_CODE_FRAGMENTS];   /* all code lifes here */
-    char                        *codeTop[CONFIG_JEM_CODE_FRAGMENTS];    /* pointer to free code space */
+    char                        **codeBorder; /* pointer to border of code segment (last allocated word  + 1) */
+    char                        **code;   /* all code lifes here */
+    char                        **codeTop;    /* pointer to free code space */
     s32                         cur_code;       /* current code chunk */
     s32                         code_bytes; /* max code memory  */
     char                        *domainName;
@@ -105,8 +105,8 @@ typedef struct DomainDesc_s {
     struct ArrayDesc_s          *libNames;
     struct ArrayDesc_s          *argv;
     struct ArrayDesc_s          *initialPortals;
-    struct DEPDesc_s            *services[CONFIG_JEM_MAX_SERVICES];
-    struct ServiceThreadPool_s  *pools[CONFIG_JEM_MAX_SERVICES];
+    struct DEPDesc_s            **services;
+    struct ServiceThreadPool_s  **pools;
     int                         state;
     u32                         id;
     struct ThreadDesc_s         *firstThreadInRunQueue;

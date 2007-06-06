@@ -65,7 +65,7 @@ struct cli_command   *jem_command;
 
 
   <ax:advice name="Advice_4" type="replace">
-    <ax:description>Add global variables for cli.</ax:description>
+    <ax:description>Add cli header include.</ax:description>
     <ax:pointcut constraint="contains(.,'@aspect include')" type="src:comment">
       <ax:or>
         <ax:restriction type="within">

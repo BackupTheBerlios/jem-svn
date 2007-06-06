@@ -60,4 +60,11 @@
   </ax:pointcut>
 
 
+  <ax:pointcut name="test_c" type="src:unit">
+    <ax:restriction type="contain">
+      <ax:pointcutRef aspect="FunctionPointcuts" ref="unitTestInit" type="src:function"/>
+    </ax:restriction>
+  </ax:pointcut>
+
+
 </ax:aspect>

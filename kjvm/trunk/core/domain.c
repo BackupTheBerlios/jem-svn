@@ -76,9 +76,14 @@ static DomainDesc *specialAllocDomainDesc(void)
     } while (d->state != DOMAIN_STATE_FREE);
 
     memset(d, 0, sizeof(DomainDesc));
-    d->magic    = MAGIC_DOMAIN;
-    d->state    = DOMAIN_STATE_CREATING;
-    d->id       = currentDomainID++;
+    d->magic    	= MAGIC_DOMAIN;
+    d->state    	= DOMAIN_STATE_CREATING;
+    d->id       	= currentDomainID++;
+    d->codeBorder	= jemMalloc((sizeof(char *) * getJVMConfig()->codeFragments) /* MEMTYPE_DCB */); 
+    d->code			= jemMalloc((sizeof(char *) * getJVMConfig()->codeFragments) /* MEMTYPE_DCB */); 
+    d->codeTop		= jemMalloc((sizeof(char *) * getJVMConfig()->codeFragments) /* MEMTYPE_DCB */); 
+    d->services		= jemMalloc((sizeof(char *) * getJVMConfig()->maxServices) /* MEMTYPE_DCB */); 
+    d->pools		= jemMalloc((sizeof(char *) * getJVMConfig()->maxServices) /* MEMTYPE_DCB */); 
     numberOfDomains++;
 
     sprintf(lockName, "dom%03dMemLock", d->id);
@@ -539,6 +544,26 @@ void terminateDomain(DomainDesc * domain)
     jemFree(domain->scratchMem
     		/* @aspect domain->scratchMemSize */
     		/* @aspect MEMTYPE_OTHER */
+    		);
+    jemFree(domain->codeBorder
+    		/* @aspect domain->codeFragmentsMemSize */
+    		/* @aspect MEMTYPE_DCB */
+    		);
+    jemFree(domain->code
+    		/* @aspect domain->codeFragmentsMemSize */
+    		/* @aspect MEMTYPE_DCB */
+    		);
+    jemFree(domain->codeTop
+    		/* @aspect domain->codeFragmentsMemSize */
+    		/* @aspect MEMTYPE_DCB */
+    		);
+    jemFree(domain->services
+    		/* @aspect domain->maxServicesMemSize */
+    		/* @aspect MEMTYPE_DCB */
+    		);
+    jemFree(domain->pools
+    		/* @aspect domain->maxServicesMemSize */
+    		/* @aspect MEMTYPE_DCB */
     		);
 
     rt_mutex_delete(&domain->domainMemLock);

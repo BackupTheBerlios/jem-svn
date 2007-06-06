@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+//==============================================================================
+// This file is part of Jem, a real time Java operating system designed for
+// embedded systems.
+//
+// Copyright (C) 2007 Christopher Stone. 
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+//==============================================================================
+-->
+
+<ax:aspect xmlns:ax="http://control.ee.ethz.ch/XWeaver/AspectX" xmlns:cpp="http://www.sdml.info/srcML/cpp" xmlns:java="http://www.sdml.info/srcML/java" xmlns:src="http://www.sdml.info/srcML/src" xmlns:util="http://www.pnp-software.com/util" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="Test">
+  <ax:description>This aspect adds a test interface to Kjvm. A separate
+module is loaded to test Kjvm. The test module uses the test interface
+provided by this aspect.
+
+Dependencies: CommandLineInterface.ax</ax:description>
+
+  <ax:include href="FunctionPointcuts.ax"/>
+  <ax:include href="UnitPointcuts.ax"/>
+
+
+  <ax:advice name="TestAdvice_1" type="replace">
+    <ax:description>Add code to initialize the unit test subsystem.</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect test')" type="src:comment">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="jem_init" type="src:function"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>jemtst_command = cli_register_command(kcli, NULL, "utest", NULL,
+		PRIVILEGE_UNPRIVILEGED, MODE_EXEC, NULL);
+cli_register_command(kcli, jemtst_command, "enter", jem_test_mode,
+    		PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Enter jem test mode.");</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="TestAdvice_2" type="add">
+    <ax:description>Add unitTestInit prototype.</ax:description>
+    <ax:pointcutRef aspect="UnitPointcuts" ref="jem_c" type="src:unit"/>
+    <ax:codeModifier type="declaration">
+      <ax:text>struct cli_command				*jemtst_command;
+static int jem_test_mode(struct cli_def *cli, char *command, char *argv[], int argc);
+      </ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="TestAdvice_3" type="begin">
+    <ax:description>Add code to unregister test cli.</ax:description>
+    <ax:pointcutRef aspect="FunctionPointcuts" ref="jem_exit" type="src:function"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>cli_unregister_command(kcli, "utest");</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="TestAdvice_4" type="add">
+    <ax:description>Add new variables and functions for malloc statistics.</ax:description>
+    <ax:pointcutRef aspect="UnitPointcuts" ref="jem_c" type="src:unit"/>
+    <ax:codeModifier type="definition">
+      <ax:text>
+static int jem_test_mode(struct cli_def *cli, char *command, char *argv[], int argc)
+{
+    cli_set_configmode(cli, CLI_TEST_MODE, "utest");	
+    return CLI_OK;
+}
+
+</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+</ax:aspect>

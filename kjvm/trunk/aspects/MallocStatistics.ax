@@ -54,7 +54,7 @@ static struct alloc_stat_s alloc_stat;
 
 static unsigned long  totalAllocedRam;
 static unsigned long  peakAllocedRam;
-static unsigned long	totalAllocations;
+static unsigned long  totalAllocations;
 static unsigned long  maxAllocSize;
 
 static void jemMallocIncrement(u32 size, int memtype);
@@ -108,7 +108,6 @@ static void jemMallocIncrement(u32 size, int memtype)
         break;
     default:
         printk(KERN_WARNING &quot;Allocation MEMTYPE unknown.\n&quot;);
-        alloc_stat.other += size;
     }
 }
 
@@ -159,21 +158,21 @@ static int jemMalloc_stat_cmd(struct cli_def *cli, char *command, char *argv[], 
 
     si_meminfo( &amp;mi );
 
-  	cli_print(kcli, "Allocated memory: ......... %ld kB", totalAllocedRam/1024);
-  	cli_print(kcli, "Peak allocated memory: .... %ld kB", peakAllocedRam/1024);
+  	cli_print(kcli, "Allocated memory: ......... %ld kB\r\n", totalAllocedRam/1024);
+  	cli_print(kcli, "Peak allocated memory: .... %ld kB\r\n", peakAllocedRam/1024);
     if (totalAllocations > 0)
-        cli_print(kcli, "Average allocation size: .. %ld kB", (totalAllocedRam / totalAllocations)/1024);
-  	cli_print(kcli, "Available memory: ......... %ld kB", K(mi.freeram));
-  	cli_print(kcli, "Used for:");
-  	cli_print(kcli, "   Heap      %9ld", alloc_stat.heap);
-  	cli_print(kcli, "   Code      %9ld", alloc_stat.code);
-  	cli_print(kcli, "   Stack     %9ld", alloc_stat.stack);
-  	cli_print(kcli, "   Memobj    %9ld", alloc_stat.memobj);
-  	cli_print(kcli, "   Profiling %9ld", alloc_stat.profiling);
-  	cli_print(kcli, "   Emulation %9ld", alloc_stat.emulation);
-  	cli_print(kcli, "   Tmp       %9ld", alloc_stat.tmp);
-  	cli_print(kcli, "   DCB       %9ld", alloc_stat.dcb);
-  	cli_print(kcli, "   Other     %9ld", alloc_stat.other);
+        cli_print(kcli, "Average allocation size: .. %ld kB\r\n", (totalAllocedRam / totalAllocations)/1024);
+  	cli_print(kcli, "Available memory: ......... %ld kB\r\n", K(mi.freeram));
+  	cli_print(kcli, "Used for:\r\n");
+  	cli_print(kcli, "   Heap      %9ld\r\n", alloc_stat.heap);
+  	cli_print(kcli, "   Code      %9ld\r\n", alloc_stat.code);
+  	cli_print(kcli, "   Stack     %9ld\r\n", alloc_stat.stack);
+  	cli_print(kcli, "   Memobj    %9ld\r\n", alloc_stat.memobj);
+  	cli_print(kcli, "   Profiling %9ld\r\n", alloc_stat.profiling);
+  	cli_print(kcli, "   Emulation %9ld\r\n", alloc_stat.emulation);
+  	cli_print(kcli, "   Tmp       %9ld\r\n", alloc_stat.tmp);
+  	cli_print(kcli, "   DCB       %9ld\r\n", alloc_stat.dcb);
+  	cli_print(kcli, "   Other     %9ld\r\n", alloc_stat.other);
 
     return CLI_OK;
 }
@@ -460,6 +459,32 @@ cli_register_command(kcli, jem_command, "mem", jemMalloc_stat_cmd,
     </ax:pointcut>
     <ax:codeModifier type="codeFragment">
       <ax:text>start, m->size, MEMTYPE_TMP</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_22" type="replace">
+    <ax:description>Add size parameter to jemFree call in domain.c</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect domain->codeFragmentsMemSize')" type="src:comment">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="terminateDomain" type="src:function"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, (sizeof(char *) * getJVMConfig()->codeFragments)</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_23" type="replace">
+    <ax:description>Add size parameter to jemFree call in domain.c</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect domain->maxServicesMemSize')" type="src:comment">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="terminateDomain" type="src:function"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>, (sizeof(char *) * getJVMConfig()->maxServices)</ax:text>
     </ax:codeModifier>
   </ax:advice>
 

@@ -8,6 +8,8 @@
       <file href="aspects/CommandLineInterface.ax" />
       <file href="aspects/MallocStatistics.ax" />
       <file href="aspects/XenoRTDMLock.ax" />
+      <file href="aspects/Test.ax" />
+      <file href="aspects/TestMalloc.ax" />
       <file href="aspects/License.ax" />
       <file href="aspects/Cleanup.ax" />
     </aspects>

@@ -91,13 +91,13 @@ static int cmd_get(struct cli_def *cli, char *command, char *argv[], int argc)
 
     if(argv[0] == NULL)
     {
-        cli_print(kcli, "No config name specified.");
+        cli_print(kcli, "No config name specified.\r\n");
     }else if(cfg_getval(argv[0], &val))
     {
-        cli_print(kcli, "Failed to get value of \"%s\"", argv[0]);
+        cli_print(kcli, "Failed to get value of \"%s\"\r\n", argv[0]);
     }else
     {
-        cli_print(kcli, "%s = \"%s\"", argv[0], val);
+        cli_print(kcli, "%s = \"%s\"\r\n", argv[0], val);
     }
 
     return CLI_OK;
@@ -107,13 +107,13 @@ static int cmd_set(struct cli_def *cli, char *command, char *cmds[], int argc)
 {
     if(cmds[0] == NULL)
     {
-        cli_print(kcli, "No config name specified.");
+        cli_print(kcli, "No config name specified.\r\n");
     }else if(cmds[1] == NULL)
     {
-        cli_print(kcli, "No value specified for \"%s\"", cmds[0]);
+        cli_print(kcli, "No value specified for \"%s\"\r\n", cmds[0]);
     }else if(cfg_setval(cmds[0], cmds[1]))
     {
-        cli_print(kcli, "Failed to set \"%s\" to \"%s\"", cmds[0], cmds[1]);
+        cli_print(kcli, "Failed to set \"%s\" to \"%s\"\r\n", cmds[0], cmds[1]);
     }
 
     return CLI_OK;
@@ -130,13 +130,13 @@ static int iterfunc(unsigned long n, void *key, void *val)
 
     if(name == NULL)
     {
-        cli_print(kcli, "%d: no name", n);
+        cli_print(kcli, "%d: no name\r\n", n);
     }else if(cfg == NULL)
     {
-        cli_print(kcli, "%d: %s has no value", n, name);
+        cli_print(kcli, "%d: %s has no value\r\n", n, name);
     }else
     {
-        cli_print(kcli, "%d: %s = \"%s\" (%s) %s%s", n, name, cfg->value,
+        cli_print(kcli, "%d: %s = \"%s\" (%s) %s%s\r\n", n, name, cfg->value,
             typename[cfg_valtype(name)],
             ((cfg->cfgline && cfg->cfgline->comment)?"COMMENT: ":""),
             ((cfg->cfgline && cfg->cfgline->comment)?cfg->cfgline->comment:""));
@@ -150,7 +150,7 @@ static int cmd_list(struct cli_def *cli, char *command, char *cmds[], int argc)
 
     if(cfg_iterate(iterfunc, &rv))
     {
-        cli_print(kcli, "Failed to iterate over config table.");
+        cli_print(kcli, "Failed to iterate over config table.\r\n");
     }
 
     return CLI_OK;
@@ -160,17 +160,17 @@ static int cmd_save(struct cli_def *cli, char *command, char *cmds[], int argc)
 {
     if(cmds[0] == NULL)
     {
-        cli_print(kcli, "Save to current config file");
+        cli_print(kcli, "Save to current config file\r\n");
         if(cfg_savefile(filename))
         {
-            cli_print(kcli, "Failed to save current config file");
+            cli_print(kcli, "Failed to save current config file\r\n");
         }
     }else
     {
-        cli_print(kcli, "Save to file \"%s\"", cmds[0]);
+        cli_print(kcli, "Save to file \"%s\"\r\n", cmds[0]);
         if(cfg_savefile(cmds[0]))
         {
-            cli_print(kcli, "Failed to save to \"%s\"", cmds[0]);
+            cli_print(kcli, "Failed to save to \"%s\"\r\n", cmds[0]);
         }
     }
 
@@ -181,13 +181,13 @@ static int cmd_load(struct cli_def *cli, char *command, char *cmds[], int argc)
 {
     if(cmds[0] == NULL)
     {
-        cli_print(kcli, "No config file name specified.");
+        cli_print(kcli, "No config file name specified.\r\n");
     }else if(cfg_loadfile(cmds[0]))
     {
-        cli_print(kcli, "Failed to load config file \"%s\"", cmds[0]);
+        cli_print(kcli, "Failed to load config file \"%s\"\r\n", cmds[0]);
     }else
     {
-        cli_print(kcli, "Loaded config file \"%s\"", cmds[0]);
+        cli_print(kcli, "Loaded config file \"%s\"\r\n", cmds[0]);
     }
 
     return CLI_OK;
@@ -196,20 +196,20 @@ static int cmd_load(struct cli_def *cli, char *command, char *cmds[], int argc)
 static int cmd_reset(struct cli_def *cli, char *command, char *cmds[], int argc)
 {
     cfg_reset();
-    cli_print(kcli, "Config system reset.");
+    cli_print(kcli, "Config system reset.\r\n");
 
     return CLI_OK;
 }
 
 static int cmd_help(struct cli_def *cli, char *command, char *cmds[], int argc)
 {
-    cli_print(kcli, "Kcfg commands:");
-    cli_print(kcli, "\tlist               - list config values");
-    cli_print(kcli, "\tget <name>         - show a named config value");
-    cli_print(kcli, "\tset <name> <value> - set a named config value");
-    cli_print(kcli, "\tload <name>        - load a config file");
-    cli_print(kcli, "\tsave [<name>]      - save the current config");
-    cli_print(kcli, "\treset              - reset the config system");
+    cli_print(kcli, "Kcfg commands:\r\n");
+    cli_print(kcli, "\tlist               - list config values\r\n");
+    cli_print(kcli, "\tget <name>         - show a named config value\r\n");
+    cli_print(kcli, "\tset <name> <value> - set a named config value\r\n");
+    cli_print(kcli, "\tload <name>        - load a config file\r\n");
+    cli_print(kcli, "\tsave [<name>]      - save the current config\r\n");
+    cli_print(kcli, "\treset              - reset the config system\r\n");
 
     return CLI_OK;
 }

@@ -115,7 +115,6 @@ void                cli_set_promptchar(struct cli_def *cli, char *promptchar);
 int                 cli_set_privilege(struct cli_def *cli, int privilege);
 int                 cli_set_configmode(struct cli_def *cli, int mode, char *config_desc);
 void                cli_reprompt(struct cli_def *cli);
-void                cli_regular(struct cli_def *cli, int (*callback)(struct cli_def *cli));
 struct cli_def      *cli_get(void);
 void                cli_print(struct cli_def *cli, char *format, ...);
 void                cli_print_callback(struct cli_def *cli,

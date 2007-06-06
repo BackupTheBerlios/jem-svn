@@ -40,7 +40,7 @@
 #include <linux/platform_device.h>
 #include "libcli.h"
 
-#define VERSION "1.2.1"
+#define VERSION "1.3.0"
 
 unsigned int     cliPort = CONFIG_KCLI_PORT;
 module_param(cliPort, uint, 444);

@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
- * 
+ *
+ * Copyright (c) 2007 Christopher Stone 
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,7 +31,6 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: HelperMacro.h,v 1.3 2004/02/10 16:19:29 arms22 Exp $
  */
 #ifndef	__HELPERMACRO_H__
 #define	__HELPERMACRO_H__

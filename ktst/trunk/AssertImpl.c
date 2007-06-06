@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
  * 
+ * Copyright (c) 2007 Christopher Stone 
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,8 +31,10 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: AssertImpl.c,v 1.5 2004/02/10 16:15:25 arms22 Exp $
  */
+#include <linux/module.h>
+#include <linux/types.h>
+#include <linux/kernel.h>
 #include "config.h"
 #include "stdImpl.h"
 #include "AssertImpl.h"
@@ -53,6 +56,7 @@ void assertImplementationInt(int expected,int actual, long line, const char *fil
 
 	addFailure(buffer, line, file);
 }
+EXPORT_SYMBOL(assertImplementationInt);
 
 void assertImplementationCStr(const char *expected,const char *actual, long line, const char *file)
 {
@@ -98,3 +102,4 @@ void assertImplementationCStr(const char *expected,const char *actual, long line
 
 	addFailure(buffer, line, file);
 }
+EXPORT_SYMBOL(assertImplementationCStr);

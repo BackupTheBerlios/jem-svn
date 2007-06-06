@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
  * 
+ * Copyright (c) 2007 Christopher Stone 
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,14 +31,9 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: TestResult.h,v 1.7 2004/02/10 16:19:29 arms22 Exp $
  */
 #ifndef	__TESTRESULT_H__
 #define	__TESTRESULT_H__
-
-#ifdef	__cplusplus
-extern "C" {
-#endif
 
 /*typedef struct __TestResult		TestResult;*//* -> Test.h*/
 /*typedef struct __TestResult*		TestResultRef;*//* -> Test.h*/
@@ -62,9 +58,5 @@ void TestResult_init(TestResult* self,TestListner* listner);
 void TestResult_startTest(TestResult* self,Test* test);
 void TestResult_endTest(TestResult* self,Test* test);
 void TestResult_addFailure(TestResult* self,Test* test,const char* msg,int line,const char* file);
-
-#ifdef	__cplusplus
-}
-#endif
 
 #endif/*__TESTRESULT_H__*/

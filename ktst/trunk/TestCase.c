@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
  * 
+ * Copyright (c) 2007 Christopher Stone 
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,8 +31,10 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: TestCase.c,v 1.6 2004/02/10 16:19:29 arms22 Exp $
  */
+#include <linux/module.h>
+#include <linux/types.h>
+#include <linux/kernel.h>
 #include "Test.h"
 #include "TestCase.h"
 #include "TestResult.h"
@@ -43,6 +46,7 @@ char* TestCase_name(TestCase* self)
 {
 	return self->name;
 }
+EXPORT_SYMBOL(TestCase_name);
 
 void TestCase_run(TestCase* self,TestResult* result)
 {
@@ -64,19 +68,23 @@ void TestCase_run(TestCase* self,TestResult* result)
 	}
 	TestResult_endTest(result, (Test*)self);
 }
+EXPORT_SYMBOL(TestCase_run);
 
 int TestCase_countTestCases(TestCase* self)
 {
 	return 1;
 }
+EXPORT_SYMBOL(TestCase_countTestCases);
 
 const TestImplement TestCaseImplement = {
 	(TestNameFunction)			TestCase_name,
 	(TestRunFunction)			TestCase_run,
 	(TestCountTestCasesFunction)TestCase_countTestCases,
 };
+EXPORT_SYMBOL(TestCaseImplement);
 
 void addFailure(const char *msg, long line, const char *file)
 {
 	TestResult_addFailure(result_, (Test*)self_, (char*)msg, line, (char*)file);
 }
+EXPORT_SYMBOL(addFailure);

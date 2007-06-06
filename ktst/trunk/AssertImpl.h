@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
- * 
+ *
+ * Copyright (c) 2007 Christopher Stone 
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,14 +31,9 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: AssertImpl.h,v 1.6 2003/09/16 11:09:53 arms22 Exp $
  */
 #ifndef	__ASSERTIMPL_H__
 #define	__ASSERTIMPL_H__
-
-#ifdef	__cplusplus
-extern "C" {
-#endif
 
 void addFailure(const char *msg, long line, const char *file);	/*TestCase.c*/
 
@@ -65,8 +61,5 @@ void assertImplementationCStr(const char *expected,const char *actual, long line
 #define TEST_FAIL(message)\
 	if (0) {} else {addFailure(message,__LINE__,__FILE__);return;}
 
-#ifdef	__cplusplus
-}
-#endif
 
 #endif/*__ASSERTIMPL_H__*/

@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
  * 
+ * Copyright (c) 2007 Christopher Stone 
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,82 +31,39 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: stdImpl.c,v 1.3 2004/02/10 16:15:25 arms22 Exp $
  */
+#include <linux/module.h>
+#include <linux/types.h>
+#include <linux/kernel.h>
+#include <linux/string.h>
 #include "stdImpl.h"
+#include "libcli.h"
+
+extern struct cli_def       *kcli;
 
 char* stdimpl_strcpy(char *dst, const char *src)
 {
-	char *start = dst;
-	char c;
-	do {
-		c = *src;
-		*dst = c;
-		src++;
-		dst++;
-	} while (c);
-	return start;
+	return strcpy(dst, src);
 }
 
 char* stdimpl_strcat(char *dst, const char *src)
 {
-	char *start = dst;
-	char c;
-	do {
-		c = *dst;
-		dst++;
-	} while (c);
-	dst--;
-	do {
-		c = *src;
-		*dst = c;
-		src++;
-		dst++;
-	} while (c);
-	return start;
+	return strcat(dst, src);
 }
 
 char* stdimpl_strncat(char *dst, const char *src,unsigned int count)
 {
-	char *start = dst;
-	char c;
-	do {
-		c = *dst;
-		dst++;
-	} while (c);
-	dst--;
-	if (count) {
-		do {
-			c = *src;
-			*dst = c;
-			src++;
-			dst++;
-			count--;
-		} while (c && count);
-		*dst = '\0';
-	}
-	return start;
+	return strncat(dst, src, count);
 }
 
 int stdimpl_strlen(const char *str)
 {
-    const char *estr = str;
-	char c;
-	do {
-		c = *estr;
-		estr++;
-	} while (c);
-    return ((int)(estr - str - 1));
+	return strlen(str);
 }
 
 int stdimpl_strcmp(const char *s1, const char *s2)
 {
-	char c1,c2;
-	do {
-		c1 = *s1++;
-		c2 = *s2++;
-	} while ((c1) && (c2) && (c1==c2));
-	return c1 - c2;
+	return strcmp(s1, s2);
 }
 
 static char* _xtoa(unsigned long v,char *string, int r, int is_neg)
@@ -138,4 +96,9 @@ char* stdimpl_itoa(int v,char *string,int r)
 		return _xtoa((unsigned long)(-v), string, r, 1);
 	}
 	return _xtoa((unsigned long)(v), string, r, 0);
+}
+
+void stdimpl_print(const char *string)
+{
+	cli_print(kcli, "%s", string);
 }

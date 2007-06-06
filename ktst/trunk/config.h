@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
  * 
+ * Copyright (c) 2007 Christopher Stone
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,18 +31,11 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: config.h,v 1.7 2004/02/10 16:17:07 arms22 Exp $
  */
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-/*	#define NO_STDIO_PRINTF*/
-	#ifdef	NO_STDIO_PRINTF
-		extern void stdimpl_print(const char *string);
-	#else
-		#include<stdio.h>
-		#define stdimpl_print printf
-	#endif
+	extern void stdimpl_print(const char *string);
 
 	#define ASSERT_STRING_BUFFER_MAX	64
 

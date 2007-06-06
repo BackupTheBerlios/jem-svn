@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
  * 
+ * Copyright (c) 2007 Christopher Stone 
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,8 +31,10 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: TestResult.c,v 1.4 2004/02/10 16:19:29 arms22 Exp $
  */
+#include <linux/module.h>
+#include <linux/types.h>
+#include <linux/kernel.h>
 #include "Test.h"
 #include "TestListener.h"
 #include "TestResult.h"
@@ -42,6 +45,7 @@ void TestResult_init(TestResult* self,TestListner* listner)
 	self->failureCount = 0;
 	self->listener = listner;
 }
+EXPORT_SYMBOL(TestResult_init);
 
 void TestResult_startTest(TestResult* self,Test* test)
 {
@@ -50,6 +54,7 @@ void TestResult_startTest(TestResult* self,Test* test)
 		TestListner_startTest(self->listener, test);
 	}
 }
+EXPORT_SYMBOL(TestResult_startTest);
 
 void TestResult_endTest(TestResult* self,Test* test)
 {
@@ -57,6 +62,7 @@ void TestResult_endTest(TestResult* self,Test* test)
 		TestListner_endTest(self->listener, test);
 	}
 }
+EXPORT_SYMBOL(TestResult_endTest);
 
 void TestResult_addFailure(TestResult* self,Test* test,const char* msg,int line,const char* file)
 {
@@ -65,3 +71,4 @@ void TestResult_addFailure(TestResult* self,Test* test,const char* msg,int line,
 		TestListner_addFailure(self->listener, test, msg, line, file);
 	}
 }
+EXPORT_SYMBOL(TestResult_addFailure);

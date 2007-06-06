@@ -47,8 +47,12 @@
 #include <linux/string.h>
 #include <linux/errno.h>
 #include <linux/moduleparam.h>
+#include "libcli.h"
 
 #define VERSION "1.0.0"
+
+struct cli_def       *kcli;
+
 
 void ktst_exit (void)
 {
@@ -57,9 +61,9 @@ void ktst_exit (void)
 
 int ktst_init (void)
 {
-    int result;
-
     printk(KERN_INFO "Ktst version %s\n", VERSION);
+    
+    kcli    = cli_get();
    
     return 0;
 }

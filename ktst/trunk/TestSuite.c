@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
- * 
+ *
+ * Copyright (c) 2007 Christopher Stone 
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,8 +31,10 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: TestSuite.c,v 1.5 2004/02/10 16:19:29 arms22 Exp $
  */
+#include <linux/module.h>
+#include <linux/types.h>
+#include <linux/kernel.h>
 #include "Test.h"
 #include "TestSuite.h"
 
@@ -39,6 +42,7 @@ char* TestSuite_name(TestSuite* self)
 {
 	return self->name;
 }
+EXPORT_SYMBOL(TestSuite_name);
 
 void TestSuite_run(TestSuite* self,TestResult* result)
 {
@@ -51,6 +55,7 @@ void TestSuite_run(TestSuite* self,TestResult* result)
 		}
 	}
 }
+EXPORT_SYMBOL(TestSuite_run);
 
 int TestSuite_countTestCases(TestSuite* self)
 {
@@ -65,9 +70,11 @@ int TestSuite_countTestCases(TestSuite* self)
 	}
 	return count;
 }
+EXPORT_SYMBOL(TestSuite_countTestCases);
 
 const TestImplement TestSuiteImplement = {
 	(TestNameFunction)			TestSuite_name,
 	(TestRunFunction)			TestSuite_run,
 	(TestCountTestCasesFunction)TestSuite_countTestCases,
 };
+EXPORT_SYMBOL(TestSuiteImplement);

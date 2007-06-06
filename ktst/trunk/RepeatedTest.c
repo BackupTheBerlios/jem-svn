@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
  * 
+ * Copyright (c) 2007 Christopher Stone 
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,8 +31,10 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: RepeatedTest.c,v 1.5 2004/02/10 16:19:29 arms22 Exp $
  */
+#include <linux/module.h>
+#include <linux/types.h>
+#include <linux/kernel.h>
 #include "Test.h"
 #include "RepeatedTest.h"
 
@@ -39,6 +42,7 @@ char* RepeatedTest_name(RepeatedTest* self)
 {
 	return Test_name(self->test);
 }
+EXPORT_SYMBOL(RepeatedTest_name);
 
 void RepeatedTest_run(RepeatedTest* self,TestResult* result)
 {
@@ -48,14 +52,17 @@ void RepeatedTest_run(RepeatedTest* self,TestResult* result)
 		Test_run(test, result);
 	}
 }
+EXPORT_SYMBOL(RepeatedTest_run);
 
 int RepeatedTest_countTestCases(RepeatedTest* self)
 {
 	return Test_countTestCases(self->test) * self->timesRepeat;
 }
+EXPORT_SYMBOL(RepeatedTest_countTestCases);
 
 const TestImplement RepeatedTestImplement = {
 	(TestNameFunction)			RepeatedTest_name,
 	(TestRunFunction)			RepeatedTest_run,
 	(TestCountTestCasesFunction)RepeatedTest_countTestCases,
 };
+EXPORT_SYMBOL(RepeatedTestImplement);

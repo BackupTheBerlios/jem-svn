@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
  * 
+ * Copyright (c) 2007 Christopher Stone 
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,8 +31,10 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: TestCaller.c,v 1.6 2004/02/10 16:19:29 arms22 Exp $
  */
+#include <linux/module.h>
+#include <linux/types.h>
+#include <linux/kernel.h>
 #include "Test.h"
 #include "TestCase.h"
 #include "TestCaller.h"
@@ -40,6 +43,7 @@ char* TestCaller_name(TestCaller* self)
 {
 	return self->name;
 }
+EXPORT_SYMBOL(TestCaller_name);
 
 void TestCaller_run(TestCaller* self,TestResult* result)
 {
@@ -54,14 +58,17 @@ void TestCaller_run(TestCaller* self,TestResult* result)
 		Test_run(&cs,result);
 	}
 }
+EXPORT_SYMBOL(TestCaller_run);
 
 int TestCaller_countTestCases(TestCaller* self)
 {
 	return self->numberOfFixtuers;
 }
+EXPORT_SYMBOL(TestCaller_countTestCases);
 
 const TestImplement TestCallerImplement = {
 	(TestNameFunction)			TestCaller_name,
 	(TestRunFunction)			TestCaller_run,
 	(TestCountTestCasesFunction)TestCaller_countTestCases,
 };
+EXPORT_SYMBOL(TestCallerImplement);

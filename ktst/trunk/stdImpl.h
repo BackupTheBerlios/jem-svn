@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
  * 
+ * Copyright (c) 2007 Christopher Stone 
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,14 +31,9 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: stdImpl.h,v 1.4 2004/02/10 16:15:25 arms22 Exp $
  */
 #ifndef	__STDIMPL_H__
 #define	__STDIMPL_H__
-
-#ifdef	__cplusplus
-extern "C" {
-#endif
 
 #ifndef NULL
 #define	NULL	0
@@ -49,9 +45,5 @@ char* stdimpl_strncat(char *dst, const char *src,unsigned int count);
 int stdimpl_strlen(const char *str);
 int stdimpl_strcmp(const char *s1, const char *s2);
 char* stdimpl_itoa(int v,char *string,int r);
-
-#ifdef	__cplusplus
-}
-#endif
 
 #endif/*__STDIMPL_H__*/

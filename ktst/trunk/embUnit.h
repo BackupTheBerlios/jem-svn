@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
- * 
+ *
+ * Copyright (c) 2007 Christopher Stone 
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,21 +31,20 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: embUnit.h,v 1.4 2004/02/10 16:16:19 arms22 Exp $
  */
 #ifndef	__EMBUNIT_H__
 #define	__EMBUNIT_H__
 
-#include <embUnit/Test.h>
-#include <embUnit/TestCase.h>
-#include <embUnit/TestListener.h>
-#include <embUnit/TestResult.h>
-#include <embUnit/TestSuite.h>
-#include <embUnit/TestRunner.h>
-#include <embUnit/TestCaller.h>
-#include <embUnit/RepeatedTest.h>
-#include <embUnit/stdImpl.h>
-#include <embUnit/AssertImpl.h>
-#include <embUnit/HelperMacro.h>
+#include <Test.h>
+#include <TestCase.h>
+#include <TestListener.h>
+#include <TestResult.h>
+#include <TestSuite.h>
+#include <TestRunner.h>
+#include <TestCaller.h>
+#include <RepeatedTest.h>
+#include <stdImpl.h>
+#include <AssertImpl.h>
+#include <HelperMacro.h>
 
 #endif/*__EMBUNIT_H__*/

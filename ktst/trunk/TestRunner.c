@@ -1,6 +1,7 @@
 /*
  * COPYRIGHT AND PERMISSION NOTICE
  * 
+ * Copyright (c) 2007 Christopher Stone
  * Copyright (c) 2003 Embedded Unit Project
  * 
  * All rights reserved.
@@ -30,8 +31,10 @@
  * use or other dealings in this Software without prior written 
  * authorization of the copyright holder.
  *
- * $Id: TestRunner.c,v 1.6 2004/02/10 16:19:29 arms22 Exp $
  */
+#include <linux/module.h>
+#include <linux/types.h>
+#include <linux/kernel.h>
 #include "config.h"
 #include "stdImpl.h"
 #include "Test.h"
@@ -53,7 +56,7 @@ static void TestRunner_endTest(TestListner* self,Test* test)
 
 static void TestRunner_addFailure(TestListner* self,Test* test,char* msg,int line,char* file)
 {
-	stdimpl_print("\n");
+	stdimpl_print("\r\n");
 	stdimpl_print(Test_name(root_));
 	stdimpl_print(".");
 	stdimpl_print(Test_name(test));
@@ -67,7 +70,7 @@ static void TestRunner_addFailure(TestListner* self,Test* test,char* msg,int lin
 		stdimpl_print(") ");
 	}
 	stdimpl_print(msg);
-	stdimpl_print("\n");
+	stdimpl_print("\r\n");
 }
 
 static const TestListnerImplement TestRunnerImplement = {
@@ -95,17 +98,21 @@ void TestRunner_end(void)
 {
 	char buf[16];
 	if (result_.failureCount) {
-		stdimpl_print("\nrun ");
+		stdimpl_print("\r\nrun ");
 		stdimpl_itoa(result_.runCount, buf, 10);
 		stdimpl_print(buf);
 		stdimpl_print(" failures ");
 		stdimpl_itoa(result_.failureCount, buf, 10);
 		stdimpl_print(buf);
-		stdimpl_print("\n");
+		stdimpl_print("\r\n");
 	} else {
-		stdimpl_print("\nOK (");
+		stdimpl_print("\r\nOK (");
 		stdimpl_itoa(result_.runCount, buf, 10);
 		stdimpl_print(buf);
-		stdimpl_print(" tests)\n");
+		stdimpl_print(" tests)\r\n");
 	}
 }
+
+EXPORT_SYMBOL(TestRunner_start);
+EXPORT_SYMBOL(TestRunner_runTest);
+EXPORT_SYMBOL(TestRunner_end);

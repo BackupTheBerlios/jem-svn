@@ -6,3 +6,4 @@ ktst.o: $(ktst-objs)
 
 obj-$(CONFIG_KTST) += ktst.o
 
+EXTRA_CFLAGS += -Idrivers/embedded/kcli 

@@ -1,5 +1,21 @@
-// Additional Copyrights:
-//	None
+//==============================================================================
+// This file is part of Jem, a real time Java operating system designed for
+// embedded systems.
+//
+// Copyright (C) 2007 JavaDevices Software. 
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
 //==============================================================================
 //
 // Jem/JVM kernel module main.
@@ -17,7 +33,6 @@
 #include "malloc.h"
 #include "jemConfig.h"
 #include "simpleconfig.h"
-// @aspect include
 
 #define VERSION "0.1.0"
 
@@ -95,7 +110,6 @@ static void loadConfig(void)
 
 void jem_exit (void)
 {
-	// @aspect begin
     printk(KERN_INFO "Jem/JVM is shutdown.\n");
 }
 
@@ -107,9 +121,6 @@ int jem_init (void)
     
     loadConfig();
     
-    // @aspect cli
-    // @aspect test
-
     // Initialize memory subsystem
     if ((result = jemMallocInit()) < 0) return result;
 
@@ -124,5 +135,4 @@ MODULE_DESCRIPTION("A Java Virtual Machine for embedded devices.");
 MODULE_VERSION(VERSION);
 module_init(jem_init);
 module_exit(jem_exit);
-
 

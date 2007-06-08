@@ -1,6 +1,23 @@
-// Additional Copyrights:
-// 	Copyright (C) 1997-2001 The JX Group.
-// 	Copyright (C) 1998-2002 Michael Golm.
+//==============================================================================
+// This file is part of Jem, a real time Java operating system designed for
+// embedded systems.
+//
+// Copyright (C) 2007 JavaDevices Software. 
+// Copyright (C) 1997-2001 The JX Group.
+// Copyright (C) 1998-2002 Michael Golm.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
 //==============================================================================
 //
 // Jem/JVM memory allocation implementation.
@@ -19,7 +36,6 @@
 #include "gc.h"
 #include "load.h"
 #include "zero.h"
-// @aspect include
 
 /*==============================================================================
  * Declarations
@@ -33,21 +49,18 @@ static u32 sharedLibID = 1;
  *==============================================================================*/
 int jemMallocInit(void)
 {
-	// @aspect begin
     return 0;
 }
 
 
 void *jemMalloc(u32 size)
 {
-	// @aspect begin
     return kmalloc(size, GFP_KERNEL);
 }
 
 
 void jemFree(void *addr)
 {
-	// @aspect begin
     kfree(addr);
 }
 
@@ -108,7 +121,7 @@ ThreadDescProxy *jemMallocThreadDescProxy(ClassDesc * c)
 {
     ThreadDescProxy     *proxy;
 
-    if ((proxy = jemMalloc(sizeof(ThreadDescProxy) /* MEMTYPE_DCB */)) == NULL) return NULL;
+    if ((proxy = jemMalloc(sizeof(ThreadDescProxy))) == NULL) return NULL;
     if (c != NULL)
         proxy->vtable = c->vtable;
     else
@@ -153,7 +166,7 @@ TempMemory *jemMallocTmp(u32 size)
     TempMemory *t;
     char *m;
     size += sizeof(TempMemory);
-    m = jemMalloc(size /* MEMTYPE_TMP */);
+    m = jemMalloc(size);
     t = (TempMemory *) m;
     t->size = size;
     t->start = m;

@@ -1,4 +1,4 @@
-kjvm-objs := core/jem.o core/malloc.o 
+kjvm-objs := jem.o malloc.o cli.o mstats.o
 
 # kjvm-objs := core/domain.o core/jem.o core/jemUPipe.o core/malloc.o core/jar.o \
 #                core/thread.o core/load.o core/call.o core/libcache.o \
@@ -13,7 +13,7 @@ kjvm-objs := core/jem.o core/malloc.o
 
 kjvm-objs += core/stub.o
 
-clean-files += malloc.mc MallocStatistics.acc malloc.c MallocStatistics.c
+clean-files += malloc.mc mstats.acc malloc.c mstats.c jem.mc cli.acc jem.c cli.c
 
 kjvm.o: $(kjvm-objs)
 	$(LD) -r -o $@ $(kjvm-objs)
@@ -22,12 +22,21 @@ obj-$(CONFIG_JEM) += kjvm.o
 
 EXTRA_CFLAGS += -Idrivers/embedded/kjvm/include -Idrivers/embedded/kcli -Idrivers/embedded/kcfg -Idrivers/embedded/ktst
 
-$(obj)/malloc.mc: $(src)/core/malloc_mc.c
-	$(CPP) $(c_flags) $(src)/core/malloc_mc.c > $(obj)/malloc.mc
+$(obj)/malloc.mc: $(src)/core/malloc.c
+	$(CPP) $(c_flags) $(src)/core/malloc.c > $(obj)/malloc.mc
 
-$(obj)/MallocStatistics.acc: $(src)/core/MallocStatistics_acc.c
-	$(CPP) $(c_flags) $(src)/core/MallocStatistics_acc.c > $(obj)/MallocStatistics.acc
+$(obj)/jem.mc: $(src)/core/jem.c
+	$(CPP) $(c_flags) $(src)/core/jem.c > $(obj)/jem.mc
 
-$(obj)/malloc.c $(obj)/MallocStatistics.c: $(obj)/malloc.mc $(obj)/MallocStatistics.acc
-	acc $(obj)/malloc.mc $(obj)/MallocStatistics.acc
+$(obj)/mstats.acc: $(src)/aspects/mstats_acc.c
+	$(CPP) $(c_flags) $(src)/aspects/mstats_acc.c > $(obj)/mstats.acc
+
+$(obj)/cli.acc: $(src)/aspects/cli_acc.c
+	$(CPP) $(c_flags) $(src)/aspects/cli_acc.c > $(obj)/cli.acc
+
+$(obj)/malloc.c $(obj)/mstats.c: $(obj)/malloc.mc $(obj)/mstats.acc
+	acc $(obj)/malloc.mc $(obj)/mstats.acc
+
+$(obj)/jem.c $(obj)/cli.c: $(obj)/jem.mc $(obj)/cli.acc
+	acc $(obj)/jem.mc $(obj)/cli.acc
 

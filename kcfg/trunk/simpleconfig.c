@@ -347,7 +347,10 @@ int cfg_getval(char *name, char **value)
 
     down_read(&cfg_mutex);
     if(ht_lookup(cfgtable, name, (void**)&cfg))
+    {
+        up_read(&cfg_mutex);
         return -2;
+    }
     up_read(&cfg_mutex);
 
     if(cfg == NULL)

@@ -65,6 +65,11 @@ void jemFree(void *addr)
 }
 
 
+static char *jem_vmalloc(u32 size)
+{
+    return (char *) vmalloc(size);
+}
+
 char *jemMallocCode(DomainDesc *domain, u32 size)
 {
     char    *data;
@@ -75,8 +80,7 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
 	// @aspect Lock
 
     if (domain->cur_code == -1) {
-    	// @aspect MallocStatistics    
-        domain->code[0] = (char *) vmalloc(chunksize);
+        domain->code[0] = jem_vmalloc(chunksize);
         domain->codeBorder[0] = domain->code[0] + chunksize;
         domain->codeTop[0] = domain->code[0];
         domain->cur_code = 0;
@@ -91,8 +95,7 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
             printk(KERN_ERR "Out of code space for domain.\n");
             return NULL;
         }
-    	// @aspect MallocStatistics    
-        domain->code[c]         = (char *) vmalloc(chunksize);
+        domain->code[c]         = jem_vmalloc(chunksize);
         domain->codeBorder[c]   = domain->code[c] + chunksize;
         domain->codeTop[c]      = domain->code[c];
         domain->cur_code        = c;
@@ -112,7 +115,6 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
 
 void jemFreeCode(void *addr)
 {
-	// @aspect begin
     vfree(addr);
 }
 
@@ -177,7 +179,7 @@ TempMemory *jemMallocTmp(u32 size)
 
 void jemFreeTmp(TempMemory * m)
 {
-    jemFree(m->start);
+    jemFree(m);
 }
 
 LibDesc *jemMallocLibdesc(DomainDesc * domain)

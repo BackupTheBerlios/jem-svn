@@ -18,40 +18,43 @@
 //
 //==============================================================================
 //
-// Jem/JVM cli aspect.
-//   This aspect adds the base code to be able to use the Kcli module.
+// Jem/JVM lock aspect.
+//   This aspect adds all of the concurrency locking code to kjvm. The locking
+//   code was broken out into an aspect because it makes it possible to
+//   change to a different locking API by just changing the code in this 
+//   aspect. For instance, one may want to use Xenomai's POSIX API instead
+//   of the native linux mutex's and semaphores.
 //
 //==============================================================================
 
 #include <linux/module.h>
 #include <linux/types.h>
 #include <linux/kernel.h>
-#include "libcli.h"
+#include <linux/mutex.h>
+#include <asm/semaphore.h>
 #include "jemtypes.h"
+#include "object.h"
+#include "domain.h"
 
-struct cli_def       *kcli;
-struct cli_command   *jem_command;
-struct cli_command	 *jemtst_command;
-
-static int jem_test_mode(struct cli_def *cli, char *command, char *argv[], int argc)
+introduce(): intype(struct DomainDesc_s) 
 {
-    cli_set_configmode(cli, CLI_TEST_MODE, "utest");	
-    return CLI_OK;
+    struct semaphore    serviceSem;
+    struct mutex        domainMemLock;
+    struct mutex        domainHeapLock;
 }
 
-after(): call(void loadConfig()) 
+introduce(): intype(struct GCDesc_s)
 {
-    kcli            = cli_get();
-    jem_command     = cli_register_command(kcli, NULL, "jem", NULL, PRIVILEGE_UNPRIVILEGED,
-                                           MODE_EXEC, NULL);
-    jemtst_command  = cli_register_command(kcli, NULL, "utest", NULL, PRIVILEGE_UNPRIVILEGED, 
-                                           MODE_EXEC, NULL);
-    cli_register_command(kcli, jemtst_command, "enter", jem_test_mode,
-                         PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "Enter jem test mode.");
+    struct mutex        gcLock;
 }
 
-before(): execution(void jem_exit()) 
+before(DomainDesc *domain): execution(char *jemMallocCode(DomainDesc *, u32)) && args(domain)
 {
-    cli_unregister_command(kcli, "jem");
-    cli_unregister_command(kcli, "utest");
+    mutex_lock(&domain->domainMemLock);
 }
+
+after(DomainDesc *domain): execution(char *jemMallocCode(DomainDesc *, u32)) && args(domain)
+{
+    mutex_unlock(&domain->domainMemLock);
+}
+

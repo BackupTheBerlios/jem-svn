@@ -1,5 +1,22 @@
-// Additional Copyrights:
-//  Copyright (C) 1997-2001 The JX Group.
+//==============================================================================
+// This file is part of Jem, a real time Java operating system designed for
+// embedded systems.
+//
+// Copyright (C) 2007 JavaDevices Software. 
+// Copyright (C) 1997-2001 The JX Group.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
 //==============================================================================
 
 #ifndef _DOMAIN_H
@@ -7,7 +24,6 @@
 
 #include <linux/types.h>
 #include "object.h"
-// @aspect include
 
 #define DOMAIN_TERMINATED_EXCEPTION  (-1)
 #define DOMAIN_STATE_FREE        0
@@ -75,7 +91,6 @@ typedef struct GCDesc_s {
     void (*printInfo) (struct DomainDesc_s * domain);
     void (*setMark)(struct DomainDesc_s *domain);
     struct ObjectDesc_s * (*atMark)(struct DomainDesc_s *domain);
-    // @aspect struct GCDesc_s
 } GCDesc;
 
 
@@ -133,7 +148,6 @@ typedef struct DomainDesc_s {
     u32                         inhibitGCFlag;  /* 1==no GC allowed; 0==GC allowed */
     u32                         portal_statistics_copyout_rcv;
     u32                         portal_statistics_copyin_rcv;
-    // @aspect struct DomainDesc_s
 } DomainDesc;
 
 

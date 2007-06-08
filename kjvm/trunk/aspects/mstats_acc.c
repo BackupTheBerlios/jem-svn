@@ -173,35 +173,70 @@ static int jemMalloc_stat_cmd(struct cli_def *cli, char *command, char *argv[], 
     return CLI_OK;
 }
 
+void *jemStatMalloc(u32 size, int memtype)
+{
+    jemMallocIncrement(size, memtype);
+    return jemMalloc(size);
+}
+
+void jemStatFree(void * addr, u32 size, int memtype)
+{
+    jemMallocDecrement(size,memtype);
+    jemFree(addr);
+    return;
+}
+
+void jemStatFreeCode(void *addr, u32 size)
+{
+    jemMallocDecrement(size, MEMTYPE_CODE);
+    jemFreeCode(addr);
+    return;
+}
+
 
 void * around(u32 size): call(void *jemMalloc(u32)) && infunc(jemMallocThreadDescProxy) && args(size)
 {
-    jemMallocIncrement(size, MEMTYPE_DCB);
-    return proceed();
+    // redirect call to jemMalloc in the function jemMallocThreadDescProxy
+    return jemStatMalloc(size, MEMTYPE_DCB);
 }
 
 void * around(u32 size): call(void *jemMalloc(u32)) && infunc(jemMallocTmp) && args(size)
 {
-    jemMallocIncrement(size, MEMTYPE_TMP);
-    return proceed();
+    // redirect the call to jemMalloc in the function jemMallocTmp
+    return jemStatMalloc(size, MEMTYPE_TMP);
 }
 
 void around(void *addr): call(void jemFree(void *)) && infunc(jemFreeThreadDesc) && args(addr)
 {
-    jemMallocDecrement(sizeof(ThreadDescProxy), MEMTYPE_DCB);
-    proceed();
+    // redirect the call to jemFree in the function jemFreeThreadDesc
+    jemStatFree(addr, sizeof(ThreadDescProxy), MEMTYPE_DCB);
     return;
 }
 
-void around(void *addr, TempMemory * m): call(void jemFree(void *)) && infunc(jemFreeTmp)  && args(addr, m)
+void around(void *addr): call(void jemFree(void *)) && infunc(jemFreeTmp)  && args(addr)
 {
-    jemMallocDecrement(m->size, MEMTYPE_TMP);
-    proceed();
+    // redirect the call to jemFree in the function jemFreeTmp
+    TempMemory *m = addr;
+    jemStatFree(addr, m->size, MEMTYPE_TMP);
+    return;
+}
+
+before(u32 chunksize): call(char *jem_vmalloc(u32)) && infunc(jemMallocCode) && args(chunksize)
+{
+    // add code before calls to vmalloc in the function jemMallocCode
+    jemMallocIncrement(chunksize, MEMTYPE_CODE);
+}
+
+void around(void *addr, DomainDesc *domain): call(void jemFreeCode(void *)) && infunc(terminateDomain)  && args(addr, domain)
+{
+    // redirect call to jemFreeCode in the function terminateDomain
+    jemStatFreeCode(addr, domain->code_bytes);
     return;
 }
 
 int around(): execution(int jemMallocInit()) 
 {
+    // add new code to the function jemMallocInit
     totalAllocedRam      = 0;
     peakAllocedRam       = 0;
     totalAllocations     = 0;
@@ -221,3 +256,4 @@ int around(): execution(int jemMallocInit())
 
     return proceed();
 }
+

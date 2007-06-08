@@ -76,16 +76,16 @@ static void loadConfig(void)
 	    			val = "40";
 	    			break;
 	    		case domScratchMemSz:
-	    			val = "8192";
+	    			val = "262144";
 	    			break;
 	    		case heapBytesDom0:
-	    			val = "8192";
+	    			val = "262144";
 	    			break;
 	    		case codeBytesDom0:
-	    			val = "8192";
+	    			val = "524288";
 	    			break;
 	    		case codeBytes:
-	    			val = "8192";
+	    			val = "262144";
 	    			break;
 	    		default:
 	    			val = "0";

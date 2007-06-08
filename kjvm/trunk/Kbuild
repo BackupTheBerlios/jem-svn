@@ -1,4 +1,4 @@
-kjvm-objs := jem.o malloc.o cli.o mstats.o
+kjvm-objs := jem.o malloc.o lock.o 
 
 # kjvm-objs := core/domain.o core/jem.o core/jemUPipe.o core/malloc.o core/jar.o \
 #                core/thread.o core/load.o core/call.o core/libcache.o \
@@ -11,9 +11,30 @@ kjvm-objs := jem.o malloc.o cli.o mstats.o
 #		dom0/zero_DomainManager.o \
 #               gc/gc.o gc/gc_alloc.o
 
-kjvm-objs += core/stub.o
+kjvm-objs += core/stub.o 
+woven-files := $(obj)/malloc.c $(obj)/jem.c $(obj)/lock.c
+weaver-files := $(obj)/malloc.mc $(obj)/jem.mc $(obj)/lock.acc
+clean-files += malloc.mc malloc.c jem.mc jem.c lock.c lock.acc cli.c cli.acc mstats.c mstats.acc  \
+		test_malloc.c test_malloc.acc 
 
-clean-files += malloc.mc mstats.acc malloc.c mstats.c jem.mc cli.acc jem.c cli.c
+ifeq ($(CONFIG_JEM_CLI),y)
+kjvm-objs += cli.o 
+woven-files += $(obj)/cli.c 
+weaver-files += $(obj)/cli.acc 
+endif
+
+ifeq ($(CONFIG_JEM_MALLOC_STATS),y)
+kjvm-objs += mstats.o 
+woven-files += $(obj)/mstats.c 
+weaver-files += $(obj)/mstats.acc 
+endif
+
+ifeq ($(CONFIG_JEM_UNIT_TEST),y)
+kjvm-objs += test_malloc.o 
+woven-files += $(obj)/test_malloc.c 
+weaver-files += $(obj)/test_malloc.acc 
+endif
+
 
 kjvm.o: $(kjvm-objs)
 	$(LD) -r -o $@ $(kjvm-objs)
@@ -21,6 +42,7 @@ kjvm.o: $(kjvm-objs)
 obj-$(CONFIG_JEM) += kjvm.o
 
 EXTRA_CFLAGS += -Idrivers/embedded/kjvm/include -Idrivers/embedded/kcli -Idrivers/embedded/kcfg -Idrivers/embedded/ktst
+
 
 $(obj)/malloc.mc: $(src)/core/malloc.c
 	$(CPP) $(c_flags) $(src)/core/malloc.c > $(obj)/malloc.mc
@@ -34,9 +56,18 @@ $(obj)/mstats.acc: $(src)/aspects/mstats_acc.c
 $(obj)/cli.acc: $(src)/aspects/cli_acc.c
 	$(CPP) $(c_flags) $(src)/aspects/cli_acc.c > $(obj)/cli.acc
 
-$(obj)/malloc.c $(obj)/mstats.c: $(obj)/malloc.mc $(obj)/mstats.acc
-	acc $(obj)/malloc.mc $(obj)/mstats.acc
+$(obj)/test_malloc.acc: $(src)/aspects/test_malloc_acc.c
+	$(CPP) $(c_flags) $(src)/aspects/test_malloc_acc.c > $(obj)/test_malloc.acc
 
-$(obj)/jem.c $(obj)/cli.c: $(obj)/jem.mc $(obj)/cli.acc
-	acc $(obj)/jem.mc $(obj)/cli.acc
+$(obj)/lock.acc: $(src)/aspects/lock_acc.c
+	$(CPP) $(c_flags) $(src)/aspects/lock_acc.c > $(obj)/lock.acc
+
+$(woven-files): $(weaver-files)
+	acc $(weaver-files)
+
+# $(obj)/malloc.c $(obj)/mstats.c: $(obj)/malloc.mc $(obj)/mstats.acc
+# 	acc $(obj)/malloc.mc $(obj)/mstats.acc
+# 
+# $(obj)/jem.c $(obj)/cli.c: $(obj)/jem.mc $(obj)/cli.acc
+# 	acc $(obj)/jem.mc $(obj)/cli.acc
 

@@ -44,7 +44,8 @@
 #include "hashtable.h"
 #include "simpleconfig.h"
 
-extern struct rw_semaphore         cfg_mutex;
+extern struct rw_semaphore         	cfg_mutex;
+extern char 						*filename;
 
 
 /* configuration system global variables */
@@ -489,12 +490,11 @@ int cfg_savefile(char *fname)
     loff_t          pos = 0;
     mm_segment_t    old_fs = get_fs();
 
-    if (fname == NULL) {
-        return -1;
-    }
-
     set_fs(KERNEL_DS);
-    fd = sys_open(fname, O_WRONLY|O_CREAT|O_TRUNC|O_SYNC, 0644);
+    if (fname == NULL)
+    	fd = sys_open(filename, O_WRONLY|O_CREAT|O_TRUNC|O_SYNC, 0644);
+    else
+    	fd = sys_open(fname, O_WRONLY|O_CREAT|O_TRUNC|O_SYNC, 0644);
     if (fd < 0) {
         set_fs(old_fs);
         return -1;
@@ -881,4 +881,5 @@ EXPORT_SYMBOL(cfg_setval);
 EXPORT_SYMBOL(cfg_strtype);
 EXPORT_SYMBOL(cfg_valtype);
 EXPORT_SYMBOL(cfg_watchval);
+EXPORT_SYMBOL(cfg_savefile);
 

@@ -41,7 +41,7 @@
 
 #define VERSION "1.1.4"
 
-static char *filename = CONFIG_KCFG_FILENAME;
+char *filename = CONFIG_KCFG_FILENAME;
 module_param(filename, charp, 444);
 MODULE_PARM_DESC(filename, "Configuration file name.");
 

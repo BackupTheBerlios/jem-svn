@@ -16,6 +16,7 @@
     <weave>
       <include name="core/jem.c" />
       <include name="core/malloc.c" />
+      <include name="core/stub.c" />
       <include name="core/domain.c" />
       <include name="include/object.h" />
       <include name="include/domain.h" />

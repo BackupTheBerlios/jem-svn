@@ -161,7 +161,7 @@ static int jemMalloc_stat_cmd(struct cli_def *cli, char *command, char *argv[], 
   	cli_print(kcli, "Allocated memory: ......... %ld kB\r\n", totalAllocedRam/1024);
   	cli_print(kcli, "Peak allocated memory: .... %ld kB\r\n", peakAllocedRam/1024);
     if (totalAllocations > 0)
-        cli_print(kcli, "Average allocation size: .. %ld kB\r\n", (totalAllocedRam / totalAllocations)/1024);
+        cli_print(kcli, "Average allocation size: .. %ld Bytes\r\n", totalAllocedRam / totalAllocations);
   	cli_print(kcli, "Available memory: ......... %ld kB\r\n", K(mi.freeram));
   	cli_print(kcli, "Used for:\r\n");
   	cli_print(kcli, "   Heap      %9ld\r\n", alloc_stat.heap);
@@ -333,27 +333,43 @@ cli_register_command(kcli, jem_command, "mem", jemMalloc_stat_cmd,
 
 
   <ax:advice name="Advice_15" type="replace">
-    <ax:description>Add size parameter to jemFree call in domain.c</ax:description>
-    <ax:pointcut constraint="contains(.,'@aspect domain->code_bytes')" type="src:comment">
-      <ax:restriction type="within">
-        <ax:pointcutRef aspect="FunctionPointcuts" ref="terminateDomain" type="src:function"/>
-      </ax:restriction>
+    <ax:description>Add size and memtype parameter to jemFree()</ax:description>
+    <ax:pointcut constraint="contains(.,'j')" type="src:name">
+      <ax:and>
+        <ax:restriction type="within">
+          <ax:pointcut constraint="src:name='jemFreeCode'" type="src:call"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcut type="src:argument_list"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcutRef aspect="FunctionPointcuts" ref="terminateDomain" type="src:function"/>
+        </ax:restriction>
+      </ax:and>
     </ax:pointcut>
     <ax:codeModifier type="codeFragment">
-      <ax:text>, domain->code_bytes</ax:text>
+      <ax:text>j], domain->code_bytes, MEMTYPE_CODE); // </ax:text>
     </ax:codeModifier>
   </ax:advice>
 
 
   <ax:advice name="Advice_16" type="replace">
-    <ax:description>Add size parameter to jemFree call in domain.c</ax:description>
-    <ax:pointcut constraint="contains(.,'@aspect domain->scratchMemSize')" type="src:comment">
-      <ax:restriction type="within">
-        <ax:pointcutRef aspect="FunctionPointcuts" ref="terminateDomain" type="src:function"/>
-      </ax:restriction>
+    <ax:description>Add size and memtype parameter to jemFree()</ax:description>
+    <ax:pointcut constraint="contains(.,'scratchMem')" type="src:name">
+      <ax:and>
+        <ax:restriction type="within">
+          <ax:pointcut constraint="src:name='jemFree'" type="src:call"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcut type="src:argument_list"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcutRef aspect="FunctionPointcuts" ref="terminateDomain" type="src:function"/>
+        </ax:restriction>
+      </ax:and>
     </ax:pointcut>
     <ax:codeModifier type="codeFragment">
-      <ax:text>, domain->scratchMemSize</ax:text>
+      <ax:text>scratchMem, domain->scratchMemSize, MEMTYPE_OTHER</ax:text>
     </ax:codeModifier>
   </ax:advice>
 
@@ -464,27 +480,127 @@ cli_register_command(kcli, jem_command, "mem", jemMalloc_stat_cmd,
 
 
   <ax:advice name="Advice_22" type="replace">
-    <ax:description>Add size parameter to jemFree call in domain.c</ax:description>
-    <ax:pointcut constraint="contains(.,'@aspect domain->codeFragmentsMemSize')" type="src:comment">
-      <ax:restriction type="within">
-        <ax:pointcutRef aspect="FunctionPointcuts" ref="terminateDomain" type="src:function"/>
-      </ax:restriction>
+    <ax:description>Add size and memtype parameter to jemFree()</ax:description>
+    <ax:pointcut constraint="contains(.,'codeBorder')" type="src:name">
+      <ax:and>
+        <ax:restriction type="within">
+          <ax:pointcut constraint="src:name='jemFree'" type="src:call"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcut type="src:argument_list"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcutRef aspect="FunctionPointcuts" ref="deleteDomainSystem" type="src:function"/>
+        </ax:restriction>
+      </ax:and>
     </ax:pointcut>
     <ax:codeModifier type="codeFragment">
-      <ax:text>, (sizeof(char *) * getJVMConfig()->codeFragments)</ax:text>
+      <ax:text>codeBorder, (sizeof(char *) * getJVMConfig(codeFragments)), MEMTYPE_DCB</ax:text>
     </ax:codeModifier>
   </ax:advice>
 
 
   <ax:advice name="Advice_23" type="replace">
-    <ax:description>Add size parameter to jemFree call in domain.c</ax:description>
-    <ax:pointcut constraint="contains(.,'@aspect domain->maxServicesMemSize')" type="src:comment">
-      <ax:restriction type="within">
-        <ax:pointcutRef aspect="FunctionPointcuts" ref="terminateDomain" type="src:function"/>
-      </ax:restriction>
+    <ax:description>Add size and memtype parameter to jemFree()</ax:description>
+    <ax:pointcut constraint="text()='code'" type="src:name">
+      <ax:and>
+        <ax:restriction type="within">
+          <ax:pointcut constraint="src:name='jemFree'" type="src:call"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcut type="src:argument_list"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcutRef aspect="FunctionPointcuts" ref="deleteDomainSystem" type="src:function"/>
+        </ax:restriction>
+      </ax:and>
     </ax:pointcut>
     <ax:codeModifier type="codeFragment">
-      <ax:text>, (sizeof(char *) * getJVMConfig()->maxServices)</ax:text>
+      <ax:text>code, (sizeof(char *) * getJVMConfig(codeFragments)), MEMTYPE_DCB</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_24" type="replace">
+    <ax:description>Add size and memtype parameter to jemFree()</ax:description>
+    <ax:pointcut constraint="contains(.,'codeTop')" type="src:name">
+      <ax:and>
+        <ax:restriction type="within">
+          <ax:pointcut constraint="src:name='jemFree'" type="src:call"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcut type="src:argument_list"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcutRef aspect="FunctionPointcuts" ref="deleteDomainSystem" type="src:function"/>
+        </ax:restriction>
+      </ax:and>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>codeTop, (sizeof(char *) * getJVMConfig(codeFragments)), MEMTYPE_DCB</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_25" type="replace">
+    <ax:description>Add size and memtype parameter to jemFree()</ax:description>
+    <ax:pointcut constraint="contains(.,'services')" type="src:name">
+      <ax:and>
+        <ax:restriction type="within">
+          <ax:pointcut constraint="src:name='jemFree'" type="src:call"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcut type="src:argument_list"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcutRef aspect="FunctionPointcuts" ref="deleteDomainSystem" type="src:function"/>
+        </ax:restriction>
+      </ax:and>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>services, (sizeof(char *) * getJVMConfig(maxServices)), MEMTYPE_DCB</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_26" type="replace">
+    <ax:description>Add size and memtype parameter to jemFree()</ax:description>
+    <ax:pointcut constraint="contains(.,'pools')" type="src:name">
+      <ax:and>
+        <ax:restriction type="within">
+          <ax:pointcut constraint="src:name='jemFree'" type="src:call"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcut type="src:argument_list"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcutRef aspect="FunctionPointcuts" ref="deleteDomainSystem" type="src:function"/>
+        </ax:restriction>
+      </ax:and>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>pools, (sizeof(char *) * getJVMConfig(maxServices)), MEMTYPE_DCB</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_27" type="replace">
+    <ax:description>Add size and memtype parameter to jemFree()</ax:description>
+    <ax:pointcut constraint="contains(.,'domainMem')" type="src:name">
+      <ax:and>
+        <ax:restriction type="within">
+          <ax:pointcut constraint="src:name='jemFree'" type="src:call"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcut type="src:argument_list"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcutRef aspect="FunctionPointcuts" ref="deleteDomainSystem" type="src:function"/>
+        </ax:restriction>
+      </ax:and>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>domainMem, (DOMAINMEM_SIZEBYTES * getJVMConfig(maxDomains)), MEMTYPE_DCB</ax:text>
     </ax:codeModifier>
   </ax:advice>
 

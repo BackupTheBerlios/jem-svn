@@ -29,7 +29,7 @@ the API to be changed.</ax:description>
   <ax:include href="UnitPointcuts.ax"/>
 
 
-  <ax:advice name="Advice_1" type="replace">
+  <ax:advice name="XenoRTDMLockAdvice_1" type="replace">
     <ax:description>Add lock variables to the DomainDesc_s struct.</ax:description>
     <ax:pointcut constraint="contains(.,'@aspect struct DomainDesc_s')" type="src:comment">
       <ax:restriction type="within">
@@ -44,7 +44,7 @@ rtdm_mutex_t                domainHeapLock;</ax:text>
   </ax:advice>
 
 
-  <ax:advice name="Advice_2" type="replace">
+  <ax:advice name="XenoRTDMLockAdvice_2" type="replace">
     <ax:description>Add lock variables to the DomainDesc_s struct.</ax:description>
     <ax:pointcut constraint="contains(.,'@aspect struct GCDesc_s')" type="src:comment">
       <ax:restriction type="within">
@@ -57,7 +57,7 @@ rtdm_mutex_t                domainHeapLock;</ax:text>
   </ax:advice>
 
 
-  <ax:advice name="Advice_3" type="replace">
+  <ax:advice name="XenoRTDMLockAdvice_3" type="replace">
     <ax:description>Add rtdm include to source.</ax:description>
     <ax:pointcut type="src:comment">
       <ax:or>
@@ -79,7 +79,7 @@ rtdm_mutex_t                domainHeapLock;</ax:text>
   </ax:advice>
 
 
-  <ax:advice name="Advice_4" type="replace">
+  <ax:advice name="XenoRTDMLockAdvice_4" type="replace">
     <ax:description>Insert mutex lock.</ax:description>
     <ax:pointcut constraint="contains(.,'@aspect Lock')" type="src:comment">
       <ax:restriction type="within">
@@ -92,7 +92,7 @@ rtdm_mutex_t                domainHeapLock;</ax:text>
   </ax:advice>
 
 
-  <ax:advice name="Advice_5" type="before">
+  <ax:advice name="XenoRTDMLockAdvice_5" type="before">
     <ax:description>Insert mutex unlock.</ax:description>
     <ax:pointcut type="src:return">
       <ax:restriction type="within">
@@ -105,7 +105,7 @@ rtdm_mutex_t                domainHeapLock;</ax:text>
   </ax:advice>
 
 
-  <ax:advice name="Advice_6" type="replace">
+  <ax:advice name="XenoRTDMLockAdvice_6" type="replace">
     <ax:description>Add lock variables to the ServiceThreadPool_s struct.</ax:description>
     <ax:pointcut constraint="contains(.,'@aspect struct ServiceThreadPool_s')" type="src:comment">
       <ax:restriction type="within">
@@ -114,6 +114,71 @@ rtdm_mutex_t                domainHeapLock;</ax:text>
     </ax:pointcut>
     <ax:codeModifier type="codeFragment">
       <ax:text>rtdm_mutex_t        poolLock;</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="XenoRTDMLockAdvice_7" type="add">
+    <ax:description>Add locks to domain.c.</ax:description>
+    <ax:pointcutRef aspect="UnitPointcuts" ref="domain_c" type="src:unit"/>
+    <ax:codeModifier type="declaration">
+      <ax:text>static rtdm_mutex_t     domainLock;
+extern rtdm_mutex_t     svTableLock;</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="XenoRTDMLockAdvice_8" type="replace">
+    <ax:description>Insert mutex lock.</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect Lock')" type="src:comment">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="specialAllocDomainDesc" type="src:function"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>rtdm_mutex_lock(&amp;domainLock);</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="XenoRTDMLockAdvice_9" type="before">
+    <ax:description>Insert mutex unlock.</ax:description>
+    <ax:pointcut type="src:return">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="specialAllocDomainDesc" type="src:function"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>rtdm_mutex_unlock(&amp;domainLock);</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="XenoRTDMLockAdvice_10" type="replace">
+    <ax:description>Insert mutex lock.</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect rtdm_mutex_init')" type="src:comment">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="specialAllocDomainDesc" type="src:function"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>rtdm_mutex_init(&amp;d->domainMemLock);
+rtdm_mutex_init(&amp;d->domainHeapLock);
+rtdm_mutex_init(&amp;d->gc.gcLock);
+rtdm_sem_init(&amp;d->serviceSem, 0);</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="XenoRTDMLockAdvice_11" type="replace">
+    <ax:description>Insert mutex lock.</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect rtdm_mutex_init')" type="src:comment">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="initDomainSystem" type="src:function"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>rtdm_mutex_init(&amp;domainLock);</ax:text>
     </ax:codeModifier>
   </ax:advice>
 

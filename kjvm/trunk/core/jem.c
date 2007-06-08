@@ -21,20 +21,68 @@
 
 #define VERSION "0.1.0"
 
-static struct jvmConfig jConfig;
+static int 	jConfig[jemConfSize];
+static char *confNames[] = {"jem_codeFragments",
+							"jem_maxServices",
+							"jem_maxDomains",
+							"jem_maxNumberLibs",
+							"jem_domScratchMemSz",
+							"jem_heapBytesDom0",
+							"jem_codeBytesDom0",
+							"jem_codeBytes",
+						   };
 
-struct jvmConfig *getJVMConfig(void) 
+int getJVMConfig(unsigned int id) 
 {
-	return &jConfig;
+	return jConfig[id];
 } 
 
 static void loadConfig(void)
 {
 	char *val;
+	int  sv=0, i;
 	
-    if (!cfg_getval("jem_code_fragments", &val)) val="30";
-    sscanf(val, "%ud", &jConfig.codeFragments);
-
+	for (i=0; i<jemConfSize; i++)
+	{
+	    if (!cfg_getval(confNames[i], &val))
+	    {
+	    	switch (i)
+	    	{ 
+	    		case codeFragments:
+	    			val="30";
+	    			break;
+	    		case maxServices:
+	    			val = "1500";
+	    			break;
+	    		case maxDomains:
+	    			val = "5";
+	    			break;
+	    		case maxNumberLibs:
+	    			val = "40";
+	    			break;
+	    		case domScratchMemSz:
+	    			val = "8192";
+	    			break;
+	    		case heapBytesDom0:
+	    			val = "8192";
+	    			break;
+	    		case codeBytesDom0:
+	    			val = "8192";
+	    			break;
+	    		case codeBytes:
+	    			val = "8192";
+	    			break;
+	    		default:
+	    			val = "0";
+	    	}
+	    	cfg_setval(confNames[i], val);
+	    	sv = 1;
+	    }
+	    sscanf(val, "%d", &jConfig[i]);
+	}
+	
+	if (sv) cfg_savefile(NULL);
+	
 	return;
 }
 

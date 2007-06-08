@@ -24,6 +24,16 @@
 <ax:aspect xmlns:ax="http://control.ee.ethz.ch/XWeaver/AspectX" xmlns:cpp="http://www.sdml.info/srcML/cpp" xmlns:java="http://www.sdml.info/srcML/java" xmlns:src="http://www.sdml.info/srcML/src" xmlns:util="http://www.pnp-software.com/util" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="FunctionPointcuts">
 
 
+  <ax:pointcut constraint="src:name='createDomain'" name="createDomain" type="src:function">
+    <ax:description>Select the createDomain function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='deleteDomainSystem'" name="deleteDomainSystem" type="src:function">
+    <ax:description>Select the deleteDomainSystem function.</ax:description>
+  </ax:pointcut>
+
+
   <ax:pointcut constraint="src:name='jemFree'" name="jemFree" type="src:function">
     <ax:description>Select the jemFree function.</ax:description>
   </ax:pointcut>
@@ -66,6 +76,16 @@
 
   <ax:pointcut constraint="src:name='jemMallocInit'" name="jemMallocInit" type="src:function">
     <ax:description>Select the jemMallocInit function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='initDomainSystem'" name="initDomainSystem" type="src:function">
+    <ax:description>Select the initDomainSystem function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='specialAllocDomainDesc'" name="specialAllocDomainDesc" type="src:function">
+    <ax:description>Select the specialAllocDomainDesc function.</ax:description>
   </ax:pointcut>
 
 

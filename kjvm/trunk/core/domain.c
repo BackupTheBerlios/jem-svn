@@ -25,19 +25,24 @@
 #include "exception_handler.h"
 #include "sched.h"
 
+/*==============================================================================
+ * Declarations
+ *==============================================================================*/
+
 DomainDesc   		*domainZero;
 static u32          numberOfDomains = 0;
 static u32          currentDomainID = 0;
 static char         *domainMem = NULL;
 static char         *domainMemBorder = NULL;
 static char         *domainMemCurrent = NULL;
-static RT_MUTEX     domainLock;
-extern RT_MUTEX     svTableLock;
 
 #define DOMAINMEM_SIZEBYTES (OBJSIZE_DOMAINDESC*4)
 #define DOMAINDESC_OFFSETBYTES (( 2 + XMOFF) *4)
 
 
+/*==============================================================================
+ * Functions
+ *==============================================================================*/
 DomainDesc *getDomainZero(void)
 {
     return domainZero;
@@ -47,16 +52,11 @@ DomainDesc *getDomainZero(void)
 static DomainDesc *specialAllocDomainDesc(void)
 {
     DomainDesc  *d;
-    char        *domainMemStart, lockName[15];
+    char        *domainMemStart;
 
-    int result = rt_mutex_acquire(&domainLock, TM_INFINITE);
-    if (result < 0) {
-        printk(KERN_ERR "Error acquiring domain lock, code=%d\n", result);
-        return NULL;
-    }
+	// @aspect Lock
 
-    if (numberOfDomains == getJVMConfig()->maxDomains) {
-        rt_mutex_release(&domainLock);
+    if (numberOfDomains == getJVMConfig(maxDomains)) {
         printk(KERN_ERR "Maximum domains have been created.\n");
         return NULL;
     }
@@ -70,7 +70,6 @@ static DomainDesc *specialAllocDomainDesc(void)
             domainMemCurrent = domainMem;
         if (domainMemCurrent == domainMemStart) {
             printk(KERN_ERR "Maximum domains have been created.\n");
-            rt_mutex_release(&domainLock);
             return NULL;
         }
     } while (d->state != DOMAIN_STATE_FREE);
@@ -79,43 +78,10 @@ static DomainDesc *specialAllocDomainDesc(void)
     d->magic    	= MAGIC_DOMAIN;
     d->state    	= DOMAIN_STATE_CREATING;
     d->id       	= currentDomainID++;
-    d->codeBorder	= jemMalloc((sizeof(char *) * getJVMConfig()->codeFragments) /* MEMTYPE_DCB */); 
-    d->code			= jemMalloc((sizeof(char *) * getJVMConfig()->codeFragments) /* MEMTYPE_DCB */); 
-    d->codeTop		= jemMalloc((sizeof(char *) * getJVMConfig()->codeFragments) /* MEMTYPE_DCB */); 
-    d->services		= jemMalloc((sizeof(char *) * getJVMConfig()->maxServices) /* MEMTYPE_DCB */); 
-    d->pools		= jemMalloc((sizeof(char *) * getJVMConfig()->maxServices) /* MEMTYPE_DCB */); 
     numberOfDomains++;
 
-    sprintf(lockName, "dom%03dMemLock", d->id);
-    result          = rt_mutex_create(&d->domainMemLock, lockName);
-    if (result < 0) {
-        printk(KERN_CRIT "Unable to create domain memory lock %s, rc=%d\n", lockName, result);
-        rt_mutex_release(&domainLock);
-        return NULL;
-    }
-    sprintf(lockName, "dom%03dHeapLock", d->id);
-    result          = rt_mutex_create(&d->domainHeapLock, lockName);
-    if (result < 0) {
-        printk(KERN_CRIT "Unable to create domain heap lock %s, rc=%d\n", lockName, result);
-        rt_mutex_release(&domainLock);
-        return NULL;
-    }
-    sprintf(lockName, "dom%03dGCLock", d->id);
-    result          = rt_mutex_create(&d->gc.gcLock, lockName);
-    if (result < 0) {
-        printk(KERN_CRIT "Unable to create domain GC lock %s, rc=%d\n", lockName, result);
-        rt_mutex_release(&domainLock);
-        return NULL;
-    }
-    sprintf(lockName, "dom%03dSvSem", d->id);
-    result          = rt_sem_create(&d->serviceSem, lockName, 0, S_PRIO);
-    if (result < 0) {
-        printk(KERN_CRIT "Unable to create domain service semaphore %s, rc=%d\n", lockName, result);
-        rt_mutex_release(&domainLock);
-        return NULL;
-    }
+	// @aspect rtdm_mutex_init
 
-    rt_mutex_release(&domainLock);
     return d;
 }
 
@@ -132,17 +98,17 @@ DomainDesc *createDomain(char *domainName, jint gcinfo0, jint gcinfo1, jint gcin
         return NULL;
     }
 
-    domain->maxNumberOfLibs = getJVMConfig()->maxNumberLibs;
+    domain->maxNumberOfLibs = getJVMConfig(maxNumberLibs);
     domain->numberOfLibs    = 0;
     domain->arrayClasses    = NULL;
-    domain->scratchMem      = jemMalloc(getJVMConfig()->domScratchMemSz /* MEMTYPE_OTHER */ );
-    domain->scratchMemSize  = getJVMConfig()->domScratchMemSz;
+    domain->scratchMem      = jemMalloc(getJVMConfig(domScratchMemSz) /* MEMTYPE_OTHER */ );
+    domain->scratchMemSize  = getJVMConfig(domScratchMemSz);
 
     domain->cur_code = -1;
     if (code_bytes != -1) {
         domain->code_bytes = code_bytes;
     } else {
-        domain->code_bytes = CONFIG_CODE_BYTES;
+        domain->code_bytes = getJVMConfig(codeBytes);
     }
 
     libMemSize = sizeof(LibDesc *) * domain->maxNumberOfLibs + strlen(domainName) + 1
@@ -176,36 +142,39 @@ DomainDesc *createDomain(char *domainName, jint gcinfo0, jint gcinfo1, jint gcin
 }
 
 
-void initDomainSystem(void)
+int initDomainSystem(void)
 {
     DomainDesc          *d;
     char                *domainMemStart;
     int                 result;
-    struct jvmConfig    *jvmConfigData = getJVMConfig();
 
-    domainMem           = (char *) jemMalloc((DOMAINMEM_SIZEBYTES * jvmConfigData->maxDomains) /* MEMTYPE_DCB */);
+    domainMem           = (char *) jemMalloc((DOMAINMEM_SIZEBYTES * getJVMConfig(maxDomains)) /* MEMTYPE_DCB */);
     domainMemStart      = domainMem;
     numberOfDomains     = 0;
     domainMemCurrent    = domainMem;
-    domainMemBorder     = domainMem + (DOMAINMEM_SIZEBYTES * jvmConfigData->maxDomains);
+    domainMemBorder     = domainMem + (DOMAINMEM_SIZEBYTES * getJVMConfig(maxDomains));
 
     while (domainMemStart < domainMemBorder) {
         char *mem       = domainMemStart;
         d               = (DomainDesc *) (((char *) mem) + DOMAINDESC_OFFSETBYTES);
         d->state        = DOMAIN_STATE_FREE;
+	    d->codeBorder	= jemMalloc((sizeof(char *) * getJVMConfig(codeFragments)) /* MEMTYPE_DCB */); 
+	    d->code			= jemMalloc((sizeof(char *) * getJVMConfig(codeFragments)) /* MEMTYPE_DCB */); 
+	    d->codeTop		= jemMalloc((sizeof(char *) * getJVMConfig(codeFragments)) /* MEMTYPE_DCB */); 
+	    d->services		= jemMalloc((sizeof(char *) * getJVMConfig(maxServices)) /* MEMTYPE_DCB */); 
+	    d->pools		= jemMalloc((sizeof(char *) * getJVMConfig(maxServices)) /* MEMTYPE_DCB */); 
         domainMemStart  += DOMAINMEM_SIZEBYTES;
     }
 
-    result = rt_mutex_create(&domainLock, "globalDomainLock");
-    if (result < 0) {
-        printk(KERN_ERR "Unable to create global domain lock, rc=%d\n", result);
-        return;
-    }
+	// @aspect rtdm_mutex_init
 
-    domainZero = createDomain("DomainZero", jvmConfigData->heapBytesDom0, -1, -1, NULL, -1,
-                              jvmConfigData->codeBytesDom0, GC_IMPLEMENTATION_DEFAULT);
+    domainZero = createDomain("DomainZero", getJVMConfig(heapBytesDom0), -1, -1, NULL, -1,
+                              getJVMConfig(codeBytesDom0), GC_IMPLEMENTATION_DEFAULT);
     if (domainZero == NULL)
+    {
         printk(KERN_ERR "Cannot create domainzero.\n");
+        return -EFAULT;
+    }
 
     domainZero->memberOfTCB = JNI_TRUE;
 }
@@ -225,10 +194,55 @@ void deleteDomainSystem(void)
             rt_mutex_delete(&d->domainHeapLock);
             rt_mutex_delete(&d->gc.gcLock);
         }
+	    jemFree(domain->codeBorder);
+	    jemFree(domain->code);
+	    jemFree(domain->codeTop);
+	    jemFree(domain->services);
+	    jemFree(domain->pools);
         domainMemStart  += DOMAINMEM_SIZEBYTES;
     }
+    
+    jemFree(domainMem);
 
     rt_mutex_delete(&domainLock);
+}
+
+
+int findClassForMethod(MethodDesc * method, JClass **jclass)
+{
+	int d, l, c, m;
+	DomainDesc *domain;
+	char *mem;
+	int ret = -1;
+
+	if (method == NULL)
+		return -1;
+
+	LOCK_DOMAINS;
+
+	for (mem = domainMem; mem < domainMemBorder; mem += DOMAINMEM_SIZEBYTES) {
+		domain = (DomainDesc *) (mem + DOMAINDESC_OFFSETBYTES);
+		for (l = 0; l < domain->numberOfLibs; l++) {
+			LibDesc *lib = domain->libs[l];
+			JClass *allClasses = lib->allClasses;
+			for (c = 0; c < lib->numberOfClasses; c++) {
+				ClassDesc *classDesc = allClasses[c].classDesc;
+				for (m = 0; m < classDesc->numberOfMethods; m++) {
+					if (&classDesc->methods[m] == method) {
+						*class = &allClasses[c];
+						//*class = classDesc;
+						ret = 0;
+						goto finish;
+					}
+				}
+			}
+		}
+	}
+
+      finish:
+	UNLOCK_DOMAINS;
+
+	return ret;
 }
 
 
@@ -532,39 +546,13 @@ void terminateDomain(DomainDesc * domain)
     /* free unshared code segments */
     for (j = 0; j < domain->cur_code + 1; j++) {
         size = (char *) (domain->codeBorder[j]) - (char *) (domain->code[j]);
-        jemFreeCode(domain->code[j]
-        		/* @aspect domain->code_bytes */
-        		/* @aspect MEMTYPE_CODE */
-        		);
+        jemFreeCode(domain->code[j]);
         domain->code[j] = domain->codeBorder[j] = domain->codeTop[j] = NULL;
     }
 
     gc_done(domain);
 
-    jemFree(domain->scratchMem
-    		/* @aspect domain->scratchMemSize */
-    		/* @aspect MEMTYPE_OTHER */
-    		);
-    jemFree(domain->codeBorder
-    		/* @aspect domain->codeFragmentsMemSize */
-    		/* @aspect MEMTYPE_DCB */
-    		);
-    jemFree(domain->code
-    		/* @aspect domain->codeFragmentsMemSize */
-    		/* @aspect MEMTYPE_DCB */
-    		);
-    jemFree(domain->codeTop
-    		/* @aspect domain->codeFragmentsMemSize */
-    		/* @aspect MEMTYPE_DCB */
-    		);
-    jemFree(domain->services
-    		/* @aspect domain->maxServicesMemSize */
-    		/* @aspect MEMTYPE_DCB */
-    		);
-    jemFree(domain->pools
-    		/* @aspect domain->maxServicesMemSize */
-    		/* @aspect MEMTYPE_DCB */
-    		);
+    jemFree(domain->scratchMem);
 
     rt_mutex_delete(&domain->domainMemLock);
     rt_mutex_delete(&domain->domainHeapLock);

@@ -1,5 +1,5 @@
 // Additional Copyrights:
-// 	Copyright (C) 1997-2001 The JX Group.
+//  Copyright (C) 1997-2001 The JX Group.
 //==============================================================================
 
 #ifndef _DOMAIN_H
@@ -141,7 +141,7 @@ typedef void (*domain_f) (struct DomainDesc_s *);
 typedef void (*domain1_f) (struct DomainDesc_s *, void *);
 
 
-void initDomainSystem(void);
+int initDomainSystem(void);
 void deleteDomainSystem(void);
 struct DomainDesc_s *createDomain(char *domainName, jint gcinfo0, jint gcinfo1, jint gcinfo2, char *gcinfo3, jint gcinfo4,
                                   u32 code_bytes, int gcImpl);
@@ -150,6 +150,7 @@ void domain_panic(struct DomainDesc_s * domain, char *msg);
 void foreachDomain(domain_f func);
 char **malloc_tmp_stringtable(struct DomainDesc_s * domain, struct TempMemory_s * mem,
                               u32 number);
+//int findClassForMethod(MethodDesc * method, JClass **jclass);
 int findMethodAtAddrInDomain(struct DomainDesc_s * domain, u8 * addr,
                              struct MethodDesc_s ** method, struct ClassDesc_s ** classInfo,
                              jint * bytecodePos, jint * lineNumber);

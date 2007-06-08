@@ -11,11 +11,23 @@ kjvm-objs := core/jem.o core/malloc.o
 #		dom0/zero_DomainManager.o \
 #               gc/gc.o gc/gc_alloc.o
 
+kjvm-objs += core/stub.o
+
+clean-files += malloc.mc MallocStatistics.acc malloc.c MallocStatistics.c
 
 kjvm.o: $(kjvm-objs)
 	$(LD) -r -o $@ $(kjvm-objs)
 
 obj-$(CONFIG_JEM) += kjvm.o
 
-EXTRA_CFLAGS += -I/opt/xenomai/include -Idrivers/embedded/kjvm/include -Idrivers/embedded/kcli -Idrivers/embedded/kcfg -Idrivers/embedded/ktst
+EXTRA_CFLAGS += -Idrivers/embedded/kjvm/include -Idrivers/embedded/kcli -Idrivers/embedded/kcfg -Idrivers/embedded/ktst
+
+$(obj)/malloc.mc: $(src)/core/malloc_mc.c
+	$(CPP) $(c_flags) $(src)/core/malloc_mc.c > $(obj)/malloc.mc
+
+$(obj)/MallocStatistics.acc: $(src)/core/MallocStatistics_acc.c
+	$(CPP) $(c_flags) $(src)/core/MallocStatistics_acc.c > $(obj)/MallocStatistics.acc
+
+$(obj)/malloc.c $(obj)/MallocStatistics.c: $(obj)/malloc.mc $(obj)/MallocStatistics.acc
+	acc $(obj)/malloc.mc $(obj)/MallocStatistics.acc
 

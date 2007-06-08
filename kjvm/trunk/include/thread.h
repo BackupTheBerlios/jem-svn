@@ -5,7 +5,6 @@
 #ifndef _THREAD_H
 #define _THREAD_H
 
-#include <native/task.h>
 #include "domain.h"
 #include "portal.h"
 
@@ -53,7 +52,7 @@ typedef struct ThreadDesc_s {
     u32                             threadID;
     void                            *createParam;
     jint                            *portalParams;
-    RT_TASK                         task;
+    //TASK                         task;
     struct copied_s                 *copied;    /* only used when thread receives portal calls */
     u32                             n_copied;
     u32                             max_copied;
@@ -124,7 +123,7 @@ static inline struct DomainDesc_s *curdom(void) {
 /*  unblocks the  given Thread   */
 static inline void threadunblock(ThreadDesc * t)
 {
-    rt_task_resume(&t->task);
+    //task_resume(&t->task);
     t->state = STATE_RUNNABLE;
 }
 
@@ -132,7 +131,7 @@ static inline void threadunblock(ThreadDesc * t)
 /* blocks the current Thread */
 static inline void threadblock(void)
 {
-    rt_task_suspend(&(curthr()->task));
+    //task_suspend(&(curthr()->task));
     curthr()->state = STATE_BLOCKEDUSER;
 }
 

@@ -9,7 +9,8 @@
 #include "thread.h"
 #include "zero_Memory.h"
 
-
+// TEMP TEMP TEMP
+#define NR_IRQS 15
 
 extern jint gc_methodindex;
 

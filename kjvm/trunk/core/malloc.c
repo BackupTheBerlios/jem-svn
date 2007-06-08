@@ -11,6 +11,7 @@
 #include <linux/types.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
+#include <linux/vmalloc.h>
 #include "jemtypes.h"
 #include "jemConfig.h"
 #include "malloc.h"
@@ -24,8 +25,7 @@
  * Declarations
  *==============================================================================*/
 
-// TEMP TEMP TEMP
-DomainDesc   		*domainZero;
+static u32 sharedLibID = 1;
 
 
 /*==============================================================================
@@ -74,7 +74,7 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
 
     if (nextObj > domain->codeBorder[c]) {
         c++;
-        if (c == getJVMConfig()->codeFragments) {
+        if (c == getJVMConfig(codeFragments)) {
             printk(KERN_ERR "Out of code space for domain.\n");
             return NULL;
         }
@@ -171,8 +171,6 @@ LibDesc *jemMallocLibdesc(DomainDesc * domain)
 {
     return (LibDesc *) jemMallocCode(domain, sizeof(LibDesc));
 }
-
-static u32 sharedLibID = 1;
 
 SharedLibDesc *jemMallocSharedlibdesc(DomainDesc * domain, u32 namelen)
 {

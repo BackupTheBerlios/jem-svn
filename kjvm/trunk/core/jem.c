@@ -44,7 +44,7 @@ static void loadConfig(void)
 	
 	for (i=0; i<jemConfSize; i++)
 	{
-	    if (!cfg_getval(confNames[i], &val))
+	    if (cfg_getval(confNames[i], &val))
 	    {
 	    	switch (i)
 	    	{ 
@@ -75,7 +75,14 @@ static void loadConfig(void)
 	    		default:
 	    			val = "0";
 	    	}
-	    	cfg_setval(confNames[i], val);
+	    	if(cfg_setval(confNames[i], val))
+            {
+                printk(KERN_ERR "Failed to set %s to %s in loadConfig().\n", confNames[i], val);
+            }
+            else
+            {
+                printk(KERN_INFO "Set %s to %s in loadConfig().\n", confNames[i], val);
+            }
 	    	sv = 1;
 	    }
 	    sscanf(val, "%d", &jConfig[i]);

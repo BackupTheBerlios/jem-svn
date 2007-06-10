@@ -2,7 +2,7 @@
 // This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
-// Copyright (C) 2007 JavaDevices Software. 
+// Copyright (C) 2007 Christopher Stone. 
 // Copyright (C) 1997-2001 The JX Group.
 // Copyright (C) 1998-2002 Michael Golm.
 //
@@ -76,8 +76,6 @@ char *jemMallocCode(DomainDesc *domain, u32 size)
     char    *nextObj;
     u32     c;
     u32     chunksize = domain->code_bytes;
-
-	// @aspect Lock
 
     if (domain->cur_code == -1) {
         domain->code[0] = jem_vmalloc(chunksize);

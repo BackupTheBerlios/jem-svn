@@ -42,4 +42,13 @@ config JEM_UNIT_TEST
 	---help---
 	  Compile in the unit test cases.
 
+config JEM_FUNCTION_TRACE
+	bool "Enable function tracing for debug"
+	depends on JEM_CLI
+	default false
+	---help---
+	  Compile in the function tracing aspect which will printk a message
+	  each time a function is entered. The aspect also adds a command that
+	  will allow the user to enable and disable tracing at run time.
+
 endmenu

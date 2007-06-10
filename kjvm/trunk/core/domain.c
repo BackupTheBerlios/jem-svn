@@ -1,6 +1,23 @@
-// Additional Copyrights:
-// 	Copyright (C) 1997-2001 The JX Group.
-// 	Copyright (C) 1998-2002 Michael Golm.
+//==============================================================================
+// This file is part of Jem, a real time Java operating system designed for
+// embedded systems.
+//
+// Copyright (C) 2007 Christopher Stone. 
+// Copyright (C) 1997-2001 The JX Group.
+// Copyright (C) 1998-2002 Michael Golm.
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
 //==============================================================================
 // domain.c
 //
@@ -11,10 +28,8 @@
 #include <linux/module.h>
 #include <linux/types.h>
 #include <linux/kernel.h>
-#include <native/mutex.h>
 #include "jemtypes.h"
 #include "jemConfig.h"
-#include "object.h"
 #include "domain.h"
 #include "gc.h"
 #include "code.h"
@@ -54,8 +69,6 @@ static DomainDesc *specialAllocDomainDesc(void)
     DomainDesc  *d;
     char        *domainMemStart;
 
-	// @aspect Lock
-
     if (numberOfDomains == getJVMConfig(maxDomains)) {
         printk(KERN_ERR "Maximum domains have been created.\n");
         return NULL;
@@ -80,8 +93,6 @@ static DomainDesc *specialAllocDomainDesc(void)
     d->id       	= currentDomainID++;
     numberOfDomains++;
 
-	// @aspect rtdm_mutex_init
-
     return d;
 }
 
@@ -101,7 +112,7 @@ DomainDesc *createDomain(char *domainName, jint gcinfo0, jint gcinfo1, jint gcin
     domain->maxNumberOfLibs = getJVMConfig(maxNumberLibs);
     domain->numberOfLibs    = 0;
     domain->arrayClasses    = NULL;
-    domain->scratchMem      = jemMalloc(getJVMConfig(domScratchMemSz) /* MEMTYPE_OTHER */ );
+    domain->scratchMem      = jemMalloc(getJVMConfig(domScratchMemSz));
     domain->scratchMemSize  = getJVMConfig(domScratchMemSz);
 
     domain->cur_code = -1;
@@ -146,9 +157,8 @@ int initDomainSystem(void)
 {
     DomainDesc          *d;
     char                *domainMemStart;
-    int                 result;
 
-    domainMem           = (char *) jemMalloc((DOMAINMEM_SIZEBYTES * getJVMConfig(maxDomains)) /* MEMTYPE_DCB */);
+    domainMem           = (char *) jemMalloc((DOMAINMEM_SIZEBYTES * getJVMConfig(maxDomains)));
     domainMemStart      = domainMem;
     numberOfDomains     = 0;
     domainMemCurrent    = domainMem;
@@ -158,15 +168,13 @@ int initDomainSystem(void)
         char *mem       = domainMemStart;
         d               = (DomainDesc *) (((char *) mem) + DOMAINDESC_OFFSETBYTES);
         d->state        = DOMAIN_STATE_FREE;
-	    d->codeBorder	= jemMalloc((sizeof(char *) * getJVMConfig(codeFragments)) /* MEMTYPE_DCB */); 
-	    d->code			= jemMalloc((sizeof(char *) * getJVMConfig(codeFragments)) /* MEMTYPE_DCB */); 
-	    d->codeTop		= jemMalloc((sizeof(char *) * getJVMConfig(codeFragments)) /* MEMTYPE_DCB */); 
-	    d->services		= jemMalloc((sizeof(char *) * getJVMConfig(maxServices)) /* MEMTYPE_DCB */); 
-	    d->pools		= jemMalloc((sizeof(char *) * getJVMConfig(maxServices)) /* MEMTYPE_DCB */); 
+	    d->codeBorder	= jemMalloc((sizeof(char *) * getJVMConfig(codeFragments))); 
+	    d->code			= jemMalloc((sizeof(char *) * getJVMConfig(codeFragments))); 
+	    d->codeTop		= jemMalloc((sizeof(char *) * getJVMConfig(codeFragments))); 
+	    d->services		= jemMalloc((sizeof(char *) * getJVMConfig(maxServices))); 
+	    d->pools		= jemMalloc((sizeof(char *) * getJVMConfig(maxServices))); 
         domainMemStart  += DOMAINMEM_SIZEBYTES;
     }
-
-	// @aspect rtdm_mutex_init
 
     domainZero = createDomain("DomainZero", getJVMConfig(heapBytesDom0), -1, -1, NULL, -1,
                               getJVMConfig(codeBytesDom0), GC_IMPLEMENTATION_DEFAULT);
@@ -180,6 +188,14 @@ int initDomainSystem(void)
 }
 
 
+static void domain_mutex_delete(DomainDesc *domain)
+{
+    //rt_mutex_delete(&domain->domainMemLock);
+    //rt_mutex_delete(&domain->domainHeapLock);
+    //rt_mutex_delete(&domain->gc.gcLock);
+    //rt_sem_delete(&domain->serviceSem);
+}
+
 void deleteDomainSystem(void)
 {
     char                *domainMemStart;
@@ -190,35 +206,29 @@ void deleteDomainSystem(void)
         char *mem       = domainMemStart;
         d               = (DomainDesc *) (((char *) mem) + DOMAINDESC_OFFSETBYTES);
         if (d->state != DOMAIN_STATE_FREE) {
-            rt_mutex_delete(&d->domainMemLock);
-            rt_mutex_delete(&d->domainHeapLock);
-            rt_mutex_delete(&d->gc.gcLock);
+            domain_mutex_delete(d);
         }
-	    jemFree(domain->codeBorder);
-	    jemFree(domain->code);
-	    jemFree(domain->codeTop);
-	    jemFree(domain->services);
-	    jemFree(domain->pools);
+	    jemFree(d->codeBorder);
+	    jemFree(d->code);
+	    jemFree(d->codeTop);
+	    jemFree(d->services);
+	    jemFree(d->pools);
         domainMemStart  += DOMAINMEM_SIZEBYTES;
     }
     
     jemFree(domainMem);
-
-    rt_mutex_delete(&domainLock);
 }
 
 
 int findClassForMethod(MethodDesc * method, JClass **jclass)
 {
-	int d, l, c, m;
+	int l, c, m;
 	DomainDesc *domain;
 	char *mem;
 	int ret = -1;
 
 	if (method == NULL)
 		return -1;
-
-	LOCK_DOMAINS;
 
 	for (mem = domainMem; mem < domainMemBorder; mem += DOMAINMEM_SIZEBYTES) {
 		domain = (DomainDesc *) (mem + DOMAINDESC_OFFSETBYTES);
@@ -229,7 +239,7 @@ int findClassForMethod(MethodDesc * method, JClass **jclass)
 				ClassDesc *classDesc = allClasses[c].classDesc;
 				for (m = 0; m < classDesc->numberOfMethods; m++) {
 					if (&classDesc->methods[m] == method) {
-						*class = &allClasses[c];
+						*jclass = &allClasses[c];
 						//*class = classDesc;
 						ret = 0;
 						goto finish;
@@ -240,7 +250,6 @@ int findClassForMethod(MethodDesc * method, JClass **jclass)
 	}
 
       finish:
-	UNLOCK_DOMAINS;
 
 	return ret;
 }
@@ -275,12 +284,11 @@ int findMethodAtAddrInDomain(DomainDesc * domain, u8 * addr, MethodDesc ** metho
     if (addr == NULL)
         return -1;
 
-    rt_mutex_acquire(&domainLock, TM_INFINITE);
     for (h = 0; h < domain->numberOfLibs; h++) {
         LibDesc *lib = domain->libs[h];
         JClass *allClasses = lib->allClasses;
         ClassDesc *classDesc;
-        u8 *lower, *upper=NULL;
+        u8 *lower=NULL, *upper=NULL;
         if (lib->numberOfClasses <= 0) {
             printk(KERN_ERR "Problem in domain, %d, empty lib\n", domain->id);
             return -1;
@@ -361,7 +369,6 @@ int findMethodAtAddrInDomain(DomainDesc * domain, u8 * addr, MethodDesc ** metho
     }
 
     finish:
-    rt_mutex_release(&domainLock);
 
     return ret;
 }
@@ -378,8 +385,6 @@ int findMethodAtAddr(u8 * addr, MethodDesc ** method, ClassDesc ** classInfo, ji
     if (addr == NULL)
         return -1;
 
-    rt_mutex_acquire(&domainLock, TM_INFINITE);
-
     for (mem = domainMem; mem < domainMemBorder; mem += DOMAINMEM_SIZEBYTES) {
         domain = (DomainDesc *) (mem + DOMAINDESC_OFFSETBYTES);
         if (findMethodAtAddrInDomain(domain, addr, method, classInfo, bytecodePos, lineNumber) == 0) {
@@ -389,7 +394,6 @@ int findMethodAtAddr(u8 * addr, MethodDesc ** method, ClassDesc ** classInfo, ji
     }
 
     finish:
-    rt_mutex_release(&domainLock);
     return ret;
 }
 
@@ -399,8 +403,6 @@ int findProxyCode(DomainDesc * domain, char *addr, char **method, char **sig, Cl
     char *mem;
     int ret = -1;
 
-    rt_mutex_acquire(&domainLock, TM_INFINITE);
-
     for (mem = domainMem; mem < domainMemBorder; mem += DOMAINMEM_SIZEBYTES) {
         domain = (DomainDesc *) (mem + DOMAINDESC_OFFSETBYTES);
         if (findProxyCodeInDomain(domain, addr, method, sig, classInfo) == 0) {
@@ -409,7 +411,6 @@ int findProxyCode(DomainDesc * domain, char *addr, char **method, char **sig, Cl
         }
     }
 
-    rt_mutex_release(&domainLock);
     return ret;
 }
 
@@ -419,8 +420,6 @@ DomainDesc *findDomain(u32 id)
     DomainDesc *domain;
     char *mem;
     DomainDesc *ret = NULL;
-
-    rt_mutex_acquire(&domainLock, TM_INFINITE);
 
     for (mem = domainMem; mem < domainMemBorder; mem += DOMAINMEM_SIZEBYTES) {
         domain = (DomainDesc *) (mem + DOMAINDESC_OFFSETBYTES);
@@ -432,7 +431,6 @@ DomainDesc *findDomain(u32 id)
         }
     }
 
-    rt_mutex_release(&domainLock);
     return ret;
 }
 
@@ -442,8 +440,6 @@ DomainDesc *findDomainByName(char *name)
     DomainDesc *domain;
     char *mem;
     DomainDesc *ret = NULL;
-
-    rt_mutex_acquire(&domainLock, TM_INFINITE);
 
     for (mem = domainMem; mem < domainMemBorder; mem += DOMAINMEM_SIZEBYTES) {
         domain = (DomainDesc *) (mem + DOMAINDESC_OFFSETBYTES);
@@ -455,7 +451,6 @@ DomainDesc *findDomainByName(char *name)
         }
     }
 
-    rt_mutex_release(&domainLock);
     return ret;
 }
 
@@ -465,8 +460,6 @@ void foreachDomain(domain_f func)
     DomainDesc *domain;
     char *mem;
 
-    rt_mutex_acquire(&domainLock, TM_INFINITE);
-
     for (mem = domainMem; mem < domainMemBorder; mem += DOMAINMEM_SIZEBYTES) {
         domain = (DomainDesc *) (mem + DOMAINDESC_OFFSETBYTES);
         if (domain->state != DOMAIN_STATE_ACTIVE)
@@ -474,7 +467,6 @@ void foreachDomain(domain_f func)
         func(domain);
     }
 
-    rt_mutex_release(&domainLock);
 }
 
 
@@ -503,14 +495,14 @@ void terminateDomain(DomainDesc * domain)
     domain->state = DOMAIN_STATE_TERMINATING;
 
     /* deactivate services */
-    rt_mutex_acquire(&svTableLock, TM_INFINITE);
-    for (index = 0; index < CONFIG_JEM_MAX_SERVICES; index++) {
+    jem_mutex_acquire();
+    for (index = 0; index < getJVMConfig(maxServices); index++) {
         if (domain->services[index] != SERVICE_ENTRY_FREE) {
             domain->services[index] = SERVICE_ENTRY_CHANGING;
             break;
         }
     }
-    rt_mutex_release(&svTableLock);
+    jem_mutex_release();
 
     /* terminate all pending portal calls */
     /* and return from all running service executions with an exception */
@@ -554,13 +546,9 @@ void terminateDomain(DomainDesc * domain)
 
     jemFree(domain->scratchMem);
 
-    rt_mutex_delete(&domain->domainMemLock);
-    rt_mutex_delete(&domain->domainHeapLock);
-    rt_mutex_delete(&domain->gc.gcLock);
-    rt_sem_delete(&domain->serviceSem);
+    domain_mutex_delete(domain);
 
     domain->state = DOMAIN_STATE_FREE;  /* domain control block can be reused */
     numberOfDomains--;
 }
-
 

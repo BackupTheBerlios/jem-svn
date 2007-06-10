@@ -1,4 +1,4 @@
-kjvm-objs := jem.o malloc.o lock.o 
+kjvm-objs := jem.o malloc.o lock.o domain.o portal.o
 
 # kjvm-objs := core/domain.o core/jem.o core/jemUPipe.o core/malloc.o core/jar.o \
 #                core/thread.o core/load.o core/call.o core/libcache.o \
@@ -12,10 +12,11 @@ kjvm-objs := jem.o malloc.o lock.o
 #               gc/gc.o gc/gc_alloc.o
 
 kjvm-objs += core/stub.o 
-woven-files := $(obj)/malloc.c $(obj)/jem.c $(obj)/lock.c
-weaver-files := $(obj)/malloc.mc $(obj)/jem.mc $(obj)/lock.acc
+woven-files := $(obj)/malloc.c $(obj)/jem.c $(obj)/lock.c $(obj)/domain.c $(obj)/portal.c
+weaver-files := $(obj)/malloc.mc $(obj)/jem.mc $(obj)/lock.acc $(obj)/domain.mc $(obj)/portal.mc
 clean-files += malloc.mc malloc.c jem.mc jem.c lock.c lock.acc cli.c cli.acc mstats.c mstats.acc  \
-		test_malloc.c test_malloc.acc 
+		test_malloc.c test_malloc.acc trace.c trace.acc domain.mc domain.c portal.mc \
+		portal.c
 
 ifeq ($(CONFIG_JEM_CLI),y)
 kjvm-objs += cli.o 
@@ -35,6 +36,12 @@ woven-files += $(obj)/test_malloc.c
 weaver-files += $(obj)/test_malloc.acc 
 endif
 
+ifeq ($(CONFIG_JEM_FUNCTION_TRACE),y)
+kjvm-objs += trace.o 
+woven-files += $(obj)/trace.c 
+weaver-files += $(obj)/trace.acc 
+endif
+
 
 kjvm.o: $(kjvm-objs)
 	$(LD) -r -o $@ $(kjvm-objs)
@@ -44,11 +51,17 @@ obj-$(CONFIG_JEM) += kjvm.o
 EXTRA_CFLAGS += -Idrivers/embedded/kjvm/include -Idrivers/embedded/kcli -Idrivers/embedded/kcfg -Idrivers/embedded/ktst
 
 
+$(obj)/domain.mc: $(src)/core/domain.c
+	$(CPP) $(c_flags) $(src)/core/domain.c > $(obj)/domain.mc
+
 $(obj)/malloc.mc: $(src)/core/malloc.c
 	$(CPP) $(c_flags) $(src)/core/malloc.c > $(obj)/malloc.mc
 
 $(obj)/jem.mc: $(src)/core/jem.c
 	$(CPP) $(c_flags) $(src)/core/jem.c > $(obj)/jem.mc
+
+$(obj)/portal.mc: $(src)/core/portal.c
+	$(CPP) $(c_flags) $(src)/core/portal.c > $(obj)/portal.mc
 
 $(obj)/mstats.acc: $(src)/aspects/mstats_acc.c
 	$(CPP) $(c_flags) $(src)/aspects/mstats_acc.c > $(obj)/mstats.acc
@@ -61,6 +74,9 @@ $(obj)/test_malloc.acc: $(src)/aspects/test_malloc_acc.c
 
 $(obj)/lock.acc: $(src)/aspects/lock_acc.c
 	$(CPP) $(c_flags) $(src)/aspects/lock_acc.c > $(obj)/lock.acc
+
+$(obj)/trace.acc: $(src)/aspects/trace_acc.c
+	$(CPP) $(c_flags) $(src)/aspects/trace_acc.c > $(obj)/trace.acc
 
 $(woven-files): $(weaver-files)
 	acc $(weaver-files)

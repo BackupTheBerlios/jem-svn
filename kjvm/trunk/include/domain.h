@@ -2,7 +2,7 @@
 // This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
-// Copyright (C) 2007 JavaDevices Software. 
+// Copyright (C) 2007 Christopher Stone. 
 // Copyright (C) 1997-2001 The JX Group.
 //
 // Jem is free software; you can redistribute it and/or modify it under the
@@ -22,7 +22,6 @@
 #ifndef _DOMAIN_H
 #define _DOMAIN_H
 
-#include <linux/types.h>
 #include "object.h"
 
 #define DOMAIN_TERMINATED_EXCEPTION  (-1)

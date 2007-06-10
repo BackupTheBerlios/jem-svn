@@ -23,4 +23,4 @@
 #include "exception_handler.h"
 #include "sched.h"
 
-DomainDesc   		*domainZero;
+int stub;

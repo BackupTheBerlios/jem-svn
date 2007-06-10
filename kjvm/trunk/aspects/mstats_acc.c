@@ -2,7 +2,7 @@
 // This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
-// Copyright (C) 2007 JavaDevices Software. 
+// Copyright (C) 2007 Christopher Stone. 
 //
 // Jem is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License, version 2, as published by the Free
@@ -32,6 +32,7 @@
 #include <linux/mm.h>
 #include "libcli.h"
 #include "jemtypes.h"
+#include "jemConfig.h"
 #include "malloc.h"
 
 extern struct cli_def       *kcli;
@@ -206,6 +207,18 @@ void * around(u32 size): call(void *jemMalloc(u32)) && infunc(jemMallocTmp) && a
     return jemStatMalloc(size, MEMTYPE_TMP);
 }
 
+void * around(u32 size): call(void *jemMalloc(u32)) && infunc(createDomain) && args(size)
+{
+    // redirect the call to jemMalloc in the function createDomain
+    return jemStatMalloc(size, MEMTYPE_OTHER);
+}
+
+void * around(u32 size): call(void *jemMalloc(u32)) && infunc(initDomainSystem) && args(size)
+{
+    // redirect the call to jemMalloc in the function createDomain
+    return jemStatMalloc(size, MEMTYPE_DCB);
+}
+
 void around(void *addr): call(void jemFree(void *)) && infunc(jemFreeThreadDesc) && args(addr)
 {
     // redirect the call to jemFree in the function jemFreeThreadDesc
@@ -218,6 +231,13 @@ void around(void *addr): call(void jemFree(void *)) && infunc(jemFreeTmp)  && ar
     // redirect the call to jemFree in the function jemFreeTmp
     TempMemory *m = addr;
     jemStatFree(addr, m->size, MEMTYPE_TMP);
+    return;
+}
+
+void around(void *addr): call(void jemFree(void *)) && infunc(terminateDomain) && args(addr)
+{
+    // redirect the call to jemFree in the function terminateDomain
+    jemStatFree(addr, getJVMConfig(domScratchMemSz), MEMTYPE_OTHER);
     return;
 }
 

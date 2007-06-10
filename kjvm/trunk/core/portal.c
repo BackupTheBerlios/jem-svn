@@ -1,11 +1,11 @@
-//=================================================================================
+//==============================================================================
 // This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
-// Copyright © 2007 JemStone Software LLC. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-// Copyright © 1998-2002 Michael Golm. All rights reserved.
-// Copyright © 2001-2002 Meik Felser. All rights reserved.
+// Copyright (C) 2007 Christopher Stone. 
+// Copyright (C) 1997-2001 The JX Group.
+// Copyright (C) 1998-2002 Michael Golm.
+// Copyright (C) 2001-2002 Meik Felser. 
 //
 // Jem is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License, version 2, as published by the Free
@@ -19,15 +19,13 @@
 // Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
 // Fifth Floor, Boston, MA 02110-1301, USA
 //
-//=================================================================================
+//==============================================================================
 // Portal invocation and data copy between domains
 //=================================================================================
 
 #include <linux/module.h>
 #include <linux/types.h>
 #include <linux/kernel.h>
-#include <native/mutex.h>
-#include <native/task.h>
 #include "jemtypes.h"
 #include "jemConfig.h"
 #include "object.h"
@@ -47,7 +45,6 @@
 #include "vmsupport.h"
 
 
-RT_MUTEX            svTableLock;
 extern ClassDesc    *portalInterface;
 
 static char         *copy_content_reference_internal(DomainDesc * src, DomainDesc * dst, ObjectDesc * ref, u32 * quota);
@@ -67,14 +64,14 @@ u32 createService(DomainDesc * domain, ObjectDesc * depObj, ClassDesc * interfac
     DEPDesc *dep;
     u32 index;
 
-    rt_mutex_acquire(&svTableLock, TM_INFINITE);
+    jem_mutex_acquire();
     for (index = 0; index < CONFIG_JEM_MAX_SERVICES; index++) {
         if (domain->services[index] == SERVICE_ENTRY_FREE) {
             domain->services[index] = SERVICE_ENTRY_CHANGING;
             break;
         }
     }
-    rt_mutex_release(&svTableLock);
+    jem_mutex_release();
 
     if (index == CONFIG_JEM_MAX_SERVICES) {
         printk(KERN_ERR "domain can not create more services\n");
@@ -211,14 +208,14 @@ static inline void portal_add_sender(DEPDesc * dep, ThreadDesc * thread)
 {
     thread->nextInDEPQueue = NULL;
 
-    rt_mutex_acquire(&dep->pool->poolLock, TM_INFINITE);
+    //mutex_acquire(&dep->pool->poolLock, TM_INFINITE);
     if (dep->pool->lastWaitingSender == NULL) {
         dep->pool->lastWaitingSender = dep->pool->firstWaitingSender = thread;
     } else {
         dep->pool->lastWaitingSender->nextInDEPQueue = thread;
         dep->pool->lastWaitingSender = thread;
     }
-    rt_mutex_release(&dep->pool->poolLock);
+    //mutex_release(&dep->pool->poolLock);
 }
 
 
@@ -247,13 +244,13 @@ static inline ThreadDesc *portal_dequeue_sender(ServiceThreadPool * pool)
     if (ret == NULL)
         return NULL;
 
-    rt_mutex_acquire(&pool->poolLock, TM_INFINITE);
+    //rt_mutex_acquire(&pool->poolLock, TM_INFINITE);
     pool->firstWaitingSender = pool->firstWaitingSender->nextInDEPQueue;
     if (pool->firstWaitingSender == NULL) {
         pool->lastWaitingSender = NULL;
     }
     ret->nextInDEPQueue = NULL;
-    rt_mutex_release(&pool->poolLock);
+    //rt_mutex_release(&pool->poolLock);
     return ret;
 }
 
@@ -283,7 +280,7 @@ void receive_portalcall(u32 poolIndex)
 
     thread_prepare_to_copy();
 
-    myparams = jemMalloc(getJVMConfig()->serviceParamsSz MEMTYPE_OTHER);
+    //myparams = jemMalloc(getJVMConfig()->serviceParamsSz MEMTYPE_OTHER);
     curthr()->myparams = myparams;
 
     for (;;) {      /* receive loop */
@@ -294,7 +291,7 @@ void receive_portalcall(u32 poolIndex)
      **************/
         pool = curdom()->pools[poolIndex];
         curthr()->state = STATE_PORTAL_WAIT_FOR_SND;
-        rt_sem_p(&(curdom()->serviceSem), TM_INFINITE);
+        //sem_p(&(curdom()->serviceSem), TM_INFINITE);
         source = portal_dequeue_sender(pool);
         curthr()->state = STATE_RUNNABLE;
 
@@ -498,7 +495,7 @@ static u32 direct_send_portal(Proxy * proxy, ...)
     oclass                      = obj2ClassDesc((ObjectDesc *) proxy);
 
     portal_add_sender(svc, curthr());   /* append this sender to the waiting threads */
-    rt_sem_v(&(targetDomain->serviceSem)); // signal a sender waiting to target domain
+    //rt_sem_v(&(targetDomain->serviceSem)); // signal a sender waiting to target domain
 
     // wait for a receiver to pick up this request and process it
     Sched_block(STATE_PORTAL_WAIT_FOR_RET);
@@ -630,7 +627,7 @@ Proxy *portal_auto_promo(DomainDesc * domain, ObjectDesc * obj)
 
     if (implements_interface(cl, portalInterface)) {
         // try to find a service description for this object
-        rt_mutex_acquire(&svTableLock, TM_INFINITE);
+        //rt_mutex_acquire(&svTableLock, TM_INFINITE);
         for (i = 0; i < CONFIG_JEM_MAX_SERVICES; i++) {
             d = domain->services[i];
             if (d == SERVICE_ENTRY_FREE || d == SERVICE_ENTRY_CHANGING) {
@@ -641,7 +638,7 @@ Proxy *portal_auto_promo(DomainDesc * domain, ObjectDesc * obj)
                 break;
             }
         }
-        rt_mutex_release(&svTableLock);
+        //rt_mutex_release(&svTableLock);
         if (d != NULL)
             return d->proxy;
 
@@ -1024,27 +1021,27 @@ static void receive_dep(void *arg)
 
 void reinit_service_thread(void)
 {
-    RT_TASK         t1;
-    RT_TASK_INFO    t1info;
+    //RT_TASK         t1;
+    //RT_TASK_INFO    t1info;
     ThreadDesc      *thread = curthr();
 
     // Unblock the sender
     Sched_portal_handoff_to_sender(thread->mostRecentlyCalledBy);
 
     // Start a new thread
-    rt_task_inquire(&thread->task, &t1info);
-    memcpy(&t1, &thread->task, sizeof(RT_TASK));
-    memset(&thread->task, 0, sizeof(RT_TASK));
-    rt_task_spawn(&thread->task, t1info.name, getJVMConfig()->serviceStackSz, getJVMConfig()->defaultServicePrio,
-                  T_FPU, receive_dep, (void *) thread->processingDEP->serviceIndex);
-    rt_task_delete(&t1);
+    //rt_task_inquire(&thread->task, &t1info);
+    //memcpy(&t1, &thread->task, sizeof(RT_TASK));
+    //memset(&thread->task, 0, sizeof(RT_TASK));
+    //rt_task_spawn(&thread->task, t1info.name, getJVMConfig()->serviceStackSz, getJVMConfig()->defaultServicePrio,
+    //              T_FPU, receive_dep, (void *) thread->processingDEP->serviceIndex);
+    //rt_task_delete(&t1);
 }
 
 void service_incRefcount(DEPDesc * p)
 {
-    rt_mutex_acquire(&svTableLock, TM_INFINITE);
+    //rt_mutex_acquire(&svTableLock, TM_INFINITE);
     p->refcount++;
-    rt_mutex_release(&svTableLock);
+    //rt_mutex_release(&svTableLock);
 }
 
 void start_notify_thread(void *dummy)
@@ -1086,9 +1083,9 @@ void service_decRefcount(DomainDesc * domain, u32 index)
 
 static void connectServiceToPool(DEPDesc * svc, ServiceThreadPool * pool)
 {
-    rt_mutex_acquire(&svTableLock, TM_INFINITE);
+    //rt_mutex_acquire(&svTableLock, TM_INFINITE);
     pool->refcount++;
-    rt_mutex_release(&svTableLock);
+    //rt_mutex_release(&svTableLock);
     svc->pool = pool;
 }
 
@@ -1110,7 +1107,7 @@ void portals_init(void)
 {
     int result;
 
-    result = rt_mutex_create(&svTableLock, "serviceTableLock");
+    //result = rt_mutex_create(&svTableLock, "serviceTableLock");
     if (result < 0) {
         printk(KERN_ERR "Unable to create service table lock, rc=%d\n", result);
         return;

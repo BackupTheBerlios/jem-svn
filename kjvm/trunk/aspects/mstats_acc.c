@@ -30,6 +30,7 @@
 #include <linux/types.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
+#include <linux/spinlock.h>
 #include "libcli.h"
 #include "jemtypes.h"
 #include "jemConfig.h"
@@ -67,9 +68,14 @@ static unsigned long  maxAllocSize;
 #define MEMTYPE_TMP   7
 #define MEMTYPE_DCB   8
 
+static spinlock_t jem_mlock = SPIN_LOCK_UNLOCKED;
+
 
 static void jemMallocIncrement(u32 size, int memtype)
 {
+    unsigned long flags;
+
+    spin_lock_irqsave(&jem_mlock, flags);
     totalAllocedRam += size;
     totalAllocations++;
     if (totalAllocedRam > peakAllocedRam) peakAllocedRam = totalAllocedRam;
@@ -106,11 +112,15 @@ static void jemMallocIncrement(u32 size, int memtype)
     default:
         printk(KERN_WARNING "Allocation MEMTYPE unknown.\n");
     }
+    spin_unlock_irqrestore(&jem_mlock, flags);
 }
 
 
 static void jemMallocDecrement(u32 size, int memtype)
 {
+    unsigned long flags;
+
+    spin_lock_irqsave(&jem_mlock, flags);
     switch (memtype) {
     case MEMTYPE_HEAP:
         alloc_stat.heap -= size;
@@ -145,6 +155,7 @@ static void jemMallocDecrement(u32 size, int memtype)
 
     totalAllocedRam -= size;
     totalAllocations--;
+    spin_unlock_irqrestore(&jem_mlock, flags);
 }
 
 #define K(x) ((x) << (PAGE_SHIFT - 10))

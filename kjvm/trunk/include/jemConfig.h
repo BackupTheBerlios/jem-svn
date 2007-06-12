@@ -29,6 +29,8 @@ enum				confIds   {	codeFragments,
 								heapBytesDom0,
 								codeBytesDom0,
 								codeBytes,
+                                defaultServicePrio,
+                                receivePortalQuota,
 								jemConfSize
 							  };
 

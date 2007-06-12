@@ -29,6 +29,7 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/vmalloc.h>
+#include <linux/spinlock.h>
 #include "jemtypes.h"
 #include "jemConfig.h"
 #include "malloc.h"

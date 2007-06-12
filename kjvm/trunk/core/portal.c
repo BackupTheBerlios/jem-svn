@@ -65,7 +65,7 @@ u32 createService(DomainDesc * domain, ObjectDesc * depObj, ClassDesc * interfac
     u32 index;
 
     jem_mutex_acquire();
-    for (index = 0; index < CONFIG_JEM_MAX_SERVICES; index++) {
+    for (index = 0; index < getJVMConfig(maxServices); index++) {
         if (domain->services[index] == SERVICE_ENTRY_FREE) {
             domain->services[index] = SERVICE_ENTRY_CHANGING;
             break;
@@ -73,7 +73,7 @@ u32 createService(DomainDesc * domain, ObjectDesc * depObj, ClassDesc * interfac
     }
     jem_mutex_release();
 
-    if (index == CONFIG_JEM_MAX_SERVICES) {
+    if (index == getJVMConfig(maxServices)) {
         printk(KERN_ERR "domain can not create more services\n");
         return 0;
     }
@@ -98,7 +98,7 @@ static ThreadDesc *createServiceThread(DomainDesc * domain, int poolIndex, char 
 {
     ServiceThreadPool *pool = domain->pools[poolIndex];
     ThreadDesc *thread = createThread(domain, receive_dep, (void *) poolIndex, STATE_RUNNABLE,
-                                      getJVMConfig()->defaultServicePrio, "SVCPool");
+                                      getJVMConfig(defaultServicePrio), "SVCPool");
     thread->nextInReceiveQueue  = pool->firstReceiver;
     pool->firstReceiver         = thread;
     return thread;
@@ -302,7 +302,7 @@ void receive_portalcall(u32 poolIndex)
         serviceIndex    = source->blockedInServiceIndex;
         svc             = curdom()->services[serviceIndex];
 
-        quota = getJVMConfig()->receivePortalQuota; /*  4 kB portal parameter quota , new quota for each new call */
+        quota = getJVMConfig(receivePortalQuota); /*  4 kB portal parameter quota , new quota for each new call */
         curthr()->n_copied = 0;
 
         obj                             = svc->obj;
@@ -400,7 +400,7 @@ void receive_portalcall(u32 poolIndex)
         /* Send reply to caller.
          */
 
-        quota = getJVMConfig()->receivePortalQuota;
+        quota = getJVMConfig(receivePortalQuota);
 
         /* copy return value to caller domain */
         source->state = STATE_PORTAL_WAIT_FOR_RETCOPY;
@@ -628,7 +628,7 @@ Proxy *portal_auto_promo(DomainDesc * domain, ObjectDesc * obj)
     if (implements_interface(cl, portalInterface)) {
         // try to find a service description for this object
         //rt_mutex_acquire(&svTableLock, TM_INFINITE);
-        for (i = 0; i < CONFIG_JEM_MAX_SERVICES; i++) {
+        for (i = 0; i < getJVMConfig(maxServices); i++) {
             d = domain->services[i];
             if (d == SERVICE_ENTRY_FREE || d == SERVICE_ENTRY_CHANGING) {
                 d = NULL;
@@ -679,7 +679,7 @@ Proxy *portal_auto_promo(DomainDesc * domain, ObjectDesc * obj)
             int i, index;
             pool = allocServicePoolInDomain(domain);
             index = -1;
-            for (i = 0; i < CONFIG_JEM_MAX_SERVICES; i++) {
+            for (i = 0; i < getJVMConfig(maxServices); i++) {
                 if (domain->pools[i] == NULL) {
                     domain->pools[i] = pool;
                     index = i;
@@ -1077,7 +1077,7 @@ void service_decRefcount(DomainDesc * domain, u32 index)
     if (findMethod(curdom(), svcClass->name, "serviceFinalizer", "()V") != NULL) {
         /* use a new thread to notify the domain that a service was deleted */
         thread = createThread(domain, start_notify_thread, p->obj /*svcObj */ , STATE_RUNNABLE,
-                      getJVMConfig()->defaultServicePrio, "ServiceFinalizer");
+                      getJVMConfig(defaultServicePrio), "ServiceFinalizer");
     }
 }
 

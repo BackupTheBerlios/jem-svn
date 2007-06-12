@@ -2,10 +2,10 @@
 // This file is part of Jem, a real time Java operating system designed for
 // embedded systems.
 //
-// Copyright © 2007 JemStone Software LLC. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-// Copyright © 1998-2002 Michael Golm. All rights reserved.
-// Copyright © 2001-2002 Christian Wawersich. All rights reserved.
+// Copyright (C) 2007 Christopher Stone. 
+// Copyright (C) 1997-2001 The JX Group. 
+// Copyright (C) 1998-2002 Michael Golm. 
+// Copyright (C) 2001-2002 Christian Wawersich. 
 //
 // Jem is free software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License, version 2, as published by the Free
@@ -29,8 +29,6 @@
 #include <linux/module.h>
 #include <linux/types.h>
 #include <linux/kernel.h>
-#include <native/mutex.h>
-#include <native/task.h>
 #include "jemtypes.h"
 #include "jemConfig.h"
 #include "object.h"

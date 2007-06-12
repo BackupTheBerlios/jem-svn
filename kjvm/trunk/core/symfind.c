@@ -1,56 +1,59 @@
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for
-// embedded systems.
-//
-// Copyright © 2007 JemStone Software LLC. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-//==============================================================================
+#include "all.h"
+#include "symbols.h"
 
-#include <linux/module.h>
-#include <linux/types.h>
-#include <linux/kernel.h>
-#include <linux/kallsyms.h>
-#include <native/mutex.h>
-#include <native/task.h>
-#include "jemtypes.h"
-#include "jemConfig.h"
-#include "object.h"
-#include "domain.h"
-#include "gc.h"
-#include "code.h"
-#include "portal.h"
-#include "thread.h"
-#include "vmsupport.h"
-#include "symfind.h"
-
-const char *findCoreSymbol(jint addr, char *symname)
+char *findCoreSymbol(jint addr)
 {
-    char *modname;
-    unsigned long symsize, offset;
-
-    return kallsyms_lookup(addr, &symsize, &offset, &modname, symname);
+	jint i;
+	for (i = 0; i < n_symbols; i++) {
+		if (symbols[i].addr <= addr && symbols[i].addr + symbols[i].size >= addr) {
+			return &(strings[symbols[i].name]);
+		}
+	}
+	return 0;
 }
 
-unsigned long addrCoreSymbol(const char *name)
+u4_t sizeCoreSymbol(const char *name)
 {
-    return kallsyms_lookup_name(name);
+	int i;
+	for (i = 0; i < n_symbols; i++) {
+		if (strcmp(&(strings[symbols[i].name]), name) == 0)
+			return symbols[i].size;
+	}
+#ifdef DEBUG
+	sys_panic("symbol: %s not found!", name);
+#endif
+	return 0;
 }
 
-#define NOINTIN(x) if (eip >= (void *)x && eip <= (void *)x + FKTSIZE_##x) return 1;
+char *addrCoreSymbol(const char *name)
+{
+	int i;
+	for (i = 0; i < n_symbols; i++) {
+		if (strcmp(&(strings[symbols[i].name]), name) == 0)
+			return (char *) symbols[i].addr;
+	}
+#ifdef DEBUG
+	sys_panic("symbol: %s not found!", name);
+#endif
+	return 0;
+}
 
+void printCoreSymbolInformation(char *name)
+{
+	jint i;
+	for (i = 0; i < n_symbols; i++) {
+		if (strcmp(name, &strings[symbols[i].name]) == 0) {
+			printf("%s addr:0x%lx - 0x%lx (size: %ld)\n ", &strings[symbols[i].name], symbols[i].addr,
+			       symbols[i].addr + symbols[i].size, symbols[i].size);
+		}
+	}
+	return;
+}
+
+#define NOINTIN(x) if (eip >= (u4_t)x && eip <= (u4_t)x + FKTSIZE_##x) return 1;
+
+void thread_exit();
+void receive_portalcall();
 #ifndef FKTSIZE_thread_exit
 #define FKTSIZE_thread_exit 0
 #endif
@@ -64,25 +67,38 @@ unsigned long addrCoreSymbol(const char *name)
 #define FKTSIZE_memory_set32 0
 #endif
 
-void jem_irq_exit(int cpuID);
-extern unsigned char jem_irq_exit_end[];
+void irq_exit();
+extern unsigned char irq_exit_end[];
+
+//void callnative_special_portal();
 extern unsigned char callnative_special_portal_end[];
 
-int eip_in_last_stackframe(void *eip)
+int eip_in_last_stackframe(u4_t eip)
 {
-    NOINTIN(thread_exit);
-    if (eip >= (void *) jem_irq_exit && eip <= (void *) jem_irq_exit_end)
-        return 1;
-    NOINTIN(receive_portalcall);
+	NOINTIN(thread_exit);
+#ifdef KERNEL
+	if (eip >= (u4_t) irq_exit && eip <= (u4_t) irq_exit_end)
+		return 1;
+#endif
+	//  if (eip >= (u4_t*)callnative_special_portal && eip <= (u4_t*)callnative_special_portal_end) return 1;
 
-    return 0;
+	NOINTIN(receive_portalcall);
+
+	return 0;
 }
 
 
-int in_portalcall(void *eip)
+int in_portalcall(u4_t * eip)
 {
-    NOINTIN(receive_portalcall);
-    return 0;
+	NOINTIN(receive_portalcall);
+	//NOINTIN(callnative_special_portal);
+	return 0;
 }
 
-
+#if 0
+int in_fastportalcall(u4_t * eip)
+{
+	NOINTIN(memory_set32);
+	return 0;
+}
+#endif

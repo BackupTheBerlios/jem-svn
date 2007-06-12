@@ -130,6 +130,22 @@ static u4_t *gc_common_move_atomvar(DomainDesc * domain, ObjectDesc ** refPtr)
 	return (u4_t *) gc_impl_shallowCopyAtomVar(dst, obj);
 }
 
+static u4_t *gc_common_move_stack(DomainDesc * domain, ObjectDesc ** refPtr)
+{
+#ifdef STACK_ON_HEAP
+	StackProxy *obj = (StackProxy *) * refPtr;
+	u4_t *dst;
+
+	ASSERTOBJECT((ObjectDesc *) obj);
+	IF_DBG_GC(printf("   GC_CHUNKED STACK %p \n", obj));
+
+	ENSURE_INHEAP(obj);
+
+	dst = GCM_MOVE_COMMON(domain).allocHeap2(domain, OBJSIZE_STACK(obj->size));
+	return (u4_t *) gc_impl_shallowCopyStack(dst, obj);
+#endif				/* STACK_ON_HEAP */
+}
+
 static u4_t *gc_common_move_cas(DomainDesc * domain, ObjectDesc ** refPtr)
 {
 	CASProxy *obj = (CASProxy *) * refPtr;

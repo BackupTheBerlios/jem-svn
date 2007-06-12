@@ -1,194 +1,316 @@
-// Additional Copyrights:
-// 	Copyright (C) 1997-2001 The JX Group.
-//==============================================================================
+/********************************************************************************
+ * Code-management related data structures
+ * Copyright 1998-2002 Michael Golm
+ *******************************************************************************/
 
-#ifndef _CODE_H
-#define _CODE_H
+#ifndef CODE_H
+#define CODE_H
 
-#include "object.h"
+#ifdef ASSEMBLER
 
+
+#else				/* ASSEMBLER */
 
 #define DEPFLAG_NONE   0
 #define DEPFLAG_REDO   1
+
+#include "types.h"
+#include "config.h"
+#include "lock.h"
+
+#define SYMBOLDESC_BASE jint type;jint immediateNCIndex;jint numBytes;jint nextInstrNCIndex
+
+
+typedef struct {
+	SYMBOLDESC_BASE;
+} SymbolDesc;
+
+typedef struct {
+	SYMBOLDESC_BASE;
+	jint immediateNCIndexPre;
+	int n_bytes;
+	int n_bits;
+	jbyte *map;
+} SymbolDescStackMap;
+
+/*
+ *
+ */
+
+typedef struct FieldDesc_s {
+	char *fieldName;
+	char *fieldType;
+	char fieldOffset;
+} FieldDesc;
+
+typedef struct {
+	jint bytecodePos;
+	jint start;
+	jint end;
+} ByteCodeDesc;
+
+typedef struct {
+	jint startBytecode;
+	jint lineNumber;
+} SourceLineDesc;
+
+typedef struct {
+	jint start;
+	jint end;
+	struct ClassDesc_s *type;
+	u4_t addr;
+} ExceptionDesc;
+
+typedef struct MethodDesc_s {
+#ifdef GC_SWAP_MAGIC_WITH_FLAGS
+# ifdef USE_QMAGIC
+	u4_t objectDesc_magic;
+# endif
+	u4_t objectDesc_flags;
+#else
+	u4_t objectDesc_flags;
+# ifdef USE_QMAGIC
+	u4_t objectDesc_magic;
+# endif
+#endif
+	code_t *objectDesc_vtable;
+#ifdef USE_QMAGIC
+	u4_t magic;
+#endif
+	char *name;
+	char *signature;
+	jint numberOfCodeBytes;
+	jint numberOfSymbols;
+	SymbolDesc **symbols;
+	jint numberOfByteCodes;
+	ByteCodeDesc *bytecodeTable;
+	jint codeOffset;
+	code_t code;
+	jint numberOfArgs;
+	jint numberOfArgTypeMapBytes;
+	jbyte *argTypeMap;
+	jint returnType;	/* 0 or 1 */
+
+	jint sizeLocalVars;
+
+#ifdef PROFILE
+	jint isprofiled;
+#endif
+
+	struct ClassDesc_s *classDesc;
+
+	jint sizeOfExceptionTable;
+	ExceptionDesc *exceptionTable;
+
+	jint numberOfSourceLines;
+	SourceLineDesc *sourceLineTable;
+
+	u4_t flags;
+} MethodDesc;
+
+#ifdef USE_QMAGIC
+#define MAGIC_METHODDESC 0x42414039
+#endif
+#if defined(USE_QMAGIC) && defined(NORMAL_MAGIC)
+#define ASSERTMETHODDESC(x) ASSERT(x->magic==MAGIC_METHODDESC)
+#else
+#define ASSERTMETHODDESC(x)
+#endif
+
 #define METHODFLAGS_STATIC 0x00000001
+
 #define IS_STATIC(m) ((m)->flags & METHODFLAGS_STATIC != 0)
+
 #define CLASSTYPE_CLASS          0x01
 #define CLASSTYPE_INTERFACE      0x03
 #define CLASSTYPE_ARRAYCLASS     0x04
 #define CLASSTYPE_PRIMITIVE      0x08
-#define CLASS_NOT_INIT 0
-#define CLASS_READY 1
-#define LIB_HASHKEY_LEN 10
-#define MAGIC_SLIB 0x42240911
-#define MAGIC_LIB 0x12345678
-#define MAGIC_METHODDESC 0x42414039
-#define MAGIC_CLASS 0x007babab
-#define MAGIC_CLASSDESC 0x47114711
 
 
-typedef struct SymbolDesc_s {
-    jint    type;
-    jint    immediateNCIndex;
-    jint    numBytes;
-    jint    nextInstrNCIndex;
-} SymbolDesc;
+struct SharedLibDesc_s;
+struct ArrayClassDesc_s;
 
-typedef struct SymbolDescStackMap_s {
-    jint    type;
-    jint    immediateNCIndex;
-    jint    numBytes;
-    jint    nextInstrNCIndex;
-    jint    immediateNCIndexPre;
-    int     n_bytes;
-    int     n_bits;
-    jbyte   *map;
-} SymbolDescStackMap;
+#ifdef DEBUG
+#define CLASSDEBUGINFO u4_t numberOfImplementors; struct ClassDesc_s* implementedBy;
+#else
+#define CLASSDEBUGINFO
+#endif
 
-typedef struct FieldDesc_s {
-    char    *fieldName;
-    char    *fieldType;
-    char    fieldOffset;
-} FieldDesc;
+#ifdef COPY_STATISTICS
+#define CLASSSTATISTICS u4_t copied; u4_t copied_arrayelements;
+#else
+#define CLASSSTATISTICS
+#endif
 
-typedef struct ByteCodeDesc_s {
-    jint    bytecodePos;
-    jint    start;
-    jint    end;
-} ByteCodeDesc;
+#define CLASSDESC0\
+    jint classType;\
+    char *name;\
+    struct ClassDesc_s *superclass;\
+    jint numberOfInterfaces;\
+    char **ifname;\
+    struct ClassDesc_s **interfaces;\
+    jint numberOfMethods;\
+    jint vtableSize;\
+    MethodDesc *methods;\
+    code_t *vtable;\
+    char **vtableSym;\
+    jint instanceSize;\
+    jint staticFieldsSize;\
+    struct SharedLibDesc_s *definingLib;\
+    struct ClassDesc_s *next;\
+    jint mapBytes;\
+    jbyte *map;\
+    jint staticsMapBytes;\
+    jbyte *staticsMap;\
+    code_t *proxyVtable;\
+    MethodDesc **methodVtable;\
+    struct ArrayClassDesc_s *arrayClass;\
+    jint numberFields;\
+    struct FieldDesc_s *fields; \
+    u4_t inheritServiceThread; \
+    CLASSSTATISTICS;\
+    CLASSDEBUGINFO
 
-typedef struct SourceLineDesc_s {
-    jint    startBytecode;
-    jint    lineNumber;
-} SourceLineDesc;
 
-typedef struct ExceptionDesc_s {
-    jint                start;
-    jint                end;
-    struct ClassDesc_s  *type;
-    u32                 addr;
-} ExceptionDesc;
 
-typedef struct MethodDesc_s {
-    u32                     objectDesc_magic;
-    u32                     objectDesc_flags;
-    code_t                  *objectDesc_vtable;
-    u32                     magic;
-    char                    *name;
-    char                    *signature;
-    jint                    numberOfCodeBytes;
-    jint                    numberOfSymbols;
-    struct SymbolDesc_s     **symbols;
-    jint                    numberOfByteCodes;
-    struct ByteCodeDesc_s   *bytecodeTable;
-    jint                    codeOffset;
-    code_t                  code;
-    jint                    numberOfArgs;
-    jint                    numberOfArgTypeMapBytes;
-    jbyte                   *argTypeMap;
-    jint                    returnType;
-    jint                    sizeLocalVars;
-    jint                    isprofiled;
-    struct ClassDesc_s      *classDesc;
-    jint                    sizeOfExceptionTable;
-    struct ExceptionDesc_s  *exceptionTable;
-    jint                    numberOfSourceLines;
-    struct SourceLineDesc_s *sourceLineTable;
-    u32                     flags;
-} MethodDesc;
+#ifdef PROFILE_HEAPUSAGE
+#define CLASSDESC1 CLASSDESC0; jint n_instances; jint n_arrayelements;
+#else
+#define CLASSDESC1 CLASSDESC0
+#endif
 
+#ifdef USE_QMAGIC
+#define CLASSDESC u4_t magic; CLASSDESC1 ; jint sfield_offset;
+#else
+#define CLASSDESC CLASSDESC1 ; jint sfield_offset;
+#endif
 
 typedef struct ClassDesc_s {
-    u32                     magic;
-    jint                    classType;
-    char                    *name;
-    struct ClassDesc_s      *superclass;
-    jint                    numberOfInterfaces;
-    char                    **ifname;
-    struct ClassDesc_s      **interfaces;
-    jint                    numberOfMethods;
-    jint                    vtableSize;
-    struct MethodDesc_s     *methods;
-    code_t                  *vtable;
-    char                    **vtableSym;
-    jint                    instanceSize;
-    jint                    staticFieldsSize;
-    struct SharedLibDesc_s  *definingLib;
-    struct ClassDesc_s      *next;
-    jint                    mapBytes;
-    jbyte                   *map;
-    jint                    staticsMapBytes;
-    jbyte                   *staticsMap;
-    code_t                  *proxyVtable;
-    struct MethodDesc_s     **methodVtable;
-    struct ClassDesc_s      *arrayClass;
-    jint                    numberFields;
-    struct FieldDesc_s      *fields;
-    u32                     inheritServiceThread;
-    u32                     copied;
-    u32                     copied_arrayelements;
-    jint                    sfield_offset;
-    jint                    n_instances;
-    jint                    n_arrayelements;
-    struct ClassDesc_s      *elementClass;
-    struct ClassDesc_s      *nextInDomain;
+	CLASSDESC;
 } ClassDesc;
 
+#ifdef USE_QMAGIC
+#define MAGIC_CLASSDESC 0x47114711
+#endif
+#if defined(USE_QMAGIC) && defined(NORMAL_MAGIC)
+#define ASSERTCLASSDESC(x) ASSERT(x->magic==MAGIC_CLASSDESC)
+#else
+#define ASSERTCLASSDESC(x)
+#endif
 
-typedef struct JClass_s {
-    u32                 objectDesc_magic;
-    u32                 objectDesc_flags;
-    code_t              *objectDesc_vtable;
-    u32                 magic;
-    struct ClassDesc_s  *classDesc;
-    struct JClass_s     *superclass;
-    jint                *staticFields;
-    jint                state;
-    jint                numberOfInstances;
-} JClass;
+#define CLASS_NOT_INIT 0
+#define CLASS_READY 1
 
+/* anchor for shared / private part of classes */
+typedef struct Class_s {
+#ifdef GC_SWAP_MAGIC_WITH_FLAGS
+# ifdef USE_QMAGIC
+	u4_t objectDesc_magic;
+# endif
+	u4_t objectDesc_flags;
+#else
+	u4_t objectDesc_flags;
+# ifdef USE_QMAGIC
+	u4_t objectDesc_magic;
+# endif
+#endif
+	code_t *objectDesc_vtable;
+#ifdef USE_QMAGIC
+	u4_t magic;
+#endif
+	ClassDesc *classDesc;	/* shared */
+	struct Class_s *superclass;	/* private */
+	jint *staticFields;	/* private */
+	jint state;
+#ifdef HEAP_STATISTICS
+	jint numberOfInstances;
+#endif				/* HEAP_STATISTICS */
+} Class;
+
+#ifdef USE_QMAGIC
+#define MAGIC_CLASS 0x007babab
+#endif
+#if defined(NORMAL_MAGIC) && defined(USE_QMAGIC)
+#define ASSERTCLASS(x) ASSERT(x->magic==MAGIC_CLASS)
+#else
+#define ASSERTCLASS(x)
+#endif
+
+typedef struct ArrayClassDesc_s {
+	CLASSDESC;
+	ClassDesc *elementClass;
+	ClassDesc *nextInDomain;
+} ArrayClassDesc;
+
+typedef struct PrimitiveClassDesc_s {
+	CLASSDESC;
+} PrimitiveClassDesc;
+
+#define LIB_HASHKEY_LEN 10
+
+/*
+ * Libs
+ */
 struct meta_s {
-    char *var;
-    char *val;
+	char *var;
+	char *val;
 };
 
 typedef struct SharedLibDesc_s {
-    u32                     magic;
-    char                    *name;
-    jint                    ndx;
-    jint                    memSizeStaticFields;
-    u32                     id;
-    jint                    numberOfClasses;
-    struct ClassDesc_s      *allClasses;
-    jint                    numberOfNeededLibs;
-    struct SharedLibDesc_s  **neededLibs;
-    char                    *code;
-    u32                     codeBytes;
-    char                    key[LIB_HASHKEY_LEN];
-    u32                     vtablesize;
-    u32                     bytecodes;
-    u32                     numberOfMeta;
-    struct meta_s           *meta;
-    struct SharedLibDesc_s  *next;
+#ifdef USE_QMAGIC
+	u4_t magic;
+#endif
+	char *name;
+#ifdef USE_LIB_INDEX
+	jint ndx;
+	jint memSizeStaticFields;
+#endif
+	u4_t id;
+	jint numberOfClasses;
+	ClassDesc *allClasses;
+	jint numberOfNeededLibs;
+	struct SharedLibDesc_s **neededLibs;
+	char *code;
+	u4_t codeBytes;
+	char key[LIB_HASHKEY_LEN];
+	u4_t vtablesize, bytecodes;	/* for statistical purposes */
+	u4_t numberOfMeta;
+	struct meta_s *meta;
+	struct SharedLibDesc_s *next;
 } SharedLibDesc;
 
+#ifdef USE_QMAGIC
+#define MAGIC_SLIB 0x42240911
+#endif
+#if  defined(NORMAL_MAGIC) &&defined(USE_QMAGIC)
+#define ASSERTSLIB(x) ASSERT(x->magic==MAGIC_SLIB)
+#else
+#define ASSERTSLIB(x)
+#endif
 
-typedef struct LibDesc_s {
-    u32                     magic;
-    jint                    numberOfClasses;
-    char                    hasNoImplementations;
-    struct JClass_s         *allClasses;
-    char                    key[LIB_HASHKEY_LEN];
-    struct SharedLibDesc_s  *sharedLib;
-    int                     initialized;
+typedef struct {
+#ifdef USE_QMAGIC
+	u4_t magic;
+#endif
+	jint numberOfClasses;
+#ifdef FASTER_METHOD_LOOKUP
+	char hasNoImplementations;
+#endif
+	Class *allClasses;
+	char key[LIB_HASHKEY_LEN];
+	SharedLibDesc *sharedLib;
+	int initialized;
 } LibDesc;
 
-
-jint callnative_special(jint * params, ObjectDesc * obj, code_t f,
-                        jint params_size);
-jint callnative_special_portal(jint * params, ObjectDesc * obj, code_t f,
-                               jint params_size);
-jint callnative_static(jint * params, code_t f, jint params_size);
-void callnative_handler(u32 * ebp, u32 * sp, char *addr);
-
-
+#ifdef USE_QMAGIC
+#define MAGIC_LIB 0x12345678
 #endif
+#if defined(NORMAL_MAGIC) && defined(USE_QMAGIC)
+#define ASSERTLIB(x) ASSERT(x->magic==MAGIC_LIB)
+#else
+#define ASSERTLIB(x)
+#endif
+
+#endif				/* ASSEMBLER */
+
+#endif				/* CODE_H */

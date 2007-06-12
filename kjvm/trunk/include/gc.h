@@ -1,18 +1,151 @@
-// Additional Copyrights:
-// 	Copyright (C) 1997-2001 The JX Group.
-//==============================================================================
+/********************************************************************************
+ * Garbage collector
+ * Copyright 1998-2002 Michael Golm
+ *******************************************************************************/
 
-#ifndef _GC_H
-#define _GC_H
+#ifndef GC_H
+#define GC_H
 
-#include <linux/types.h>
-#include "domain.h"
+/****************************/
+// FIXME
+//public part
+
+#include "gc_alloc.h"
+#include "gc_org.h"
+#include "gc_new.h"
+#include "gc_compacting.h"
+#include "gc_bitmap.h"
 
 #define GC_IMPLEMENTATION_NEW        0
 #define GC_IMPLEMENTATION_COMPACTING 1
 #define GC_IMPLEMENTATION_BITMAP     2
 #define GC_IMPLEMENTATION_CHUNKED    3
-#define GC_IMPLEMENTATION_DEFAULT    GC_IMPLEMENTATION_NEW
+
+#define GC_IMPLEMENTATION_DEFAULT    GC_IMPLEMENTATION_NEW 
+
+#ifdef GC_USE_ONLY_ONE
+# define GC_FUNC_NAME_H3(A, B) gc_##A##_##B
+# define GC_FUNC_NAME_H2 GC_FUNC_NAME_H3
+# define GC_FUNC_NAME_H1(A, B) GC_FUNC_NAME_H2 (A, B)
+# define GC_FUNC_NAME(NAME) GC_FUNC_NAME_H1 ( GC_USE_ONLY_ONE, NAME)
+#else
+# define GC_FUNC_NAME(NAME) domain->gc. NAME
+#endif				/* GC_USE_ONLY_ONE */
+
+#ifndef GC_SWAP_MAGIC_WITH_FLAGS
+# define XMONE XMOFF
+# define XMZERO 0
+#else
+# define XMONE 0
+# define XMZERO XMOFF
+#endif
+
+void gc_init(DomainDesc * domain, u1_t * memu, jint gcinfo0, jint gcinfo1, jint gcinfo2, char *gcinfo3, jint gcinfo4, int gcImpl);
+void gc_done(DomainDesc * domain);
+
+static inline u4_t *ObjectDesc2ptr(ObjectDesc * ref)
+{
+	return ((u4_t *) ref) - 1 - XMOFF;
+}
+
+static inline ObjectDesc *ptr2ObjectDesc(u4_t * ptr)
+{
+	return (ObjectDesc *) (ptr + 1 + XMOFF);
+}
+
+/*
+static inline ObjectDesc* DomainDesc2ObjectDesc(DomainDesc *domain) {
+  return (ObjectDesc*)(((u4_t*)domain) - 1 );
+}
+
+static inline ObjectDesc* CPUDesc2ObjectDesc(CPUDesc *cpu) {
+  return (ObjectDesc*)(((u4_t*)cpu) - 1 );
+}
+
+static inline ObjectDesc* ThreadDesc2ObjectDesc(ThreadDesc *thread) {
+  return (ObjectDesc*)(((u4_t*)thread) - 1 );
+}
+*/
+static inline ObjectDesc *DomainDesc2ObjectDesc(DomainDesc * domain)
+{
+	return (ObjectDesc *) (((u4_t *) domain) - 1);
+}
+
+static inline ObjectDesc *CPUDesc2ObjectDesc(CPUDesc * cpu)
+{
+	return (ObjectDesc *) (((u4_t *) cpu) - 1);
+}
+
+static inline ObjectDesc *ThreadDesc2ObjectDesc(ThreadDesc * thread)
+{
+	return (ObjectDesc *) (((u4_t *) thread) - 1);
+}
+
+static inline u4_t getObjFlags(ObjectDesc * ref)
+{
+	return *(((u4_t *) ref) - 1 - XMONE);
+}
+
+static inline void setObjFlags(ObjectDesc * ref, u4_t flags)
+{
+	*(((u4_t *) ref) - 1 - XMONE) = flags;
+}
+
+#ifdef USE_QMAGIC
+/*
+static inline u4_t getObjMagic(ObjectDesc *ref) {
+  return *(((u4_t*)ref) - 1 - XMZERO);
+}
+*/
+
+#define getObjMagic(ref) (*(((u4_t*)ref) - 1 - XMZERO))
+
+static inline void setObjMagic(ObjectDesc * ref, u4_t magic)
+{
+	*(((u4_t *) ref) - 1 - XMZERO) = magic;
+}
+#endif
+
+static inline u4_t gc_freeWords(DomainDesc * domain)
+{
+#ifdef ENABLE_GC
+	return GC_FUNC_NAME(freeWords) (domain);
+#else
+	sys_panic("no gc defined");
+	return -1;
+#endif
+}
+
+static inline u4_t gc_totalWords(DomainDesc * domain)
+{
+#ifdef ENABLE_GC
+	return GC_FUNC_NAME(totalWords) (domain);
+#else
+	sys_panic("no gc defined");
+	return -1;
+#endif
+}
+
+void gc_printInfo(DomainDesc * domain);
+
+#ifdef DEBUG
+jboolean gc_isValidHeapRef(DomainDesc * domain, ObjectDesc * ptr);
+#endif
+
+#ifdef CHECK_HEAPUSAGE
+jboolean gc_checkHeap(DomainDesc * domain, jboolean invalidate);
+#endif
+
+#ifdef FIND_OBJECTS_BY_CLASS
+void gc_findOnHeap(DomainDesc * domain, char *classname);
+#endif
+
+#ifdef PROFILE_HEAPUSAGE
+void gc_countInstances(DomainDesc * domain, InstanceCounts_t * counts);
+#endif
+
+  /**********************************/
+//FIXME
 #define OBJFLAGS_OBJECT               0x00000002
 #define OBJFLAGS_PORTAL               0x00000004
 #define OBJFLAGS_MEMORY               0x00000006
@@ -36,117 +169,61 @@
 #define OBJFLAGS_SERVICE_POOL         0x0000002a
 #define OBJFLAGS_MAPPED_MEMORY        0x0000002c
 #define OBJFLAGS_STACK                0x0000002e
+
 #define FLAGS_MASK        0x000000fe
-#define XMONE XMOFF
-#define XMZERO 0
-
-void gc_init(struct DomainDesc_s *domain, u8 *memu, jint gcinfo0, jint gcinfo1, jint gcinfo2, char *gcinfo3,
-             jint gcinfo4, int gcImpl);
-void gc_done(struct DomainDesc_s *domain);
-u32 gc_mem(void);
-
-static inline u32 *ObjectDesc2ptr(struct ObjectDesc_s * ref)
-{
-    return((u32 *) ref) - 1 - XMOFF;
-}
-
-static inline struct ObjectDesc_s *ptr2ObjectDesc(u32 * ptr) {
-    return(struct ObjectDesc_s *) (ptr + 1 + XMOFF);
-}
-
-static inline struct ObjectDesc_s *DomainDesc2ObjectDesc(struct DomainDesc_s * domain) {
-    return(struct ObjectDesc_s *) (((u32 *) domain) - 1);
-}
-
-static inline struct ObjectDesc_s *ThreadDesc2ObjectDesc(struct ThreadDesc_s * thread) {
-    return(struct ObjectDesc_s *) (((u32 *) thread) - 1);
-}
-
-static inline u32 getObjFlags(struct ObjectDesc_s * ref)
-{
-    return *(((u32 *) ref) - 1 - XMONE);
-}
-
-static inline void setObjFlags(struct ObjectDesc_s * ref, u32 flags)
-{
-    *(((u32 *) ref) - 1 - XMONE) = flags;
-}
-
-#define getObjMagic(ref) (*(((u32*)ref) - 1 - XMZERO))
-
-static inline void setObjMagic(struct ObjectDesc_s * ref, u32 magic)
-{
-    *(((u32 *) ref) - 1 - XMZERO) = magic;
-}
-
-static inline u32 gc_freeWords(struct DomainDesc_s * domain)
-{
-    return domain->gc.freeWords(domain);
-    //return 0;
-}
-
-static inline u32 gc_totalWords(struct DomainDesc_s * domain)
-{
-    return domain->gc.totalWords(domain);
-    //return 0;
-}
-
-void gc_printInfo(struct DomainDesc_s * domain);
-
-jboolean gc_checkHeap(struct DomainDesc_s * domain, jboolean invalidate);
-void gc_findOnHeap(struct DomainDesc_s * domain, char *classname);
 
 
 #define OBJSIZE_ARRAY \
-      XMOFF /* magic */\
-      + 1 /* flags at neg index */\
-      + 1 /* vtable (arrays are objects!) */\
-      + 1 /* size */\
-      + 1 /* elemClass pointer */
+	  XMOFF /* magic */\
+	  + 1 /* flags at neg index */\
+	  + 1 /* vtable (arrays are objects!) */\
+	  + 1 /* size */\
+	  + 1 /* elemClass pointer */
 
 #define OBJSIZE_ARRAY_8BIT(size) \
-      ((((size)+3)/4) \
-       + OBJSIZE_ARRAY)
+	  ((((size)+3)/4) \
+	   + OBJSIZE_ARRAY)
 
 #define OBJSIZE_ARRAY_16BIT(size) \
-      ((((size)+1)/2) \
-       + OBJSIZE_ARRAY)
+	  ((((size)+1)/2) \
+	   + OBJSIZE_ARRAY)
 
 #define OBJSIZE_ARRAY_32BIT(size) \
-      ((size) \
-       + OBJSIZE_ARRAY)
+	  ((size) \
+	   + OBJSIZE_ARRAY)
 
 #define OBJSIZE_ARRAY_64BIT(size) \
-      (((size)*2) \
-       + OBJSIZE_ARRAY)
+	  (((size)*2) \
+	   + OBJSIZE_ARRAY)
 
 #define OBJSIZE_OBJECT(size) \
-      (size \
-      + XMOFF /* magic */\
-      + 1 /* flags at neg index */\
-      + 1 /* vtable  */\
-      + 1 /* size */)
+	  (size \
+	  + XMOFF /* magic */\
+	  + 1 /* flags at neg index */\
+	  + 1 /* vtable  */\
+	  + 1 /* size */)
 
 #define OBJSIZE_STACK(size) \
-      (size \
-      + XMOFF /* magic */\
-      + 1 /* flags at neg index */\
-      + 2 /* size field, tcb field */\
-      + 1 /* vtable  */)
+	  (size \
+	  + XMOFF /* magic */\
+	  + 1 /* flags at neg index */\
+	  + 2 /* size field, tcb field */\
+	  + 1 /* vtable  */)
 
 #define OBJSIZE_PORTAL \
-      ( XMOFF /* magic */\
+	  ( XMOFF /* magic */\
           + 1 /* flags at neg */\
-      + 1 /* domain */\
-      + 1 /* domainID */\
-      + 1 /* index */\
-      + 1 /* vtable pointer */)
+	  + 1 /* domain */\
+	  + 1 /* domainID */\
+	  + 1 /* index */\
+	  + 1 /* vtable pointer */)
 
 #define OBJSIZE_MEMORY \
-     ( XMOFF /* magic */\
+	 ( XMOFF /* magic */\
          + 1 /* flags at negative index */\
-     + (memory_sizeof_proxy()>>2) /* vtable pointer + data */)
+	 + (memory_sizeof_proxy()>>2) /* vtable pointer + data */)
 
+// FIXME jgbauman ?magic?
 #define OBJSIZE_SERVICEDESC \
  (((sizeof(DEPDesc) + 4) >> 2) \
     + 1  /* OBJFLAGS */)
@@ -157,10 +234,17 @@ void gc_findOnHeap(struct DomainDesc_s * domain, char *classname);
 
 
 #define OBJSIZE_DOMAINDESC \
-      ( XMOFF /* magic */\
-          + ((sizeof(struct DomainDesc_s)+4)>>2) \
+	  ( XMOFF /* magic */\
+          + ((sizeof(DomainDesc)+4)>>2) \
           + 1 /* flags at index -1 */\
           + 1 /* vtable */)
+
+#define OBJSIZE_CPUDESC \
+	  ( XMOFF /* magic */\
+	  + ((sizeof(CPUDesc)+4)>>2) \
+	  + 1 /* flags at index -1 */\
+	  + 1 /* vtable */)
+
 
 #define OBJSIZE_ATOMVAR \
     ( XMOFF /* magic */\
@@ -193,80 +277,82 @@ void gc_findOnHeap(struct DomainDesc_s * domain, char *classname);
     + 2 /* data */)
 
 #define OBJSIZE_THREADDESCPROXY \
-      ( XMOFF /* magic */\
-      + ((sizeof(ThreadDescProxy)+4)>>2) \
-      + 1 /* flags at index -1 */\
-      + 1 /* vtable */)
+	  ( XMOFF /* magic */\
+	  + ((sizeof(ThreadDescProxy)+4)>>2) \
+	  + 1 /* flags at index -1 */\
+	  + 1 /* vtable */)
 
 #define OBJSIZE_FOREIGN_THREADDESC \
-      ( XMOFF /* magic */\
-      + ((sizeof(ThreadDescForeignProxy)+4)>>2) \
-      + 1 /* flags at index -1 */\
-      + 1 /* vtable */)
+	  ( XMOFF /* magic */\
+	  + ((sizeof(ThreadDescForeignProxy)+4)>>2) \
+	  + 1 /* flags at index -1 */\
+	  + 1 /* vtable */)
 
 #define OBJSIZE_MAPPED_MEMORY \
-      ( XMOFF /* magic */\
-      + ((sizeof(MappedMemoryProxy)+4)>>2) \
-      + 1 /* flags at index -1 */\
-      + 1 /* vtable */)
+	  ( XMOFF /* magic */\
+	  + ((sizeof(MappedMemoryProxy)+4)>>2) \
+	  + 1 /* flags at index -1 */\
+	  + 1 /* vtable */)
 
 
-#define OBJSIZE_INTERCEPTINBOUNDINFO \
+#if defined(PORTAL_INTERCEPTOR) || defined(PORTAL_TRANSFER_INTERCEPTOR)
+#  define OBJSIZE_INTERCEPTINBOUNDINFO \
         ( XMOFF /* magic */\
         + 1 /* flags at negative index */\
         + 1 /* vtable pointer */\
         + 6 /* data */)
 
-#define OBJSIZE_INTERCEPTPORTALINFO \
+#  define OBJSIZE_INTERCEPTPORTALINFO \
         ( XMOFF /* magic */\
         + 1 /* flags at negative index */\
         + 1 /* vtable pointer */\
         + 2 /* data */)
+#endif
 
+#if 0
+#define OBJSIZE_DZMEMORY (sizeof(DZMemoryProxy)>>2)
+#endif
 
-static inline ObjectHandle gc_allocDataInDomain(struct DomainDesc_s * domain,
-                                                int objsize, u32 flags)
+static inline ObjectHandle gc_allocDataInDomain(DomainDesc * domain,
+						int objsize, u4_t flags)
 {
-    return domain->gc.allocDataInDomain(domain, objsize, flags);
+#ifdef ENABLE_GC
+	return GC_FUNC_NAME(allocDataInDomain) (domain, objsize, flags);
+#else
+	sys_panic("no gc defined");
+	return -1;
+#endif
 }
 
-void gc_in(struct ObjectDesc_s * o, struct DomainDesc_s * domain);
+/*
+void setObjFlags(ObjectDesc *ref, u4_t flags);
+u4_t getObjFlags(ObjectDesc *ref);
+*/
+void gc_in(ObjectDesc * o, DomainDesc * domain);
 jboolean isRef(jbyte * map, int total, int num);
+
+#ifdef DEBUG
+#define CHECKINHEAP(domain, x) ASSERT(gc_isValidHeapRef(domain, (ObjectDesc*)x))
+#else
+#define CHECKINHEAP(domain, x)
+#endif
+
+#ifdef ENABLE_GC
 
 #define REF2HANDLE(ref) (&(ref))
 // JUMP to atomic code
+#define RETURN_FROMHANDLE(handle)  ASSERTOBJECT(*handle); return *handle;
 #define RETURN_UNREGHANDLE(handle) return unregisterObject(curdom(), handle);
 #define UNREGHANDLE(handle) unregisterObject(curdom(), handle);
 
-#define gc_objSize(_o_) gc_objSize2(_o_, getObjFlags(_o_))
-u32 gc_objSize2(ObjectDesc* obj, jint flags);
+#else
 
-void gc_walkContinuesBlock(DomainDesc * domain, u32 * start, u32 ** top,
-                           HandleObject_t handleObject,
-                           HandleObject_t handleArray,
-                           HandleObject_t handlePortal,
-                           HandleObject_t handleMemory,
-                           HandleObject_t handleService,
-                           HandleObject_t handleCAS,
-                           HandleObject_t handleAtomVar,
-                           HandleObject_t handleDomainProxy,
-                           HandleObject_t handleCPUStateProxy,
-                           HandleObject_t handleServicePool,
-                           HandleObject_t handleStackProxy);
+#define REF2HANDLE(ref) ((ObjectHandle)(ref))
+// JUMP to atomic code
+#define RETURN_FROMHANDLE(handle)  ASSERTOBJECT((ObjectDesc*)(handle)); return (ObjectDesc*)(handle);
+#define RETURN_UNREGHANDLE(handle) return unregisterObject(curdom(), handle);
+#define UNREGHANDLE(handle) unregisterObject(curdom(), handle);
 
-void gc_walkContinuesBlock_Alt(DomainDesc * domain, u32 * start,
-                               u32 * top, HandleObject_t handleObject,
-                               HandleObject_t handleArray,
-                               HandleObject_t handlePortal,
-                               HandleObject_t handleMemory,
-                               HandleObject_t handleService,
-                               HandleObject_t handleCAS,
-                               HandleObject_t handleAtomVar,
-                               HandleObject_t handleDomainProxy);
-
-
-ObjectHandle registerObject(DomainDesc * domain, ObjectDesc * obj);
-ObjectDesc *unregisterObject(DomainDesc * domain, ObjectHandle handle);
+#endif				/* ENABLE_GC */
 
 #endif
-

@@ -1,135 +1,140 @@
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for
-// embedded systems.
-//
-// Copyright © 2007 JemStone Software LLC. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-//==============================================================================
-// zero_Clock.c
-//
-//
-//==============================================================================
-
-#include <linux/module.h>
-#include <linux/types.h>
-#include <linux/kernel.h>
-#include <native/mutex.h>
-#include <native/task.h>
-#include <native/event.h>
-#include <native/timer.h>
-#include "jemtypes.h"
-#include "jemConfig.h"
-#include "object.h"
-#include "domain.h"
-#include "gc.h"
-#include "code.h"
-#include "portal.h"
-#include "thread.h"
-#include "vmsupport.h"
-#include "load.h"
-#include "exception_handler.h"
-#include "zero.h"
-#include "malloc.h"
-
+#include "all.h"
 /*
  * ClockDEP
  */
-static jint clock_getTimeInMillis(ObjectDesc * self)
+jint clock_getTimeInMillis(ObjectDesc * self)
 {
-    return (jint) rt_timer_tsc2ns(rt_timer_tsc()) / 1000000;
+#ifndef KERNEL
+	jlong t;
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+	t = tp.tv_sec;
+	t *= 1000;
+	t += (tp.tv_usec / 1000);
+	return (jint) t;
+#else
+	unsigned long long ret;
+	unsigned long r;
+	asm volatile ("rdtsc":"=A" (ret):);
+	return CYCL2MILLIS(ret);
+#endif
+#if 0
+#ifndef KERNEL
+	struct timeval tp;
+	/*  debugz(("CLOCK GETTIME %lx\n",(jint)self); */
+	gettimeofday(&tp, NULL);
+	return tp.tv_sec;
+#else
+	return 0;
+#endif
+#endif
 }
 
 jlong clock_getTicks(ObjectDesc * self)
 {
-    return (jlong) rt_timer_tsc();
+	unsigned long long ret;
+	asm volatile ("rdtsc":"=A" (ret):);
+	return ret;
 }
 
 jint clock_getTicks_low(ObjectDesc * self)
 {
-    unsigned long long ret;
-    ret = (unsigned long long) rt_timer_tsc();
-    return (jint) (ret & 0x000000007fffffff);
+	unsigned long long ret;
+	asm volatile ("rdtsc":"=A" (ret):);
+	return (jint) (ret & 0x000000007fffffff);
 }
 
 jint clock_getTicks_high(ObjectDesc * self)
 {
-    unsigned long long ret;
-    ret = (unsigned long long) rt_timer_tsc();
-    return (jint) (ret >> 32);
+	unsigned long long ret;
+	asm volatile ("rdtsc":"=A" (ret):);
+	return (jint) (ret >> 32);
 }
 
 jint clock_getCycles(ObjectDesc * self, ObjectDesc * cycleTime)
 {
-    unsigned long long ret;
-    ret = (unsigned long long) rt_timer_tsc();
-    cycleTime->data[0] = ret & 0x000000007fffffff;
-    cycleTime->data[1] = ret >> 32;
-    return 0;
+	unsigned long low, high;
+	asm volatile ("rdtsc":"=d" (high), "=a"(low));
+	CHECK_NULL_PTR(cycleTime);
+	cycleTime->data[0] = low;
+	cycleTime->data[1] = high;
 }
 
 jint clock_subtract(ObjectDesc * self, ObjectDesc * res, ObjectDesc * a, ObjectDesc * b)
 {
-    u64 ca = *((u64 *) a->data);
-    u64 cb = *((u64 *) b->data);
-    u64 cr = ca - cb;
-    *((u64 *) res->data) = cr;
-    return 0;
+	CHECK_NULL_POINTER(a == NULL || b == NULL || res == NULL);
+	{
+		u8_t ca = *((u8_t *) a->data);
+		u8_t cb = *((u8_t *) b->data);
+		u8_t cr = ca - cb;
+		if (ca < cb)
+			sys_panic("");
+		*((u8_t *) res->data) = cr;
+	}
 }
 
 jint clock_toMicroSec(ObjectDesc * self, ObjectDesc * a)
 {
-    SRTIME ca = *((u64 *) a->data);
-    return rt_timer_tsc2ns(ca) / 1000;
+	jint ret;
+	CHECK_NULL_PTR(a);
+	DISABLE_IRQ;		/* clock is fast portal and performas floating point operations */
+	{
+		u8_t ca = *((u8_t *) a->data);
+		//  printf("*%ld,%ld,%ld,%ld*", a->data[0], a->data[1],(u4_t)(ca / 500), (u4_t)(ca >> 9));
+		ret = CYCL2MICROS(ca);
+	}
+	RESTORE_IRQ;
+	return ret;
 }
 
 jint clock_toNanoSec(ObjectDesc * self, ObjectDesc * a)
 {
-    SRTIME ca = *((u64 *) a->data);
-    return rt_timer_tsc2ns(ca);
+	u8_t ret;
+	CHECK_NULL_PTR(a);
+	DISABLE_IRQ;		/* clock is fast portal and performas floating point operations */
+	{
+		u8_t ca = *((u8_t *) a->data);
+		ret = CYCL2NANOS(ca);
+	}
+	RESTORE_IRQ;
+	return ret;
 }
 
 jint clock_toMilliSec(ObjectDesc * self, ObjectDesc * a)
 {
-    SRTIME ca = *((u64 *) a->data);
-    return rt_timer_tsc2ns(ca) / 1000000;
+	jint ret;
+	CHECK_NULL_PTR(a);
+	DISABLE_IRQ;		/* clock is fast portal and performas floating point operations */
+	{
+		u8_t ca = *((u8_t *) a->data);
+		ret = CYCL2MILLIS(ca);
+	}
+	RESTORE_IRQ;
+	return ret;
 }
 
 MethodInfoDesc clockMethods[] = {
-    {"getTimeInMillis", "", (code_t) clock_getTimeInMillis}
-    ,
-    {"getTicks", "", (code_t) clock_getTicks}
-    ,
-    {"getTicks_low", "", (code_t) clock_getTicks_low}
-    ,
-    {"getTicks_high", "", (code_t) clock_getTicks_high}
-    ,
-    {"getCycles", "", (code_t) clock_getCycles}
-    ,
-    {"subtract", "", (code_t) clock_subtract}
-    ,
-    {"toMicroSec", "", (code_t) clock_toMicroSec}
-    ,
-    {"toNanoSec", "", (code_t) clock_toNanoSec}
-    ,
-    {"toMilliSec", "", (code_t) clock_toMilliSec}
-    ,
+	{"getTimeInMillis", "", clock_getTimeInMillis}
+	,
+	{"getTicks", "", clock_getTicks}
+	,
+	{"getTicks_low", "", clock_getTicks_low}
+	,
+	{"getTicks_high", "", clock_getTicks_high}
+	,
+	{"getCycles", "", clock_getCycles}
+	,
+	{"subtract", "", clock_subtract}
+	,
+	{"toMicroSec", "", clock_toMicroSec}
+	,
+	{"toNanoSec", "", clock_toNanoSec}
+	,
+	{"toMilliSec", "", clock_toMilliSec}
+	,
 };
 
-void init_clock_portal(void)
+void init_clock_portal()
 {
-    init_zero_dep_without_thread("jx/zero/Clock", "Clock", clockMethods, sizeof(clockMethods), "<jx/zero/Clock>");
+	init_zero_dep_without_thread("jx/zero/Clock", "Clock", clockMethods, sizeof(clockMethods), "<jx/zero/Clock>");
 }
-

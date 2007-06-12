@@ -169,6 +169,14 @@ void gc_walkContinuesBlock(DomainDesc * domain, u4_t * start, u4_t ** top, Handl
 			flags = getObjFlags((ObjectDesc *) (flags & FORWARD_PTR_MASK))
 			    | GC_FORWARD;
 		}
+#ifdef DBG_SCAN_HEAP
+#ifdef USE_FMAGIC
+		printf("rel=%p addr=%p flags=%p (%s) magic=%p\n", (char *) data - (char *) start, data + 2, flags & FLAGS_MASK,
+		       get_flagname(flags & FLAGS_MASK), data[1]);
+#else
+		printf("addr=%p flags=%p (%s)\n", data + 1, flags & FLAGS_MASK, get_flagname(flags & FLAGS_MASK));
+#endif
+#endif
 		switch (flags & FLAGS_MASK) {
 		case OBJFLAGS_ARRAY:{
 				objSize = gc_objSize2(obj, flags);
@@ -182,6 +190,9 @@ void gc_walkContinuesBlock(DomainDesc * domain, u4_t * start, u4_t ** top, Handl
 		case OBJFLAGS_OBJECT:{
 				c = obj2ClassDesc(obj);
 				ASSERTCLASSDESC(c);
+#ifdef DBG_SCAN_HEAP
+				printf("%s\n", c->name);
+#endif
 				objSize = OBJSIZE_OBJECT(c->instanceSize);
 				if (handleObject)
 					handleObject(domain, obj, objSize, flags);
@@ -245,6 +256,14 @@ void gc_walkContinuesBlock(DomainDesc * domain, u4_t * start, u4_t ** top, Handl
 #endif				/* STACK_ON_HEAP */
 		default:
 			printf("FLAGS: %lx\n", flags & FLAGS_MASK);
+#ifdef DEBUG
+			flags = getObjFlags(obj);
+			if ((flags & FORWARD_MASK) == GC_FORWARD) {
+				printf("Forward to %p\n", flags & FORWARD_PTR_MASK);
+				flags = getObjFlags((ObjectDesc *) (flags & FORWARD_PTR_MASK));
+			}
+			dump_data(obj);
+#endif
 			sys_panic("WRONG HEAP DATA");
 		}
 		data += objSize;

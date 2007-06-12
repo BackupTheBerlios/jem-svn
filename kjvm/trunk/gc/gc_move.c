@@ -1,29 +1,8 @@
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for
-// embedded systems.
-//
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
-// Copyright © 1998-2002 Michael Golm. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-// Copyright © 2001-2002 Joerg Baumann. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-// Alternative licenses for Jem may be arranged by contacting Sombrio Systems Inc.
-// at http://www.javadevices.com
-//=================================================================================
-// Garbage collector
-//=================================================================================
+/********************************************************************************
+ * Garbage collector
+ * Copyright 1998-2002 Michael Golm
+ * Copyright 2001-2002 Joerg Baumann
+ *******************************************************************************/
 
 #ifdef ENABLE_GC
 #include "all.h"
@@ -163,9 +142,130 @@ void gc_impl_walkContentServicePool(DomainDesc * domain, ServiceThreadPool * obj
 	ThreadDesc *tp;
 	ThreadDescProxy *tpr;
 	HandleReference_t handler = handleReference;
+	//printf("walkContentPool %p\n", obj);
 	MOVETCB(obj->firstReceiver);
+	/* obj->firstWaitingSender and obj->lastWaitingSender are pointers to TCBs in other domains and must not be moved */
+/*
+	IF_DBG_GC(printf("  going to copy service.(obj=%p,proxy=%p) \n", obj->obj, obj->proxy));
+	handleReference(domain, &(obj->obj));
+	handleReference(domain, (ObjectDesc **) & (obj->proxy));
+	IF_DBG_GC(printf("  copied service.(obj=%p,proxy=%p) \n", obj->obj, obj->proxy));
+*/
 }
 
+#ifdef STACK_ON_HEAP
+ObjectDesc *gc_impl_shallowCopyStack(u4_t * dst, StackProxy * srcObj)
+{
+	StackProxy *dstObj = (StackProxy *) ptr2ObjectDesc(dst);
+	char *dstStack, *srcStack;
+
+	srcStack = obj2stack(srcObj);
+
+	dstStack = obj2stack(dstObj);
+
+	IF_DBG_GC(printf("   MOVE STACK %p  to %p\n", srcObj, dstObj));
+
+	memcpy(dstStack, srcStack, srcObj->size << 2);
+
+	setObjFlags(dstObj, OBJFLAGS_STACK);
+#ifdef USE_QMAGIC
+	setObjMagic(dstObj, MAGIC_OBJECT);
+#endif
+	dstObj->vtable = srcObj->vtable;
+	dstObj->size = srcObj->size;
+	dstObj->thread = srcObj->thread;
+	return dstObj;
+}
+
+#define VERBOSE_STACKMOVE 1
+
+void gc_impl_walkContentStack(DomainDesc * domain, StackProxy * obj, HandleReference_t handleReference)
+{
+	char **spp;
+	char *inc;
+	u4_t *ebp;
+	ThreadDescProxy *tpr;
+	HandleReference_t handler = handleReference;
+	MOVETCB(obj->thread);
+
+	ebp = (u4_t *) & domain - 2;
+
+
+	/* obj->thread is in second semispace ! */
+	inc = (char *) obj->thread->stack - (char *) obj2stack(obj);
+	//ebp = (char*)ebp - inc; // ebp is corrected below
+
+	if (obj->thread->isGCThread) {
+		/* must copy stack again, otherwise it is the stack from the shallowCopy call */
+		memcpy(obj2stack(obj), obj->thread->stack, obj->size << 2);
+	}
+
+	ASSERT(obj->thread->stack != obj2stack(obj));
+
+#ifdef VERBOSE_STACKMOVE
+	domain->gc.printInfo(domain);
+	printf("Obj: %p\n", obj);
+	printf("Thread: %p\n", obj->thread);
+	printf("Stack(thread): %p\n", obj->thread->stack);
+	printf("Stack(myself): %p\n", obj2stack(obj));
+	printf("ESP: %p\n", obj->thread->context[PCB_ESP]);
+	printf("EBP: %p\n", obj->thread->context[PCB_EBP]);
+	printf("EIP: %p\n", obj->thread->context[PCB_EIP]);
+
+	cTrace("OLD", obj->thread, obj->thread->context[PCB_EBP], obj->thread->context[PCB_EIP]);
+#endif				/* VERBOSE_STACKMOVE */
+
+	if (obj->thread->context[PCB_ESP])
+		((char *) obj->thread->context[PCB_ESP]) -= inc;
+
+	/* correct frame pointers on new stack */
+	spp = &(obj->thread->context[PCB_EBP]);	/* PCB_EBP  points to old stack */
+	if (obj->thread->isGCThread) {	/* we are currently running !! saved state is old */
+		spp = &ebp;	/* ebp points to old stack */
+	}
+	while (*spp) {
+		*spp -= inc;	/* correct actual pointer */
+		spp = *spp;	/* get pointer to next */
+	}
+#ifdef VERBOSE_STACKMOVE
+	if (obj->thread->isGCThread) {
+		printf("MY OWN STACK: correct stack and stackTop and load ebp\n");
+		cTrace("NEW", obj->thread, ebp, gc_impl_walkContentStack);
+	} else {
+		cTrace("NEW", obj->thread, obj->thread->context[PCB_EBP], obj->thread->context[PCB_EIP]);
+	}
+#endif
+	/* stack/stackTop must be corrected after new stack is ready (GC thread runs on this stack) */
+	obj->thread->stack = obj2stack(obj);
+	obj->thread->stackTop = obj->thread->stack + (STACK_CHUNK_SIZE >> 2);
+
+	if (obj->thread->isGCThread) {
+		/* switch to the new stack */
+		asm volatile ("movl %0, %%ebp;"::"r" (ebp));
+		asm volatile ("movl %0, %%esp;"::"r" (ebp));
+	}
+}
+
+#ifdef VERBOSE_STACKMOVE
+void cTrace(char *txt, ThreadDesc * thread, u4_t * base, u4_t * eip)
+{
+	int i;
+	u4_t *sp, *ebp;
+	sp = base;
+
+	for (;;) {
+		if (sp == NULL)
+			break;
+		printf("STACK%s BASE: %p EBP: %p EIP: %p ", txt, base, sp, eip);
+		print_eip_info(eip);
+		printf("\n");
+		ebp = (u4_t *) * sp++;
+		eip = (u4_t *) * sp++;
+		sp = ebp;
+	}
+}
+#endif				/* VERBOSE_STACKMOVE */
+#endif
 
 ArrayDesc *gc_impl_shallowCopyArray(u4_t * dst, ArrayDesc * srcObj)
 {
@@ -335,7 +435,7 @@ void gc_impl_walkContentForeignCPUState(DomainDesc * domain, ThreadDescForeignPr
 static void check_inwait(DomainDesc * domain, ThreadDesc * t)
 {
 	int i;
-	for (i = 0; i < CONFIG_JEM_MAX_SERVICES; i++) {
+	for (i = 0; i < MAX_SERVICES; i++) {
 		if (domain->pools[i]) {
 			if (domain->pools[i]->lastWaitingSender && t->id == domain->pools[i]->lastWaitingSender->id
 			    && t->domain->id == domain->pools[i]->lastWaitingSender->domain->id) {
@@ -490,8 +590,8 @@ void gc_impl_walkContentCPUState(DomainDesc * domain, ThreadDescProxy * obj, Han
 	if (t->entry) {
 		handler(domain, (ObjectDesc **) & (t->entry));
 	}
-	if ((t->portalReturnType & PORTAL_RETURN_TYPE_REFERENCE)
-	    && (t->portalReturn)) {
+	if (PORTAL_RETURN_IS_OBJECT(t->portalReturnType)
+	    && t->portalReturn) {
 		gc_dprintf("move portalReturn\n");
 		handler(domain, (ObjectDesc **) & (t->portalReturn));
 	}
@@ -688,5 +788,3 @@ void gc_impl_walkContent(DomainDesc * domain, ObjectDesc * obj, HandleReference_
 }
 
 #endif				/* ENABLE_GC */
-
-

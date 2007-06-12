@@ -1,29 +1,3 @@
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for
-// embedded systems.
-//
-// Copyright © 2007 JemStone Software LLC. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-//==============================================================================
-// exception_handler.h
-//
-// Java exception handler interface
-//
-//==============================================================================
-
 #ifndef _EXCEPTION_HANDLER_H_
 #define _EXCEPTION_HANDLER_H_
 
@@ -47,22 +21,30 @@
 #define THROW_MemoryExhaustedException ((jint*)-13)
 #define THROW_DomainTerminatedException ((jint*)-14)
 
+#ifndef ASSEMBLER
+#include "types.h"
+#include "domain.h"
+
+#ifdef KERNEL
+#define CHECK_NULL_PTR(_ptr_) {if (_ptr_==NULL) exceptionHandler(THROW_NullPointerException);}
+#define CHECK_NULL_POINTER(_ptr_)
+#else
 #define CHECK_NULL_PTR(_ptr_) {if (_ptr_==NULL) exceptionHandler(THROW_NullPointerException);}
 #define CHECK_NULL_POINTER(_exp_) {if (_exp_) exceptionHandler(THROW_NullPointerException);}
+#endif
 
 ObjectDesc *createExceptionInDomain(DomainDesc * domain,
-                                    char *exception,
-                                    char *details);
+				    const char *exception,
+				    const char *details);
 
-void throw_exception(ObjectDesc * exception, u32 * sp);
+void throw_exception(ObjectDesc * exception, u4_t * sp);
 void throw_ArithmeticException(jint dummy);
-void throw_StackOverflowError(void);
+void throw_StackOverflowError();
 void throw_ArrayIndexOutOfBounds(jint dummy);
 void throw_NullPointerException(jint dummy);
 
 void exceptionHandlerMsg(jint * p, char *msg);
 void exceptionHandler(jint * p);
-void exceptionHandlerInternal(char *msg);
-
+#endif
 
 #endif

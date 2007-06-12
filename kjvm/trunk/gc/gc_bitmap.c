@@ -1,24 +1,3 @@
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for
-// embedded systems.
-//
-// Copyright © 2007 Sombrio Systems Inc. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-//=================================================================================
-
 #if defined( GC_BITMAP_IMPL ) && defined ( GC_USE_NEW )
 #include "all.h"
 
@@ -262,7 +241,7 @@ static jint *bitmap_alloc(DomainDesc * domain, u4_t size)
 static jint bitmap_check_reserve(DomainDesc * domain, u4_t size)
 {
 	u4_t nslots = BYTES2SLOTS(size);
-	if (GCM_BITMAP(domain).free_slots < (nslots + (getJVMConfig()->heapReserve / SLOT_SIZE)))
+	if (GCM_BITMAP(domain).free_slots < (nslots + (HEAP_RESERVE / SLOT_SIZE)))
 		return JNI_FALSE;
 	return JNI_TRUE;
 }
@@ -619,7 +598,7 @@ void gc_bitmap_gc(DomainDesc * domain)
 
 	GCM_BITMAP(domain).run++;
 
-	/*
+	/* 
 	 * Init
 	 */
 
@@ -702,8 +681,8 @@ void gc_bitmap_init(DomainDesc * domain, u4_t heap_bytes)
 	if (heap_bytes == 0)
 		sys_panic("gc_bitmap is not suitable for domain Zero");
 
-	if (heap_bytes < getJVMConfig()->heapReserve + HEAP_BLOCKSIZE)
-		heap_bytes = getJVMConfig()->heapReserve + HEAP_BLOCKSIZE;
+	if (heap_bytes < HEAP_RESERVE + HEAP_BLOCKSIZE)
+		heap_bytes = HEAP_RESERVE + HEAP_BLOCKSIZE;
 
 	n_obj = heap_bytes / SLOT_SIZE;
 	bitmap_size = n_obj / 8;
@@ -747,5 +726,3 @@ void gc_bitmap_init(DomainDesc * domain, u4_t heap_bytes)
 #endif				/* GC_USE_ONLY_ONE */
 }
 #endif
-
-

@@ -30,9 +30,9 @@
 #include <linux/initrd.h>
 #include <linux/moduleparam.h>
 #include "jemtypes.h"
-#include "malloc.h"
 #include "jemConfig.h"
 #include "simpleconfig.h"
+#include "all.h"
 
 #define VERSION "0.1.0"
 
@@ -46,6 +46,15 @@ static char *confNames[] = {"jem_codeFragments",
 							"jem_codeBytesDom0",
 							"jem_codeBytes",
 						   };
+SharedLibDesc *zeroLib;
+
+void start_domain_zero();
+
+
+static void dummy_entry_point()
+{
+	sys_panic("dummy_entry_point SHOULD NOT BE CALLED");
+}
 
 int getJVMConfig(unsigned int id) 
 {
@@ -113,20 +122,73 @@ void jem_exit (void)
     printk(KERN_INFO "Jem/JVM is shutdown.\n");
 }
 
-int jem_init (void)
+
+int jem_init(void)
 {
-    int result;
+	ThreadDesc *domainZero_thread;
+
+	struct multiboot_module *module;
 
     printk(KERN_INFO "Jem/JVM version %s\n", VERSION);
-    
+
     loadConfig();
-    
-    // Initialize memory subsystem
-    if ((result = jemMallocInit()) < 0) return result;
+
+    /* read zip from boot module */
+	/*module = base_multiboot_find(ZIPFILE); */
+	module = multiboot_get_module();
+
+	if (module == NULL) {
+		sys_panic("Could not find boot module");
+	}
+
+	zip_init(module->mod_start, module->mod_end - module->mod_start);
+
+	pic_init_pmode();
+	init_irq_data();
+
+    /*
+	 * Serial line
+	 */
+	ser_enable_break();
+
+	dprintf("finished system init\n");
+
+	init_domainsys();
+
+	/*
+	 * Init preemption-aware atomic regions
+	 */
+
+	nopreempt_init();
+
+    atomicfn_init();
+
+	threads_init();
+
+	portals_init();
+
+	java_lang_Object = createObjectClassDesc();
+	java_lang_Object_class = createObjectClass(java_lang_Object);
+
+	createArrayObjectVTableProto(domainZero);
+	//class_Array = createArrayObjectClassDesc(domainZero);
+	//class_Array_class = createArrayObjectClass(domainZero, class_Array);
+
+	/* init system */
+	set_current(createThread(domainZero, dummy_entry_point /* dummy */ , (void *) -1, STATE_RUNNABLE, SCHED_CREATETHREAD_NORUNQ));	/* dummy thread */
+
+#ifdef DEBUG
+	check_current = 0;
+#endif
+
+	initPrimitiveClasses();
+
+	domainZero_thread = createThread(domainZero, start_domain_zero, (void *) 0, STATE_RUNNABLE, SCHED_CREATETHREAD_DEFAULT);
+	setThreadName(domainZero_thread, "DomainZero:InitialThread", NULL);
+	//thread_exit();
 
     printk(KERN_INFO "Jem/JVM initialization complete.\n");
-
-    return 0;
+	return 0;
 }
 
 MODULE_AUTHOR("Christopher Stone");

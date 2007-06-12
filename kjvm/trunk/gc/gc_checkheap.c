@@ -54,7 +54,7 @@ jboolean gc_isValidHeapRef(DomainDesc * domain, ObjectDesc * ptr)
 
 /*
  * Check all objects on this heap whether they contain invalid references (references that
- * point outside this heap)
+ * point outside this heap) 
  */
 
 struct CheckHeap_scrap_s {
@@ -113,7 +113,7 @@ static void gc_checkHeap_ObjectCB(DomainDesc * domain, ObjectDesc * obj, u4_t ob
 			sys_panic("");
 		}
 	}
-	/* FIXME
+	/* FIXME        
 	   #ifdef CHECKHEAP_VERBOSE
 	   printf("    of class %s\n", c->name);
 	   #endif

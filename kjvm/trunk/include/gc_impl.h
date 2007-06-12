@@ -1,81 +1,14 @@
-//=================================================================================
-// This file is part of Jem, a real time Java operating system designed for
-// embedded systems.
-//
-// Copyright © 2007 JemStone Software LLC. All rights reserved.
-// Copyright © 1997-2001 The JX Group. All rights reserved.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-//==============================================================================
-// gc_impl.h
-//
-//
-//==============================================================================
+/********************************************************************************
+ * Garbage collector
+ * Copyright 1998-2002 Michael Golm
+ * Copyright 2001-2002 Joerg Baumann
+ *******************************************************************************/
 
-#ifndef GC_IMPL_H
-#define GC_IMPL_H
+#ifndef GC_IMP_H
+#define GC_IMP_H
 
-#define gc_objSize(_o_) gc_objSize2(_o_, getObjFlags(_o_))
-u32 gc_objSize2(ObjectDesc* obj, jint flags);
-
-void gc_walkContinuesBlock(DomainDesc * domain, u32 * start, u32 ** top,
-                           HandleObject_t handleObject,
-                           HandleObject_t handleArray,
-                           HandleObject_t handlePortal,
-                           HandleObject_t handleMemory,
-                           HandleObject_t handleService,
-                           HandleObject_t handleCAS,
-                           HandleObject_t handleAtomVar,
-                           HandleObject_t handleDomainProxy,
-                           HandleObject_t handleCPUStateProxy,
-                           HandleObject_t handleServicePool,
-                           HandleObject_t handleStackProxy);
-
-void gc_walkContinuesBlock_Alt(DomainDesc * domain, u32 * start,
-                               u32 * top, HandleObject_t handleObject,
-                               HandleObject_t handleArray,
-                               HandleObject_t handlePortal,
-                               HandleObject_t handleMemory,
-                               HandleObject_t handleService,
-                               HandleObject_t handleCAS,
-                               HandleObject_t handleAtomVar,
-                               HandleObject_t handleDomainProxy);
-
-ObjectDesc *gc_impl_shallowCopyObject(u32 * dst, ObjectDesc * srcObj);
-void gc_impl_walkContentObject(DomainDesc * domain, ObjectDesc * obj,
-                               HandleReference_t handleReference);
-
-DEPDesc *gc_impl_shallowCopyService(u32 * dst, DEPDesc * srcObj);
-void gc_impl_walkContentService(DomainDesc * domain, DEPDesc * obj,
-                                HandleReference_t handleReference);
-
-ArrayDesc *gc_impl_shallowCopyArray(u32 * dst, ArrayDesc * srcObj);
-void gc_impl_walkContentArray(DomainDesc * domain, ArrayDesc * obj,
-                              HandleReference_t handleReference);
-
-Proxy *gc_impl_shallowCopyPortal(u32 * dst, Proxy * srcObj);
-
-CASProxy *gc_impl_shallowCopyCAS(u32 * dst, CASProxy * srcObj);
-
-AtomicVariableProxy *gc_impl_shallowCopyAtomVar(u32 * dst,
-                                                AtomicVariableProxy *srcObj);
-void gc_impl_walkContentAtomVar(DomainDesc *domain,
-                                AtomicVariableProxy * obj,
-                                HandleReference_t handleReference);
-
-void gc_impl_walkContent(DomainDesc * domain, ObjectDesc * obj,
-                         HandleReference_t handleReference);
+#ifdef ENABLE_GC
+#include "gc_move.h"
 
 void freezeThreads(DomainDesc * domain);
 
@@ -87,29 +20,60 @@ void walkSpecial(DomainDesc * domain, HandleReference_t handler);
 void walkInterrupHandlers(DomainDesc * domain, HandleReference_t handler);
 
 void walkRootSet(DomainDesc * domain,
-                 HandleReference_t stacksHandler,
-                 HandleReference_t staticsHandler,
-                 HandleReference_t portalsHandler,
-                 HandleReference_t registeredHandler,
-                 HandleReference_t specialHandler,
-                 HandleReference_t interruptHandlersHandler);
+		 HandleReference_t stacksHandler,
+		 HandleReference_t staticsHandler,
+		 HandleReference_t portalsHandler,
+		 HandleReference_t registeredHandler,
+		 HandleReference_t specialHandler,
+		 HandleReference_t interruptHandlersHandler);
 
+/************************************************/
+//FIXME
 #define FORWARD_MASK            0x00000001
 #define FORWARD_PTR_MASK        0xfffffffe
 
 /* flag word is used as forwarding pointer
-   flags must be at high position
+   flags must be at high position 
 */
 
 #define GC_FORWARD 0x00000001
 #define GC_WHITE   0x00000000
 
 
+#define DEBUG_ALL   1
+#define DEBUG_NO    0
+
+#ifdef DBG_GC
+#define GC_DEBUG_LEVEL DEBUG_ALL
+#else
+#define GC_DEBUG_LEVEL DEBUG_NO
+#endif
+
+
+#if(GC_DEBUG_LEVEL == DEBUG_NO)
+#define gc_dprintf(args...) while(0){printf(args);}
+#else
+#ifdef SMP
+#define gc_dprintf(args...)   do{printf("CPU%d: ",get_processor_id()); printf(args);}while (0);
+#else
+#define gc_dprintf(args...)   printf(args)
+#endif
+#endif
+
+
+
+#ifdef DBG_GC
+# define IF_DBG_GC(n) n;
+//# define IF_DBG_GC(n) do{n}while(0);
+#else
+# define IF_DBG_GC(n) while(0){n;}
+#endif
+
 #define FORBITMAP(map, mapsize, isset, notset) \
 { \
-  u8 * addr = map; \
-  u32 index; \
-  u8 bits = 0; \
+  u1_t * addr = map; \
+  u4_t index; \
+  u1_t bits = 0; \
   for(index = 0;index < mapsize; index++) { \
     if (index % 8 == 0) bits = *addr++; \
     if (bits&1) { \
@@ -121,7 +85,8 @@ void walkRootSet(DomainDesc * domain,
   } \
 }
 
+#endif				/* ENABLE_GC */
+
 #define MOVETCB(x) if (x) {tpr = thread2CPUState(x); handler(domain, (ObjectDesc **) & (tpr)); x = cpuState2thread(tpr);}
 
-
-#endif              /* GC_IMPL_H */
+#endif				/* GC_IMP_H */

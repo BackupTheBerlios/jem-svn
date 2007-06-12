@@ -1,48 +1,65 @@
-//==============================================================================
-// This file is part of Jem, a real time Java operating system designed for
-// embedded systems.
-//
-// Copyright (C) 2007 Christopher Stone. 
-// Copyright (C) 1997-2001 The JX Group.
-//
-// Jem is free software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License, version 2, as published by the Free
-// Software Foundation.
-//
-// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with
-// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
-// Fifth Floor, Boston, MA 02110-1301, USA
-//
-//==============================================================================
+#ifndef OBJECT_H
+#define OBJECT_H
 
-#ifndef _OBJECT_H
-#define _OBJECT_H
-
-
-#define MAGIC_OBJECT 0xbebeceee
-#define MAGIC_INVALID 0xabcdef98
-#define MAGIC_CPU 0xcb0cb0ff
-
-
-
-typedef struct ObjectDesc_s {
-    code_t      *vtable;
-    jint        data[1];
+typedef struct {
+	code_t *vtable;
+	jint data[1];		/* at least one word of data */
 } ObjectDesc;
 
-typedef struct ObjectDesc_s **ObjectHandle;
-
-typedef struct ArrayDesc_s {
-    code_t              *vtable;
-    struct ClassDesc_s  *arrayClass;
-    jint                size;
-    jint                data[1];
-} ArrayDesc;
+typedef ObjectDesc **ObjectHandle;
 
 
+#ifdef USE_QMAGIC
+#define MAGIC_OBJECT 0xbebeceee
+#define MAGIC_INVALID 0xabcdef98
+#endif
+#if defined (USE_QMAGIC) && defined (NORMAL_MAGIC)
+//#define ASSERTOBJECT(x) ASSERT(((char*)(x) == NULL) || (getObjMagic(x)==MAGIC_OBJECT))
+#define ASSERTOBJECT(x) if (! (((char*)(x) == NULL) || (getObjMagic(x)==MAGIC_OBJECT))) {printf("\"%s\", line %d: Assertion failed \n NOT AN OBJECT: %p\n ", __FILE__, __LINE__, x); dump_data(x); asm("int $3");}
+#define ASSERTPROXY(x) {ASSERTOBJECT(x); { ASSERT((getObjFlags(x) & FLAGS_MASK) == OBJFLAGS_PORTAL); }}
+#define ASSERTHANDLE(_h_) \
+ if (((char*)(_h_)==NULL) || (getObjMagic(*(_h_))!=MAGIC_OBJECT)) {\
+  printf(" _h_ is not a valid handle! %s(%d)\n",__FILE__,__LINE__);\
+  asm("int $3");\
+}
+#else
+#define ASSERTOBJECT(x)
+#define ASSERTHANDLE(x)
+#define ASSERTPROXY(x)
 #endif
 
+#ifdef DEBUG
+#define ASSERT_ARRAYTYPE(_array_,_type_) { if (((ArrayClassDesc *)((ArrayDesc*)(_array_)->arrayClass))->name[1]!=_type_) sys_panic("Assertion failed"); }
+#else
+#define ASSERT_ARRAYTYPE(_array_,_type_)
+#endif
+
+#include "code.h"
+
+typedef struct {
+	code_t *vtable;
+	ClassDesc *arrayClass;
+	jint size;
+	jint data[1];		/* at least one word of data */
+} ArrayDesc;
+
+/* NOT derived from ObjectDesc */
+typedef struct {
+	//    code_t **vtable;
+#ifdef USE_QMAGIC
+	u4_t magic;
+#endif
+	int cpu_id;
+} CPUDesc;
+
+#ifdef USE_QMAGIC
+#define MAGIC_CPU 0xcb0cb0ff
+#endif
+#if defined (NORMAL_MAGIC) && defined(USE_QMAGIC)
+#define ASSERTCPU(x) ASSERT(x->magic==MAGIC_CPU)
+#else
+#define ASSERTCPU(x)
+#endif
+
+
+#endif				/* OBJECT_H */

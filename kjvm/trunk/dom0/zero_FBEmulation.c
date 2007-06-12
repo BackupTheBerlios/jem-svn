@@ -560,7 +560,7 @@ jboolean fbemulation_checkEvent(ObjectDesc * self, ObjectDesc * event)
 		printf("NEXT\n");
 
 		XNextEvent(d, &ev);
-		//   XPeekEvent(d, &ev);
+		//   XPeekEvent(d, &ev); 
 
 	}
 #endif

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+//==============================================================================
+// This file is part of Jem, a real time Java operating system designed for
+// embedded systems.
+//
+// Copyright (C) 2007 Christopher Stone. 
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+//==============================================================================
+-->
+
+<ax:aspect xmlns:ax="http://control.ee.ethz.ch/XWeaver/AspectX" xmlns:cpp="http://www.sdml.info/srcML/cpp" xmlns:java="http://www.sdml.info/srcML/java" xmlns:src="http://www.sdml.info/srcML/src" xmlns:util="http://www.pnp-software.com/util" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="FunctionPointcuts">
+
+
+  <ax:pointcut constraint="src:name='createDomain'" name="createDomain" type="src:function">
+    <ax:description>Select the createDomain function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='deleteDomainSystem'" name="deleteDomainSystem" type="src:function">
+    <ax:description>Select the deleteDomainSystem function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemFree'" name="jemFree" type="src:function">
+    <ax:description>Select the jemFree function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemFreeCode'" name="jemFreeCode" type="src:function">
+    <ax:description>Select the jemFreeCode function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemFreeThreadDesc'" name="jemFreeThreadDesc" type="src:function">
+    <ax:description>Select the jemFreeThreadDesc function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemFreeTmp'" name="jemFreeTmp" type="src:function">
+    <ax:description>Select the jemFreeTmp function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jem_exit'" name="jem_exit" type="src:function">
+    <ax:description>Select the jem_exit function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jem_init'" name="jem_init" type="src:function">
+    <ax:description>Select the jem_init function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemMalloc'" name="jemMalloc" type="src:function">
+    <ax:description>Select the jemMalloc function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemMallocCode'" name="jemMallocCode" type="src:function">
+    <ax:description>Select the jemMallocCode function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemMallocInit'" name="jemMallocInit" type="src:function">
+    <ax:description>Select the jemMallocInit function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='initDomainSystem'" name="initDomainSystem" type="src:function">
+    <ax:description>Select the initDomainSystem function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='specialAllocDomainDesc'" name="specialAllocDomainDesc" type="src:function">
+    <ax:description>Select the specialAllocDomainDesc function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='terminateDomain'" name="terminateDomain" type="src:function">
+    <ax:description>Select the terminateDomain function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='unitTestInit'" name="unitTestInit" type="src:function">
+    <ax:description>Select the unitTestInit function.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='createService'" name="createServiceDecl" type="src:function_decl">
+    <ax:description>Select the createService function declaration.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='initDomainSystem'" name="initDomainSystemDecl" type="src:function_decl">
+    <ax:description>Select the initDomainSystem function declaration.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemFree'" name="jemFreeDecl" type="src:function_decl">
+    <ax:description>Select the jemFree function declaration.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemFreeCode'" name="jemFreeCodeDecl" type="src:function_decl">
+    <ax:description>Select the jemFreeCode function declaration.</ax:description>
+  </ax:pointcut>
+
+
+  <ax:pointcut constraint="src:name='jemMalloc'" name="jemMallocDecl" type="src:function_decl">
+    <ax:description>Select the jemMalloc function.</ax:description>
+  </ax:pointcut>
+
+
+</ax:aspect>

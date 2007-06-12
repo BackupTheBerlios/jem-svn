@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+//==============================================================================
+// This file is part of Jem, a real time Java operating system designed for
+// embedded systems.
+//
+// Copyright (C) 2007 Christopher Stone. 
+//
+// Jem is free software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License, version 2, as published by the Free
+// Software Foundation.
+//
+// Jem is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// Jem; if not, write to the Free Software Foundation, Inc., 51 Franklin Street,
+// Fifth Floor, Boston, MA 02110-1301, USA
+//
+//==============================================================================
+-->
+
+<ax:aspect xmlns:ax="http://control.ee.ethz.ch/XWeaver/AspectX" xmlns:cpp="http://www.sdml.info/srcML/cpp" xmlns:java="http://www.sdml.info/srcML/java" xmlns:src="http://www.sdml.info/srcML/src" xmlns:util="http://www.pnp-software.com/util" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="CommandLineInterface">
+  <ax:description>Add the debug command line interface support code and the global
+commands.</ax:description>
+  <ax:include href="FunctionPointcuts.ax"/>
+  <ax:include href="UnitPointcuts.ax"/>
+
+
+  <ax:advice name="Advice_1" type="replace">
+    <ax:description>Add code to initialize the CLI.</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect cli')" type="src:comment">
+      <ax:restriction type="within">
+        <ax:pointcutRef aspect="FunctionPointcuts" ref="jem_init" type="src:function"/>
+      </ax:restriction>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>kcli        = cli_get();
+jem_command = cli_register_command(kcli, NULL, "jem", NULL, PRIVILEGE_UNPRIVILEGED,
+        MODE_EXEC, NULL);</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_2" type="begin">
+    <ax:description>Add code to unregister jem cli.</ax:description>
+    <ax:pointcutRef aspect="FunctionPointcuts" ref="jem_exit" type="src:function"/>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>cli_unregister_command(kcli, "jem");</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_3" type="add">
+    <ax:description>Add global variables for cli.</ax:description>
+    <ax:pointcutRef aspect="UnitPointcuts" ref="jem_c" type="src:unit"/>
+    <ax:codeModifier type="declaration">
+      <ax:text>
+struct cli_def       *kcli;
+struct cli_command   *jem_command;
+      </ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_4" type="replace">
+    <ax:description>Add cli header include.</ax:description>
+    <ax:pointcut constraint="contains(.,'@aspect include')" type="src:comment">
+      <ax:or>
+        <ax:restriction type="within">
+          <ax:pointcutRef aspect="UnitPointcuts" ref="malloc_c" type="src:unit"/>
+        </ax:restriction>
+        <ax:restriction type="within">
+          <ax:pointcutRef aspect="UnitPointcuts" ref="jem_c" type="src:unit"/>
+        </ax:restriction>
+      </ax:or>
+    </ax:pointcut>
+    <ax:codeModifier type="codeFragment">
+      <ax:text>#include "libcli.h"
+// @aspect include</ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+  <ax:advice name="Advice_5" type="add">
+    <ax:description>Add global variables for cli.</ax:description>
+    <ax:pointcutRef aspect="UnitPointcuts" ref="malloc_c" type="src:unit"/>
+    <ax:codeModifier type="declaration">
+      <ax:text>
+extern struct cli_def       *kcli;
+extern struct cli_command   *jem_command;
+      </ax:text>
+    </ax:codeModifier>
+  </ax:advice>
+
+
+</ax:aspect>

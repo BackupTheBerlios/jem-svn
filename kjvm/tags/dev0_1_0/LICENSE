@@ -1,0 +1,20 @@
+Copyright (C) 2007 JavaDevices Software. All rights reserved.
+Copyright (C) 1997-2001 The JX Group. All rights reserved.
+
+This is the license for Jem/JVM, a java virtual machine for Jem. Jem is a
+real time Java operating system designed for embedded systems. The files
+in this directory and sub-directories are part of Jem/JVM, and are covered
+by this license.
+
+Jem/JVM is free software; you can redistribute it and/or modify it under the
+terms of the GNU General Public License, version 2, as published by the Free
+Software Foundation.
+
+Jem/JVM is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+Jem/JVM; if not, write to the Free Software Foundation, Inc., 51 Franklin
+Street, Fifth Floor, Boston, MA 02110-1301, USA
+

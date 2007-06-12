@@ -1,0 +1,1 @@
+make ARCH=i386 CROSS_COMPILE=586- -C /opt/sombrio/jcore/build SUBDIRS=/vesta-work/chris/jem/jvm/kmodule modules

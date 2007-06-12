@@ -1,0 +1,54 @@
+#
+# JEM configuration
+#
+menu "Java Virtual Machine (Jem)"
+
+config JEM
+	tristate "Kernel-based Java Virtual Machine (Jem) support"
+	depends on EXPERIMENTAL
+	---help---
+	  Jem is a java virtual machine (JVM) that runs in the kernel. It
+	  is intended for embedded java applications. You will also
+	  need the java class files that come with the JEM JDK.
+
+	  To compile this as a module, choose M here: the module
+	  will be called kjvm.
+
+	  If unsure, say N.
+
+config JEM_CLI
+	bool "Enable command line interface"
+	depends on JEM
+	default false
+	---help---
+	  Compile in the command line interface (kcli) support. Some of the debug 
+	  and statistics gathering aspects register commands with kcli that will
+	  display their results.
+
+config JEM_MALLOC_STATS
+	bool "Enable malloc statistics"
+	depends on JEM_CLI
+	default false
+	---help---
+	  Compile in the malloc statistics aspect, which will keep track of
+	  how much memory has been allocated, and what the memory was allocated
+	  for. A command is added to the cli to display the statistics. Thus
+	  this option depends on adding the cli support.
+
+config JEM_UNIT_TEST
+	bool "Enable unit test cases"
+	depends on JEM_CLI
+	default false
+	---help---
+	  Compile in the unit test cases.
+
+config JEM_FUNCTION_TRACE
+	bool "Enable function tracing for debug"
+	depends on JEM_CLI
+	default false
+	---help---
+	  Compile in the function tracing aspect which will printk a message
+	  each time a function is entered. The aspect also adds a command that
+	  will allow the user to enable and disable tracing at run time.
+
+endmenu
